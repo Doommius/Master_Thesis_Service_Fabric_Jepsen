@@ -1,0 +1,294 @@
+% !TeX spellcheck = en-US
+% !TeX encoding = utf8
+% !TeX program = pdflatex
+% !BIB program = biber
+% -*- coding:utf-8 mod:LaTeX -*-
+
+
+% vv  scroll down to line 200 for content  vv
+
+
+\let\ifdeutsch\iffalse
+\let\ifenglisch\iftrue
+\input{pre-documentclass}
+\documentclass[
+  % fontsize=11pt is the standard
+  a4paper,  % Standard format - only KOMAScript uses paper=a4 - https://tex.stackexchange.com/a/61044/9075
+  twoside,  % we are optimizing for both screen and two-side printing. So the page numbers will jump, but the content is configured to stay in the middle (by using the geometry package)
+  bibliography=totoc,
+  %               idxtotoc,   %Index ins Inhaltsverzeichnis
+  %               liststotoc, %List of X ins Inhaltsverzeichnis, mit liststotocnumbered werden die Abbildungsverzeichnisse nummeriert
+  headsepline,
+  cleardoublepage=empty,
+  parskip=half,
+  %               draft    % um zu sehen, wo noch nachgebessert werden muss - wichtig, da Bindungskorrektur mit drin
+  draft=false
+]{scrbook}
+\input{config}
+
+
+\usepackage[
+  title={Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks},
+  author={Mark Jervelund},
+  type=Master Thesis,
+  institute=IMADA, % or other institute names - or just a plain string using {Demo\\Demo...}
+  course={Computer Science},
+  examiner={},
+  supervisor={Jacopo Mauro, Associate Professor, SDU Mikkel Hegnhoj, Microsoft},
+  startdate={Auguest, 2020},
+  enddate={june ##, 2021}
+]{scientific-thesis-cover}
+
+\input{acronyms}
+
+\makeindex
+
+\begin{document}
+
+%tex4ht-Konvertierung verschönern
+\iftex4ht
+  % tell tex4ht to create picures also for formulas starting with '$'
+  % WARNING: a tex4ht run now takes forever!
+  \Configure{$}{\PicMath}{\EndPicMath}{}
+  %$ % <- syntax highlighting fix for emacs
+  \Css{body {text-align:justify;}}
+
+  %conversion of .pdf to .png
+  \Configure{graphics*}
+  {pdf}
+  {\Needs{"convert \csname Gin@base\endcsname.pdf
+      \csname Gin@base\endcsname.png"}%
+    \Picture[pict]{\csname Gin@base\endcsname.png}%
+  }
+\fi
+
+%\VerbatimFootnotes %verbatim text in Fußnoten erlauben. Geht normalerweise nicht.
+
+\input{commands}
+\pagenumbering{arabic}
+\Titelblatt
+
+%Eigener Seitenstil fuer die Kurzfassung und das Inhaltsverzeichnis
+\deftripstyle{preamble}{}{}{}{}{}{\pagemark}
+%Doku zu deftripstyle: scrguide.pdf
+\pagestyle{preamble}
+\renewcommand*{\chapterpagestyle}{preamble}
+
+
+  \section*{Abstract}
+
+
+<Short summary of the thesis>
+
+\cleardoublepage
+
+
+% BEGIN: Verzeichnisse
+
+\iftex4ht
+\else
+  \microtypesetup{protrusion=false}
+\fi
+
+%Produce table of contents
+%
+%In case you have trouble with headings reaching into the page numbers, enable the following three lines.
+%Hint by http://golatex.de/inhaltsverzeichnis-schreibt-ueber-rand-t3106.html
+%
+%\makeatletter
+%\renewcommand{\@pnumwidth}{2em}
+%\makeatother
+%
+\tableofcontents
+
+% Bei einem ungünstigen Seitenumbruch im Inhaltsverzeichnis, kann dieser mit
+% \addtocontents{toc}{\protect\newpage}
+% an der passenden Stelle im Fließtext erzwungen werden.
+
+\listoffigures
+\listoftables
+
+\listof{Listing}{List of Listings}
+
+
+
+  \listof{Algorithmus}{List of Algorithms}
+
+\printnoidxglossaries
+
+\iftex4ht
+\else
+  %Optischen Randausgleich und Grauwertkorrektur wieder aktivieren
+  \microtypesetup{protrusion=true}
+\fi
+
+% END: Verzeichnisse
+
+
+% Headline and footline
+\renewcommand*{\chapterpagestyle}{scrplain}
+\pagestyle{scrheadings}
+\pagestyle{scrheadings}
+\ihead[]{}
+\chead[]{}
+\ohead[]{\headmark}
+\cfoot[]{}
+\ofoot[\usekomafont{pagenumber}\thepage]{\usekomafont{pagenumber}\thepage}
+\ifoot[]{}
+
+
+%% vv  scroll down for content  vv %%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Main content starts here
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\chapter{Introduction}
+
+This thesis starts with \cref{chap:k2}.
+
+We can also typeset \verb|<text>verbatim text</text>|.
+Backticks are also rendered correctly: \verb|`words in backticks`|.
+
+\chapter{Study}
+\label{chap:k2}
+
+\section{Things to read(temp list)}
+
+https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
+
+
+\section{Jepsen}
+\subsection{Introduction}
+"
+Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems’ failure modes. In each analysis we explore whether the system lives up to its documentation’s claims.
+"\cite{jepsonio}
+\\
+What this means is that Jepsen is a tool that can assist us in fault checking if a database system works and intended compared to ACID and the isolation levels in the database.
+
+Explain what they did in past projects, and what they allows you to do wrt 
+
+\subsection{Isolation levels and phenomena}
+
+The Isolation level as defined by the ISO/IEC 9075 standard which defines SQL, This means that any database system should present to what level that they follow the isolation levels. in this we have 4 levels that can lead to unintended behavior within a single transaction. 
+
+First the 3 types of behavior is explained as these are used to explain the 4 levels of isolation. the are categorized as the 3 below.
+\begin{itemize}
+\item dirty read,
+\item Non-repeatable read and
+\item Phantom read
+\end{itemize}
+
+'Dirty read' is when a S1 can read data that S2 has written but not yet committed, It is considered dirty as S2 can rollback the transaction where S1 read data that must be considered non existent. \textcolor{red}{Make example diagram} 
+\\
+The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. so if S1 read the some data again they will have changed. this results in two equal select statements returning different results.  \textcolor{red}{Make example diagram} 
+
+Phantom read
+The Third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
+ \textcolor{red}{Make example diagram} 
+
+The 4 Isolation levels are defined as:
+read uncommitted
+       The read uncommitted does not issue shared lock, which allows session S2 write access to the data S1 is reading.\textcolor{red}{write more in dept} 
+ read commited
+ \textcolor{red}{write more in dept} 
+repeatable read
+\textcolor{red}{write more in dept} 
+serializable
+\textcolor{red}{write more in dept} 
+
+
+
+From this knowledge a table can be made that gives us an overview of the isolation levels and what behaviour and the trade off they have.
+Isolation level	Read phenomena
+Dirty read	Non-repeatable read	Phantom read
+read uncommitted	yes	yes	yes
+read committed	no	yes	yes
+repeatable read	no	no	y
+serializable	no	no	no
+\textcolor{red}{Maybe also include something about snapshot isolation} 
+"""
+
+\subsection{related work to Jepsen}
+
+K. Kingsbury. Knossos.
+https://github.com/jepsen-io/knossos, 2013-2019.
+
+G. Lowe. Testing and Verifying Concurrent Objects.
+Concurrency and Computation: Practice and
+Experience, 29(4), 2017
+
+J. M. Wing and C. Gong. Testing and Verifying
+Concurrent Objects. Journal of Parallel and
+Distributed Computing, 17(1-2), 1993.
+
+P. B. Gibbons and E. Korach. Testing shared
+memories. SIAM Journal on Computing, 26(4), 1997
+
+S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
+Line-up: A Complete and Automatic Linearizability
+Checker. PLDI ’10, 2010.
+
+
+\subsection{Tooling}
+
+\section{AWS cluster}
+https://aws.amazon.com/marketplace/pp/Jepsen-LLC-Jepsen/B01LZ7Y7U0
+
+
+List and describe the methods and tools used to preform a Jepsen test.
+
+
+\section{Service Fabric}
+
+\subsection{Introduction}
+
+\subsection{What does service Fabric promise wrt ACID}
+
+https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections-transactions-locks
+
+
+\section{}{Experiment}
+
+\subsection{Introduction}
+
+The Goal of the experiment to to investigate weather Service Fabric is compliance with ACID or not, 
+
+
+
+%LaTeX hints are provided in \cref{chap:latexhints}.
+
+%\blinddocument
+
+\chapter{Related Work}
+maybe http://jepsen.io/analyses as it's related but not results have been found on the work of testing service fabric claims wrt to isolation.
+
+\chapter{Conclusion and Outlook}
+\label{chap:zusfas}
+
+\section*{Outlook}
+
+\printbibliography
+
+All links were last followed on March 17, 2018.
+
+
+
+\newpage
+\appendix
+\input{Proposal}
+
+
+
+%\input{latexhints-english}
+
+\pagestyle{empty}
+\renewcommand*{\chapterpagestyle}{empty}
+\Versicherung
+\end{document}

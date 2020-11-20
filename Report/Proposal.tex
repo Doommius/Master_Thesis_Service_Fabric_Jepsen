@@ -1,0 +1,149 @@
+%Template by Mark Jervelund - 2015 - mjerv15@student.sdu.dk
+
+
+\setdatetoday
+\addtocounter{datenumber}{0} %date for dilierry standard is today
+\setdatebynumber{\thedatenumber}
+\date{}
+\setcounter{secnumdepth}{0}
+\pagestyle{fancy}
+\fancyhf{}
+
+
+%lstlisting ting:
+\definecolor{dkgreen}{rgb}{0,0.45,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.30,0,0.30}
+
+\lstset{frame=tb,
+  language=C++,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,
+  numberstyle=\footnotesize,
+  keywordstyle=\color{dkgreen}\bfseries,
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=false
+  tabsize=1
+}
+\renewcommand{\lstlistingname}{Code} 
+
+\newcommand{\Z}{\mathbb{Z}}
+\counterwithin*{equation}{section}
+
+\begin{document}
+
+
+
+\section{'Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks'}
+
+\section{Introduction}
+The goal of this project is to assess how Jepsen\cite{2} tests allow us to verify the properties of ACID\cite{8} in a cloud system. 
+The Jepsen test is a method used to evaluate the compliance of a system in relation to the ACID properties. This is done is by analysing the system via Blackbox\cite{4} tests , in the sense that the internals of the system work are not relevant. We look at the service from a client-side and not any underlying structures or frameworks.  
+The ACID properties are 
+\begin{itemize}
+\item	Atomicity \\
+Guarantees that each transaction is treated as a single "unit", which either succeeds completely or fails completely 
+\item	Consistency \\
+Ensures that a transaction can only bring the database from one valid state to another
+\item	Isolation \\
+Ensures that concurrent execution of transactions leaves the database in the same state that would have been obtained if the transactions were executed sequentially 
+\item	Durability \\
+Guarantees that once a transaction has been committed, it will remain committed even in the case of a system failure 
+\end{itemize}
+\cite{8} \\
+We plan to apply these methods on Service Fabric\cite{5} , to verify if this system is compliant with the ACID properties. Service Fabric is a framework developed by Microsoft, designed to allow developers to build Hyper-Scale Cloud (HSC) deployments on the Azure\cite{6} platform.    
+The motivation behind this thesis is to study the ACID properties in an HSC environment and evaluate how the constraints of ACID hold up in practice, as well as verifying if these constraints are met, and more importantly if they are not. 
+\section{Plan}
+     
+The project is segmented into three parts. The writing of the report will take place at all times throughout the process, and the final phase should be a finalization and corrections phase.  
+\subsection{The study phase  }
+\begin{itemize}
+\item	The first part of the study will focus on analysing the previous\cite{3} Jepsen tests performed on other systems. This will allow us to define a strategy in terms of: which tools, tactics and methods are worth investigating, and what type of faults should be taken note of. This information is useful for two aspects:  
+\begin{itemize}
+\item	where our focus should be when testing,  
+\item	which tools and packages we should be familiarize with. 
+\end{itemize}
+\item	 The second part of the study will centre around “Service Fabric” and getting to know how the framework is coupled together, what vectors we can access the system from, and how we can manipulate the framework to induce fault conditions.   
+\end{itemize}
+\subsection{The experimentation phase}
+\begin{itemize}
+\item	In the experimentation phase, we will design and perform tests on the system. If any faults occur, we will attempt to locate where, and why they occur. If the scope and the timeline of the project allow, we will assess whether we prevent the faults from occurring in the future.
+\item	The Experimentation phase of the project will include the steps described below. 
+\begin{itemize}
+\item	Planning of the test, selection of the aspects of the system to be tested, consulting with developers and users of the system to determine if and where undesired behaviour may occur.
+\item	Designing the tests and setting up the tools to facilitate those tests.
+\item	Writing the tests, verifying they work as intended and setting up a data collection framework to collect the data in a manner that allows our analysis.
+\item	Performing the tests on the system in different scenarios, normal conditions and different levels of faults and disaster recovery.
+\item	Analysing the data for faults, errors and inconsistencies.
+\item	Consulting with DEVs to determine where the faults occurred, and which failures or bugs led to these fault conditions.
+\item	Concluding whether “Service Fabric” is ACID-compliant. 
+\end{itemize}
+\end{itemize}
+\subsection{The report phase }
+\begin{itemize}
+\item The final phase of the project aims at finishing an initial draft, reviewing and correcting it, and finalizing the report for hand-in.
+\item	Deliverables 
+\begin{itemize}
+\item	At the end of the project, there should be a report, the tests and the results from those tests. 
+\item	The report written in English and following the standard academic writing conventions will include 
+\begin{itemize}
+\item	A study on Jepsen tests, describing what they are, as well as why and how they are done.
+\item	An experiment in which we will analyse “Service Fabric”	
+\item	A discussion on the conclusiveness of the test and the compliance of the framework with service fabric.
+\end{itemize}
+\item	The code \& data will include
+\begin{itemize}
+\item	Scripts and code for tests and for analysing the data.
+\item	Relevant results and data from the tests. 
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\section{Goal    }  
+The goal of the project is to deep dive into Jepsen tests with a focus on “Service Fabric” as the subject. The optimal goal of the project is to verify if the database aspects of “Service Fabric” comply with the ACID properties, and to locate the fault cases in case they don’t.    
+Risk assessment 
+There are a few risks in the project. In the case no faults are found within the Service Fabric, this reduces the scope of the project. If no faults are found, time allowing, different framework can be analysed. On the contrary, if the number of faults in the framework is more extensive than expected, then the scope of the project may grow uncontrollably. In this case, choices will be made to select a subset of the data to focus on.
+ 
+
+\begin{thebibliography}{9}
+\bibitem{1} 
+https://github.com/jepsen-io/jepsen 
+
+\bibitem{2} 
+https://aphyr.com/tags/jepsen 
+
+\bibitem{3} 
+https://jepsen.io/analyses 
+
+\bibitem{4}
+https://youtu.be/tRc0O9VgzB0?t=293
+
+\bibitem{5} 
+https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview  
+
+\bibitem{6} 
+https://microsoft.com/en-us/azure/ 
+
+\bibitem{gitservicefabric} 
+https://github.com/microsoft/service-fabric  
+
+\bibitem{8}
+Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510
+
+\end{thebibliography}
+
+\end{document}
+
+
+\bibitem{einstein} 
+Albert Einstein. 
+\textit{Zur Elektrodynamik bewegter K{\"o}rper}. (German) 
+[\textit{On the electrodynamics of moving bodies}]. 
+Annalen der Physik, 322(10):891–921, 1905.
