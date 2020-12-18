@@ -170,14 +170,16 @@ https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
 Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems’ failure modes. In each analysis we explore whether the system lives up to its documentation’s claims.
 "\cite{jepsonio}
 \\
-What this means is that Jepsen is a tool that can assist us in fault checking if a database system works and intended compared to ACID and the isolation levels in the database.
 
-Explain what they did in past projects, and what they allows you to do wrt 
+Going from the above quite Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given, and in a world where distributed, hyper scale or even planetary scale systems are becoming the norm the way data storage is done is required to behave in an expected manner, the reason that expected manner is used rather than correct manner is that we may allow certain faults to occur and eventual consistency to allow for higher throughput applications and that some data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. //
 
+Two different examples of this is the YouTube 301 views that happened around 2015, where the number of views weren't globally distributed right away. while comments and likes were, this meant two things. //
 
+Comments were available globally in real time, while views would also commit globally doing low load times, or off hours to maximize utilization of resources.
 
+another more modern scenario where the real time data distribution and correctness is of the utmost importance is within transactions in the finance industry,  where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is non longer available, otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.//
 
-
+To go more in debt about these cases we need to do a short introduction to isolation levels and the pheomena that they can cause.
 
 
 \subsection{Isolation levels and phenomena}
@@ -221,9 +223,22 @@ serializable	no	no	no
 \textcolor{red}{Maybe also include something about snapshot isolation} 
 """
 
+\subsection{Historically}
 
+\subsection{Historically}
 
-\subsection{How does Jepsen Achieve this.}
+Historically this was done with using a manually defined hand coded set of patterns to check how a system behaves wrt to the isolation levels above, like if some proven invariants hold, or if an anomaly is present in parallel is present by inserting record x and y in two separate transactions and and in two more transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handles long forks and snapshot isolation, and more importantly if it supports it at all.
+
+these checking are generally quite efficient and run in polynomial time, but they only check for a certain patterns and therefor don't give us the larger picture of where issues are present, and only cover a fairly limited set of configurations and isolation levels, and are defined on a system to system basis and no interchangeability is supporter.
+
+This means that this has been a giant scope project where case by case tests are predefined and where we only test for certain scopes, which more importantly mean that tests have been done but the test coverage haven't been perfect and a lot of anomalies are never detected.
+
+\subsection{State of the art.}
+
+One of the ways this is done is by inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history. 
+
+We are then able to reveal any anomaly and provide a concise explanation as to why any fault may have occurred.  
+
 
 
 
