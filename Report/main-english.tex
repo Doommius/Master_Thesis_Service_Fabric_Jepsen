@@ -27,51 +27,8 @@
 \input{config}
 
 
-\usepackage[
-  title={Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks},
-  author={Mark Jervelund},
-  type=Master Thesis,
-  institute=IMADA, % or other institute names - or just a plain string using {Demo\\Demo...}
-  course={Computer Science},
-  examiner={},
-  supervisor={Jacopo Mauro, Associate Professor, SDU Mikkel Hegnhoj, Microsoft},
-  startdate={Auguest, 2020},
-  enddate={june ##, 2021}
-]{scientific-thesis-cover}
-
-\input{acronyms}
-
-\makeindex
-
 \begin{document}
 
-%tex4ht-Konvertierung verschönern
-\iftex4ht
-  % tell tex4ht to create picures also for formulas starting with '$'
-  % WARNING: a tex4ht run now takes forever!
-  \Configure{$}{\PicMath}{\EndPicMath}{}
-  %$ % <- syntax highlighting fix for emacs
-  \Css{body {text-align:justify;}}
-
-  %conversion of .pdf to .png
-  \Configure{graphics*}
-  {pdf}
-  {\Needs{"convert \csname Gin@base\endcsname.pdf
-      \csname Gin@base\endcsname.png"}%
-    \Picture[pict]{\csname Gin@base\endcsname.png}%
-  }
-\fi
-
-%\VerbatimFootnotes %verbatim text in Fußnoten erlauben. Geht normalerweise nicht.
-
-\input{commands}
-\pagenumbering{arabic}
-\Titelblatt
-
-%Eigener Seitenstil fuer die Kurzfassung und das Inhaltsverzeichnis
-\deftripstyle{preamble}{}{}{}{}{}{\pagemark}
-%Doku zu deftripstyle: scrguide.pdf
-\pagestyle{preamble}
 \renewcommand*{\chapterpagestyle}{preamble}
 
 
@@ -80,49 +37,7 @@
 
 <Short summary of the thesis>
 
-\cleardoublepage
 
-
-% BEGIN: Verzeichnisse
-
-\iftex4ht
-\else
-  \microtypesetup{protrusion=false}
-\fi
-
-%Produce table of contents
-%
-%In case you have trouble with headings reaching into the page numbers, enable the following three lines.
-%Hint by http://golatex.de/inhaltsverzeichnis-schreibt-ueber-rand-t3106.html
-%
-%\makeatletter
-%\renewcommand{\@pnumwidth}{2em}
-%\makeatother
-%
-\tableofcontents
-
-% Bei einem ungünstigen Seitenumbruch im Inhaltsverzeichnis, kann dieser mit
-% \addtocontents{toc}{\protect\newpage}
-% an der passenden Stelle im Fließtext erzwungen werden.
-
-\listoffigures
-\listoftables
-
-\listof{Listing}{List of Listings}
-
-
-
-  \listof{Algorithmus}{List of Algorithms}
-
-\printnoidxglossaries
-
-\iftex4ht
-\else
-  %Optischen Randausgleich und Grauwertkorrektur wieder aktivieren
-  \microtypesetup{protrusion=true}
-\fi
-
-% END: Verzeichnisse
 
 
 % Headline and footline
@@ -251,10 +166,17 @@ but a lot of this lay outside the scope of this thesis but it's also a super int
 
 
 
+
+
 \subsection{Past jepsen tests}
 
 http://jepsen.io/analyses
 
+
+
+
+
+\subsection{methods used in Jepsen tests}
 
 \subsection{related work to Jepsen}
 
@@ -282,6 +204,28 @@ Checker. PLDI ’10, 2010.
 
 \subsection{Introduction}
 
+Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale microservices and containers, one of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by microsoft as the backbone oftheir core serives and datastores, 
+
+
+
+\subsection{DataStore}
+
+
+
+
+\subsection{Promises}
+
+
+\subsection{Configuration}
+
+
+What we are able to tweak
+
+
+\subsection{What aspects of the datastore we'd like to test}
+
+
+
 \subsection{What does service Fabric promise wrt ACID}
 
 https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections-transactions-locks
@@ -292,6 +236,8 @@ https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-se
 \subsection{Introduction}
 
 The Goal of the experiment to to investigate weather Service Fabric is compliance with ACID or not, 
+
+Currently awaiting for PostNord to deliver hardware.
 
 
 \subsection{Tooling}
@@ -329,51 +275,51 @@ All links were last followed on March 17, 2018.
 % \usepackage{multirow}
 % \usepackage[table,xcdraw]{xcolor}
 % If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
-\begin{table}[]
-\begin{tabular}{clllcc}
-\multicolumn{2}{l}{Mark Jervelund thesis plan} & Date Start        & Date end          & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{Anything before this has been unstructured study, a lot of finding materials and such.}                 \\
-                                & Week 45      & November 2, 2020  & November 8, 2020  &                                                                                          &                                                                                                                            \\
-                                & Week 46      & November 9, 2020  & November 15, 2020 &                                                                                          & \multirow{-2}{*}{Study jepsen test}                                                                                        \\
-                                & Week 47      & November 16, 2020 & November 22, 2020 &                                                                                          &                                                                                                                            \\
-\multirow{-4}{*}{November}      & Week 48      & November 23, 2020 & November 29, 2020 &                                                                                          & \multirow{-2}{*}{Finish study on Jepsen test}                                                                              \\
-                                & Week 49      & November 30, 2020 & December 6, 2020  &                                                                                          &                                                                                                                            \\
-                                & Week 50      & December 7, 2020  & December 13, 2020 &                                                                                          & \multirow{-2}{*}{Study Service Fabric}                                                                                     \\
-                                & Week 51      & December 14, 2020 & December 20, 2020 &                                                                                          & \cellcolor[HTML]{FFC7CE}{\color[HTML]{9C0006} }                                                                            \\
-                                & Week 52      & December 21, 2020 & December 27, 2020 &                                                                                          & \multirow{-2}{*}{\cellcolor[HTML]{FFC7CE}{\color[HTML]{9C0006} Chrismas break}}                                            \\
-\multirow{-5}{*}{December}      & Week 53      & December 28, 2020 & January 3, 2021   &                                                                                          &                                                                                                                            \\
-                                & week 01      & January 4, 2021   & January 10, 2021  & \multirow{-10}{*}{\begin{tabular}[c]{@{}c@{}}Structured study\\    8 weeks\end{tabular}} & \multirow{-2}{*}{Finish Study Service Fabric}                                                                              \\
-                                & Week 02      & January 11, 2021  & January 17, 2021  &                                                                                          &                                                                                                                            \\
-                                & Week 03      & January 18, 2021  & January 24, 2021  &                                                                                          & \multirow{-2}{*}{designing the experiment}                                                                                 \\
-\multirow{-4}{*}{January}       & Week 04      & January 25, 2021  & January 31, 2021  &                                                                                          &                                                                                                                            \\
-                                & Week 05      & February 1, 2021  & February 7, 2021  &                                                                                          & \multirow{-2}{*}{designing the experiment}                                                                                 \\
-                                & Week 06      & February 8, 2021  & February 14, 2021 &                                                                                          &                                                                                                                            \\
-                                & Week 07      & February 15, 2021 & February 21, 2021 &                                                                                          & \multirow{-2}{*}{Excecute the exeriment}                                                                                   \\
-\multirow{-4}{*}{Febuary}       & Week 08      & February 22, 2021 & February 28, 2021 &                                                                                          &                                                                                                                            \\
-                                & Week 09      & March 1, 2021     & March 7, 2021     &                                                                                          & \multirow{-2}{*}{Analyse the experiment}                                                                                   \\
-                                & Week 10      & March 8, 2021     & March 14, 2021    &                                                                                          &                                                                                                                            \\
-                                & Week 11      & March 15, 2021    & March 21, 2021    & \multirow{-10}{*}{\begin{tabular}[c]{@{}c@{}}Experiment\\    10 weeks\end{tabular}}      & \multirow{-2}{*}{discover what the findings from the exeriment is}                                                         \\
-                                & Week 12      & March 22, 2021    & March 28, 2021    &                                                                                          &                                                                                                                            \\
-\multirow{-5}{*}{March}         & Week 13      & March 29, 2021    & April 4, 2021     &                                                                                          & \multirow{-2}{*}{\begin{tabular}[c]{@{}c@{}}Running additional experiments if needed\\    Full on write mode\end{tabular}} \\
-                                & Week 14      & April 5, 2021     & April 11, 2021    &                                                                                          &                                                                                                                            \\
-                                & Week 15      & April 12, 2021    & April 18, 2021    &                                                                                          & \multirow{-2}{*}{Full on write mode}                                                                                       \\
-                                & Week 16      & April 19, 2021    & April 25, 2021    &                                                                                          &                                                                                                                            \\
-\multirow{-4}{*}{April}         & Week 17      & April 26, 2021    & May 2, 2021       &                                                                                          & \multirow{-2}{*}{Full on write mode}                                                                                       \\
-                                & Week 18      & May 3, 2021       & May 9, 2021       &                                                                                          &                                                                                                                            \\
-                                & Week 19      & May 10, 2021      & May 16, 2021      &                                                                                          & \multirow{-2}{*}{\begin{tabular}[c]{@{}c@{}}Full on write mode\\    Send out thesis for feedback\end{tabular}}             \\
-                                & Week 20      & May 17, 2021      & May 23, 2021      &                                                                                          &                                                                                                                            \\
-                                & Week 21      & May 24, 2021      & May 30, 2021      & \multirow{-10}{*}{\begin{tabular}[c]{@{}c@{}}Thesis writing\\    10 weeks\end{tabular}}  & \multirow{-2}{*}{Correction}                                                                                               \\
-\multirow{-5}{*}{May}           & Week 22      & May 31, 2021      & June 6, 2021      &                                                                                          &                                                                                                                            \\
-                                & Week 23      & June 7, 2021      & June 13, 2021     & \multirow{-2}{*}{goal}                                                                   & \multirow{-2}{*}{Hand in}                                                                                                  \\
-                                & Week 24      & June 14, 2021     & June 20, 2021     & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-                                & Week 25      & June 21, 2021     & June 27, 2021     & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-                                & Week 26      & June 28, 2021     & July 4, 2021      & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-\multirow{-5}{*}{June}          & Week 27      &                   &                   & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-\multicolumn{1}{l}{}            & Week 28      &                   &                   & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-\multicolumn{1}{l}{}            & Week 29      &                   &                   & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-\multicolumn{1}{l}{}            & Week 30      &                   &                   & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                       \\
-\multicolumn{1}{l}{}            & Week 31      &                   &                   & \multicolumn{1}{l}{}                                                                     & \multicolumn{1}{l}{}                                                                                                      
+
+\begin{tabular}{clll}
+\multicolumn{2}{l}{Mark Jervelund thesis plan} &                                           &                  \\
+                                & Week 45      &                                             &                                                                                                                            \\
+                                & Week 46      &                                             & \multirow{-2}{*}{Study Jensen test}                                                                                        \\
+                                & Week 47      &                                             &                                                                                                                            \\
+\multirow{-4}{*}{November}      & Week 48      &                                             & \multirow{-2}{*}{Finish study on Jepsen test}                                                                              \\
+                                & Week 49      &                                             &                                                                                                                            \\
+                                & Week 50      &                                             & \multirow{-2}{*}{Study Service Fabric}                                                                                     \\
+                                & Week 51      &                                             &                                                                            \\
+                                & Week 52      &                                             & \multirow{-2}{*}{ Christmas break}                                            \\
+\multirow{-5}{*}{December}      & Week 53      &                                             &                                                                                                                            \\
+                                & week 01      &  \multirow{-10}{*}{Structured study 8 weeks} & \multirow{-2}{*}{Finish Study Service Fabric}                                                                              \\
+                                & Week 02      &                                             &                                                                                                                            \\
+                                & Week 03      &                                             & \multirow{-2}{*}{designing the experiment}                                                                                 \\
+\multirow{-4}{*}{January}       & Week 04      &                                             &                                                                                                                            \\
+                                & Week 05      &                                             & \multirow{-2}{*}{designing the experiment}                                                                                 \\
+                                & Week 06      &                                             &                                                                                                                            \\
+                                & Week 07      &                                             & \multirow{-2}{*}{Execute the experiment}                                                                                   \\
+\multirow{-4}{*}{February}      & Week 08      &                                             &                                                                                                                            \\
+                                & Week 09      &                                             & \multirow{-2}{*}{Analyse the experiment}                                                                                   \\
+                                & Week 10      &                                             &                                                                                                                            \\
+                                & Week 11      &  \multirow{-10}{*}{Experiment 10 weeks}     & \multirow{-2}{*}{discover what the findings from the experiment is}                                                         \\
+                                & Week 12      &                                             &                                                                                                                            \\
+\multirow{-5}{*}{March}         & Week 13      &                                             & \multirow{-2}{*}{Running additional experiments if needed  Full on write mode} \\
+                                & Week 14      &                                             &                                                                                                                            \\
+                                & Week 15      &                                             & \multirow{-2}{*}{Full on write mode}                                                                                       \\
+                                & Week 16      &                                             &                                                                                                                            \\
+\multirow{-4}{*}{April}         & Week 17      &                                             & \multirow{-2}{*}{Full on write mode}                                                                                       \\
+                                & Week 18      &                                             &                                                                                                                            \\
+                                & Week 19      &                                             & \multirow{-2}{*}{Full on write mode    Send out thesis for feedback}             \\
+                                & Week 20      &                                             &                                                                                                                            \\
+                                & Week 21      & \multirow{-10}{*}{Thesis writing  10 weeks} & \multirow{-2}{*}{Correction}                                                                                               \\
+\multirow{-5}{*}{May}           & Week 22      &                                             &                                                                                                                            \\
+                                & Week 23      & \multirow{-2}{*}{goal}                      & \multirow{-2}{*}{Hand in}                                                                                                  \\
+                                & Week 24      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
+                                & Week 25      &  \multicolumn{1}{l}{}                       & \multicolumn{1}{l}{}                                                                                                       \\
+                                & Week 26      &  \multicolumn{1}{l}{}                       & \multicolumn{1}{l}{}                                                                                                       \\
+\multirow{-5}{*}{June}          & Week 27      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
+\multicolumn{1}{l}{}            & Week 28      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
+\multicolumn{1}{l}{}            & Week 29      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
+\multicolumn{1}{l}{}            & Week 30      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
+\multicolumn{1}{l}{}            & Week 31      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                      
 \end{tabular}
-\end{table}
+
 
 
 
@@ -381,5 +327,5 @@ All links were last followed on March 17, 2018.
 
 \pagestyle{empty}
 \renewcommand*{\chapterpagestyle}{empty}
-\Versicherung
+
 \end{document}
