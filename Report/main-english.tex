@@ -35,7 +35,7 @@
   \section*{Abstract}
 
 
-<Short summary of the thesis>
+TODO
 
 
 
@@ -52,16 +52,7 @@
 \ifoot[]{}
 
 
-%% vv  scroll down for content  vv %%
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Main content starts here
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \chapter{Introduction}
@@ -77,6 +68,10 @@ Backticks are also rendered correctly: \verb|`words in backticks`|.
 \section{Things to read(temp list)}
 
 https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
+
+https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections
+
+
 
 
 \section{Jepsen}
@@ -170,7 +165,12 @@ but a lot of this lay outside the scope of this thesis but it's also a super int
 
 \subsection{Past jepsen tests}
 
-http://jepsen.io/analyses
+https://aphyr.com/posts/294-call-me-maybe-cassandra
+
+
+https://aphyr.com/posts/291-call-me-maybe-zookeeper
+
+
 
 
 
@@ -204,12 +204,12 @@ Checker. PLDI ’10, 2010.
 
 \subsection{Introduction}
 
-Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale microservices and containers, one of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by microsoft as the backbone oftheir core serives and datastores, 
-
+Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers, one of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.
 
 
 \subsection{DataStore}
 
+So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage 
 
 
 
@@ -222,7 +222,7 @@ Service Fabric (SF) is a presented as a distributed systems platform something a
 What we are able to tweak
 
 
-\subsection{What aspects of the datastore we'd like to test}
+\subsection{What aspects of the service fabric are we  we'd like to test}
 
 
 
@@ -231,7 +231,9 @@ What we are able to tweak
 https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections-transactions-locks
 
 
-\section{}{Experiment}
+\section{Experiment}
+
+
 
 \subsection{Introduction}
 
@@ -242,11 +244,6 @@ Currently awaiting for PostNord to deliver hardware.
 
 \subsection{Tooling}
 
-\section{AWS cluster}
-https://aws.amazon.com/marketplace/pp/Jepsen-LLC-Jepsen/B01LZ7Y7U0
-
-
-List and describe the methods and tools used to preform a Jepsen test
 
 %LaTeX hints are provided in \cref{chap:latexhints}.
 
