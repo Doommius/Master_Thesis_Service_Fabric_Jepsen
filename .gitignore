@@ -13,16 +13,16 @@
 *.userprefs
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
+/jepsen.servicefabric/[Dd]ebug/
+/jepsen.servicefabric/[Dd]ebugPublic/
+/jepsen.servicefabric/[Rr]elease/
+/jepsen.servicefabric/[Rr]eleases/
+/jepsen.servicefabric/x64/
+/jepsen.servicefabric/x86/
+/jepsen.servicefabric/bld/
+/jepsen.servicefabric/[Bb]in/
+/jepsen.servicefabric/[Oo]bj/
+/jepsen.servicefabric/[Ll]og/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -328,3 +328,4 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+/jepsen.servicefabric/target/
