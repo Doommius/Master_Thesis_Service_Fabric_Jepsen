@@ -2,16 +2,12 @@
   (:require [clojure.tools.logging :refer :all]
             [clojure.string :as str]
             [jepsen [cli :as cli]
-                    [control :as c]
-                    [db :as db]
-                    [tests :as tests]]
+             [control :as c]
+             [db :as db]
+             [tests :as tests]]
             [jepsen.control.util :as cu]
             [jepsen.os.debian :as debian]))
 
-(def dir     "/opt/etcd")
-(def binary "etcd")
-(def logfile (str dir "/etcd.log"))
-(def pidfile (str dir "/etcd.pid"))
 
 
 (defn node-url
@@ -38,7 +34,13 @@
               (str node "=" (peer-url node))))
        (str/join ",")))
 
+
+(def dir     "/opt/etcd")
+(def binary "etcd")
+(def logfile (str dir "/etcd.log"))
+(def pidfile (str dir "/etcd.pid"))
 (def dir "/opt/etcd")
+
 
 (defn db
   "Etcd DB for a particular version."
@@ -70,18 +72,12 @@
          (teardown! [_ test node]
                     (info node "tearing down etcd")
                     (cu/stop-daemon! binary pidfile)
-                    (c/su (c/exec :rm :-rf dir)))))
+                    (c/su (c/exec :rm :-rf dir)))
 
 
-(ns jepsen.etcdemo
-  (:require [clojure.tools.logging :refer :all]
-            [clojure.string :as str]
-            [jepsen [cli :as cli]
-             [control :as c]
-             [db :as db]
-             [tests :as tests]]
-            [jepsen.control.util :as cu]
-            [jepsen.os.debian :as debian]))
+         db/LogFiles
+         (log-files [_ test node]
+                    [logfile])))
 
 
 (defn etcd-test
@@ -103,5 +99,4 @@
   (cli/run! (merge (cli/single-test-cmd {:test-fn etcd-test})
                    (cli/serve-cmd))
             args))
-
 
