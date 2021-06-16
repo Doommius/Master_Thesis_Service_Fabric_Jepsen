@@ -1,16 +1,20 @@
 (ns jepsen.servicefabric
   (:require [clojure.tools.logging :refer :all]
             [clojure.string :as str]
-            [verschlimmbesserung.core :as v]
-            [jepsen [cli :as cli]
+            [jepsen [checker :as checker]
+             [cli :as cli]
              [client :as client]
              [control :as c]
              [db :as db]
              [generator :as gen]
+             [nemesis :as nemesis]
              [tests :as tests]]
+            [jepsen.checker.timeline :as timeline]
             [jepsen.control.util :as cu]
             [jepsen.os.debian :as debian]
-            [slingshot.slingshot :refer [try+]]))
+            [knossos.model :as model]
+            [slingshot.slingshot :refer [try+]]
+            [verschlimmbesserung.core :as v]))
 
 
 (def dir     "/opt/etcd")
@@ -128,10 +132,21 @@
           :os              debian/os
           :db              (db "v3.1.5")
           :client          (Client. nil)
-          :generator       (->> (gen/mix [r w cas])
-                                (gen/stagger 1)
-                                (gen/nemesis nil)
-                                (gen/time-limit 15))}))
+          :nemesis         (nemesis/partition-random-halves)
+          :checker         (checker/compose
+                            {:perf   (checker/perf)
+                             :linear (checker/linearizable
+                                      {:model     (model/cas-register)
+                                       :algorithm :linear})
+                             :timeline (timeline/html)})
+          :generator (->> (gen/mix [r w cas])
+                          (gen/stagger 1)
+                          (gen/nemesis
+                           (gen/seq (cycle [(gen/sleep 5)
+                                            {:type :info, :f :start}
+                                            (gen/sleep 5)
+                                            {:type :info, :f :stop}])))
+                          (gen/time-limit (:time-limit opts)))}
 
 
 (defn -main
