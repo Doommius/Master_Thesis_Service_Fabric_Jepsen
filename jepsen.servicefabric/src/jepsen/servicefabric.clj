@@ -18,6 +18,9 @@
 (def pidfile (str dir "/etcd.pid"))
 (def dir "/opt/etcd")
 
+(defn r   [_ _] {:type :invoke, :f :read, :value nil})
+(defn w   [_ _] {:type :invoke, :f :write, :value (rand-int 5)})
+(defn cas [_ _] {:type :invoke, :f :cas, :value [(rand-int 5) (rand-int 5)]})
 
 (defn node-url
   "An HTTP url for connecting to a node on a particular port."
@@ -121,7 +124,7 @@
           :os              debian/os
           :db              (db "v3.1.5")
           :client          (Client. nil)
-          :generator        (gen/mix [r w cas])
+          :generator       (->> (gen/mix [r w])
                                 (gen/stagger 1)
                                 (gen/nemesis nil)
                                 (gen/time-limit 15))}))
