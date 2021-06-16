@@ -12,6 +12,12 @@
             [jepsen.os.debian :as debian]))
 
 
+(def dir     "/opt/etcd")
+(def binary "etcd")
+(def logfile (str dir "/etcd.log"))
+(def pidfile (str dir "/etcd.pid"))
+(def dir "/opt/etcd")
+
 
 (defn node-url
   "An HTTP url for connecting to a node on a particular port."
@@ -37,13 +43,10 @@
               (str node "=" (peer-url node))))
        (str/join ",")))
 
-
-(def dir     "/opt/etcd")
-(def binary "etcd")
-(def logfile (str dir "/etcd.log"))
-(def pidfile (str dir "/etcd.pid"))
-(def dir "/opt/etcd")
-
+(defn parse-long
+  "Parses a string to a Long. Passes through `nil`."
+  [s]
+  (when s (Long/parseLong s)))
 
 (defn db
   "Etcd DB for a particular version."
@@ -90,7 +93,15 @@
 
   (setup! [this test])
 
-  (invoke! [_ test op])
+  (invoke! [_ test op]
+    (case (:f op)
+      :read  (assoc op :type :ok, :value (parse-long (v/get conn "foo")))
+      :write (do (v/reset! conn "foo" (:value op))
+               (assoc op :type :ok))
+      :cas (let [[old new] (:value op)]
+             (assoc op :type (if (v/cas! conn "foo" old new)
+                               :ok
+                               :fail)))))
 
   (teardown! [this test])
 
@@ -110,7 +121,7 @@
           :os              debian/os
           :db              (db "v3.1.5")
           :client          (Client. nil)
-          :generator       (->> r
+          :generator        (gen/mix [r w cas])
                                 (gen/stagger 1)
                                 (gen/nemesis nil)
                                 (gen/time-limit 15))}))
