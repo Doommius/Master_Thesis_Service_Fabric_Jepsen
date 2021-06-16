@@ -140,13 +140,13 @@
                                        :algorithm :linear})
                              :timeline (timeline/html)})
           :generator (->> (gen/mix [r w cas])
-                          (gen/stagger 1)
+                          (gen/stagger 1/50)
                           (gen/nemesis
-                           (gen/seq (cycle [(gen/sleep 5)
-                                            {:type :info, :f :start}
-                                            (gen/sleep 5)
-                                            {:type :info, :f :stop}])))
-                          (gen/time-limit (:time-limit opts)))}
+                           (cycle [(gen/sleep 5)
+                                   {:type :info, :f :start}
+                                   (gen/sleep 5)
+                                   {:type :info, :f :stop}]))
+                          (gen/time-limit (:time-limit opts)))}))
 
 
 (defn -main
