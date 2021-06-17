@@ -17,8 +17,8 @@
             [verschlimmbesserung.core :as v]))
 
 
-(def dir     "/opt/etcd")
-(def binary "etcd")
+(def dir     "/opt/microsoft/servicefabric/bin")
+(def binary "/Fabric/Fabric.Code/Fabric")
 (def logfile (str dir "/etcd.log"))
 (def pidfile (str dir "/etcd.pid"))
 (def dir "/opt/etcd")
@@ -56,38 +56,43 @@
   [s]
   (when s (Long/parseLong s)))
 
-(defn db
-  "Etcd DB for a particular version."
+(defn cluster
+  "service fabric for a particular version."
   [version]
   (reify db/DB
          (setup! [_ test node]
-                 (info node "installing etcd" version)
-                 (c/su
-                  (let [url (str "https://storage.googleapis.com/etcd/" version
-                                 "/etcd-" version "-linux-amd64.tar.gz")]
-                    (cu/install-archive! url dir))
+;                 Deploy Test code to cluster, This should setup the service fabric cluster, configure it, deploy api.
+                 (info node "Deploying Config to servicefabric test cluster " version)
 
-                  (cu/start-daemon!
-                   {:logfile logfile
-                    :pidfile pidfile
-                    :chdir   dir}
-                   binary
-                   :--log-output                   :stderr
-                   :--name                         (name node)
-                   :--listen-peer-urls             (peer-url   node)
-                   :--listen-client-urls           (client-url node)
-                   :--advertise-client-urls        (client-url node)
-                   :--initial-cluster-state        :new
-                   :--initial-advertise-peer-urls  (peer-url node)
-                   :--initial-cluster              (initial-cluster test))
 
-                  (Thread/sleep 10000)))
+
+
+;                 sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
+;                 sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
+;                 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
+;                 sudo apt-get install curl
+;                 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+;                 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+;                 sudo apt-get install apt-transport-https
+;                 sudo apt-get update
+
+;
+;
+;                 echo "servicefabric servicefabric/accepted-eula-ga select true" | sudo debconf-set-selections
+;                 echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | sudo debconf-set-selections
+;
+;                 sudo apt-get install -fy && sudo dpkg -i out/build.prod/FabricDrop/deb/servicefabric_6*.deb
+;                 sudo apt-get install -fy && sudo dpkg -i out/build.prod/FabricDrop/deb/servicefabric_sdkcommon_*.deb
+;
+;                 sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
+
+
+                 )
 
          (teardown! [_ test node]
-                    (info node "tearing down etcd")
-                    (cu/stop-daemon! binary pidfile)
-                    (c/su (c/exec :rm :-rf dir)))
-
+;                    This should stop the cluster, and clear all files.
+                    (info node "Clearing deployed application from servicefabric cluster.")
+)
 
          db/LogFiles
          (log-files [_ test node]
@@ -103,7 +108,10 @@
 
   (invoke! [this test op]
     (case (:f op)
-      :read (assoc op :type :ok, :value (parse-long (v/get conn "foo")))
+      :read (let [value (-> conn
+                            (v/get "foo" {:quorum? true})
+                            parse-long)]
+              (assoc op :type :ok, :value value))
       :write (do (v/reset! conn "foo" (:value op))
                (assoc op :type :ok))
       :cas (try+
@@ -121,16 +129,16 @@
     ; doesn't actually hold connections, so there's nothing to close.
     ))
 
-(defn etcd-test
+(defn servicefabric-test
   "Given an options map from the command line runner (e.g. :nodes, :ssh,
   :concurrency ...), constructs a test map."
   [opts]
   (merge tests/noop-test
          opts
          {:pure-generators true
-          :name            "etcd"
+          :name            "servicefabric Reliable Collections"
           :os              debian/os
-          :db              (db "v3.1.5")
+          :db              (cluster "v3.1.5")
           :client          (Client. nil)
           :nemesis         (nemesis/partition-random-halves)
           :checker         (checker/compose
@@ -153,7 +161,7 @@
   "Handles command line arguments. Can either run a test, or a web server for
   browsing results."
   [& args]
-  (cli/run! (merge (cli/single-test-cmd {:test-fn etcd-test})
+  (cli/run! (merge (cli/single-test-cmd {:test-fn servicefabric-test})
                    (cli/serve-cmd))
             args))
 
