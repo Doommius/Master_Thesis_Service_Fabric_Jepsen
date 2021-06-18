@@ -27,29 +27,12 @@
 (defn w   [_ _] {:type :invoke, :f :write, :value (rand-int 5)})
 (defn cas [_ _] {:type :invoke, :f :cas, :value [(rand-int 5) (rand-int 5)]})
 
-(defn node-url
-  "An HTTP url for connecting to a node on a particular port."
-  [node port]
-  (str "http://" node ":" port))
 
-(defn peer-url
-  "The HTTP url for other peers to talk to a node."
-  [node]
-  (node-url node 2380))
 
 (defn client-url
   "The HTTP url clients use to talk to a node."
   [node]
-  (node-url node 2379))
-
-(defn initial-cluster
-  "Constructs an initial cluster string for a test, like
-  \"foo=foo:2380,bar=bar:2380,...\""
-  [test]
-  (->> (:nodes test)
-       (map (fn [node]
-              (str node "=" (peer-url node))))
-       (str/join ",")))
+  (node-url node 80))
 
 (defn parse-long
   "Parses a string to a Long. Passes through `nil`."
@@ -63,10 +46,6 @@
          (setup! [_ test node]
 ;                 Deploy Test code to cluster, This should setup the service fabric cluster, configure it, deploy api.
                  (info node "Deploying Config to servicefabric test cluster " version)
-
-
-
-
 ;                 sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
 ;                 sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
 ;                 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
@@ -75,8 +54,6 @@
 ;                 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 ;                 sudo apt-get install apt-transport-https
 ;                 sudo apt-get update
-
-;
 ;
 ;                 echo "servicefabric servicefabric/accepted-eula-ga select true" | sudo debconf-set-selections
 ;                 echo "servicefabricsdkcommon servicefabricsdkcommon/accepted-eula-ga select true" | sudo debconf-set-selections
@@ -85,8 +62,6 @@
 ;                 sudo apt-get install -fy && sudo dpkg -i out/build.prod/FabricDrop/deb/servicefabric_sdkcommon_*.deb
 ;
 ;                 sudo /opt/microsoft/sdk/servicefabric/common/clustersetup/devclustersetup.sh
-
-
                  )
 
          (teardown! [_ test node]
