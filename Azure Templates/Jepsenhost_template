@@ -1,0 +1,71 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "northeurope"
+        },
+        "networkInterfaceName": {
+            "value": "jepsenhost761"
+        },
+        "networkSecurityGroupName": {
+            "value": "jepsenhost-nsg"
+        },
+        "networkSecurityGroupRules": {
+            "value": [
+                {
+                    "name": "SSH",
+                    "properties": {
+                        "priority": 300,
+                        "protocol": "TCP",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "22"
+                    }
+                }
+            ]
+        },
+        "subnetName": {
+            "value": "Subnet-0"
+        },
+        "virtualNetworkId": {
+            "value": "/subscriptions/c484c80e-0a6f-4470-86de-697ecee16984/resourceGroups/markjervelund/providers/Microsoft.Network/virtualNetworks/VNet-jepsen"
+        },
+        "publicIpAddressName": {
+            "value": "jepsenhost-ip"
+        },
+        "publicIpAddressType": {
+            "value": "Static"
+        },
+        "publicIpAddressSku": {
+            "value": "Standard"
+        },
+        "virtualMachineName": {
+            "value": "jepsenhost"
+        },
+        "virtualMachineComputerName": {
+            "value": "jepsenhost"
+        },
+        "virtualMachineRG": {
+            "value": "markjervelund"
+        },
+        "osDiskType": {
+            "value": "StandardSSD_LRS"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_D2_v3"
+        },
+        "adminUsername": {
+            "value": "jervelund"
+        },
+        "adminPublicKey": {
+            "value": null
+        },
+        "zone": {
+            "value": "1"
+        }
+    }
+}

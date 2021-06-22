@@ -1,5 +1,5 @@
 (defproject jepsen.sf "0.2.0-SNAPSHOT"
-  :description "Jepsen tests for Consul"
+  :description "Jepsen tests for SF"
   :url "https://github.com/aphyr/jepsen"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}

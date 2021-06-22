@@ -1,7 +1,7 @@
 (ns jepsen.sf.db
   (:require [clojure.tools.logging :refer [info warn]]
             [clojure.string :as str]
-            [jepsen.consul.client :as client]
+            [jepsen.sf.client :as client]
             [jepsen.core :as jepsen]
             [jepsen.db :as db]
             [jepsen.control :as c]
@@ -15,9 +15,8 @@
 (def config-file "/opt/consul.json")
 ;; TODO Condense these into `dir`, we don't need to sprawl these files in tests
 (def pidfile "/var/run/consul.pid")
-(def logfile "/var/log/consul.log")
+(def logfile "var/log/sfnode/sfnodelog")
 (def data-dir "/var/lib/consul")
-
 (def retry-interval "5s")
 
 (defn start-sf!
@@ -57,9 +56,9 @@
   (reify db/DB
     (setup! [this test node]
 
-            (info node "Configuring cluster" version)
+            (info node "Configuring cluster")
 
-            (info node "Cluster Configure" version)
+            (info node "Cluster Configure")
             )
 
     (teardown! [_ test node]

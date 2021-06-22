@@ -105,27 +105,3 @@
                 #"500" (assoc ~op :type type# :error :server-unavailable)
                 (throw e#))))))
 
-(defn await-cluster-ready
-  "Blocks until cluster index matches count of nodes on test."
-  [node count]
-  (let [url (str "http://" (net/ip (name node)) ":8500/v1/catalog/nodes?index=" count)]
-     (with-retry [attempts 5]
-       (get url)
-
-       ;; We got an application-level response, let's proceed!
-       (catch clojure.lang.ExceptionInfo e
-         (if (and (= (.getMessage e) "clj-http: status 500")
-                  (< 0 attempts))
-           (retry (dec attempts))
-           (throw+ {:error :retry-attempts-exceeded :exception e})))
-
-       ;; Cluster not converged yet, let's keep waiting
-       (catch java.net.ConnectException e
-         (if (< 0 attempts)
-           (do
-             ;; TODO It would be nice to remove this log warning if we don't have connection issues anymore
-             (warn "Connection refused from node:" node ", retrying. Attempts remaining:" attempts)
-             (Thread/sleep 1000)
-             (retry (dec attempts)))
-           (throw+ {:error :retry-attempts-exceeded :exception e})))))
-  true)
