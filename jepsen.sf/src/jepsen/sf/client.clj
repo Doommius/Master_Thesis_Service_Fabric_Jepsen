@@ -54,6 +54,7 @@
    (http/get (str url key)
              {:query-params {(keyword consistency) nil}})))
 
+;TODO
 (defn put!
   ([url key value]
    (http/put (str url key) {:body value}))
