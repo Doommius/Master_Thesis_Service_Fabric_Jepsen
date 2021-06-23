@@ -21,8 +21,7 @@
    "register" register/workload})
 
 (defn sf-test
-  "Given an options map from the command line runner constructs a test map. Special options:
-  TODO"
+  "Given an options map from the command line runner constructs a test map. Special options:"
   [opts]
   (let [workload-name (:workload opts)
         workload ((workloads workload-name) opts)
@@ -59,11 +58,6 @@
                         (gen/sleep 10)
                         (gen/clients (:final-generator workload)))})))
 
-(defn all-tests
-  "TODO This doesn't do anything now, but will be important when we have
-  multiple workloads and want to run comprehensive CI"
-  [])
-
 (def cli-opts
   "Additional command line options."
   [["-v" "--version STRING" "What version of etcd should we install?"
@@ -90,7 +84,7 @@
   (cli/run! (merge (cli/single-test-cmd
                     {:test-fn sf-test
                      :opt-spec cli-opts})
-                   (cli/test-all-cmd {:tests-fn (partial all-tests sf-test)
+                   (cli/test-all-cmd {:tests-fn (partial sf-test)
                                       :opt-spec cli-opts})
                    (cli/serve-cmd))
             args))

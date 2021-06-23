@@ -27,14 +27,22 @@
        \"Value\": \"YmFy\"
      }
     ]
+    [
+    {\"key\":\"potato\",\"value\":13}
+    ,{\"key\":\"test\",\"value\":3}
+    ]
   "
   [resp]
-  (let [body  (-> resp
+  (let [body (last(last(-> resp
                   :body
-                  (json/parse-string #(keyword (.toLowerCase %)))
-                  first)
+                  (json/parse-string )
+                  first)))
         value (-> body :value base64/decode maybe-int)]
     (assoc body :value value)))
+
+(defn parse [response]
+  (assoc (parse-body response)
+         ))
 
 
 (defn get
