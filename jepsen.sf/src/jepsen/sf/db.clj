@@ -19,37 +19,6 @@
 (def data-dir "/var/lib/consul")
 (def retry-interval "5s")
 
-(defn start-sf!
-  [test node]
-  (info node "starting sf")
-  (cu/start-daemon!
-   {:logfile logfile
-    :pidfile pidfile
-    :chdir   dir}
-   binary
-   :agent
-   :-server
-   :-log-level "debug"
-   :-client    "0.0.0.0"
-   :-bind      (net/ip (name node))
-   :-data-dir  data-dir
-   :-node      (name node)
-   :-retry-interval retry-interval
-   ;; TODO Enable this when we're giving the system on-disk config
-   #_(when (= node (jepsen/primary test))
-     [:-config-file config-file])
-
-   ;; Setup node in bootstrap mode if it resolves to primary
-   (when (= node (jepsen/primary test)) :-bootstrap)
-
-   ;; Join if not primary
-   (when-not (= node (jepsen/primary test))
-     [:-retry-join (net/ip (name (jepsen/primary test)))])
-
-   ;; Shovel stdout to logfile
-   :>> logfile
-   (c/lit "2>&1")))
-
 (defn db
   "prepare and cleanup test"
   []

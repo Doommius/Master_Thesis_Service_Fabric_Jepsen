@@ -32,10 +32,9 @@
                   (assoc op :type :ok :value (independent/tuple k v)))
 
           :write (let [consistency (:consistency test)
-                       body (json/generate-string value)
-                       _ (if consistency
-                           (c/put! client k body consistency)
-                           (c/put! client k body))]
+                        _ (if consistency
+                           (c/put! client k value consistency)
+                           (c/put! client k value))]
                    (assoc op :type :ok))
 
           :cas   (let [consistency (:consistency test)
@@ -43,13 +42,13 @@
                        res (if consistency
                              (c/cas! client
                                      k
-                                     (json/generate-string value)
-                                     (json/generate-string value')
+                                     value
+                                     value'
                                      consistency)
                              (c/cas! client
                                      k
-                                     (json/generate-string value)
-                                     (json/generate-string value')))]
+                                     value
+                                     value'))]
                    (assoc op :type (if res :ok :fail)))))))
 
   ;; HTTP clients are stateless
