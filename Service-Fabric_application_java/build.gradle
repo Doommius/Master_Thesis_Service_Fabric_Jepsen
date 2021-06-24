@@ -1,0 +1,8 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+subprojects {
+    apply plugin: 'java'
+} 
+    
+defaultTasks 'clean', 'jar', 'copyDeps'

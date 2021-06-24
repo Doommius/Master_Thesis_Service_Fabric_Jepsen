@@ -1,0 +1,6 @@
+
+
+
+Remove-ServiceFabricApplication fabric:/VotingApplication
+Unregister-ServiceFabricApplicationType VotingApplicationType 1.0.0
+Remove-ServiceFabricApplicationPackage VotingApplication

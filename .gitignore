@@ -329,5 +329,5 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
 /jepsen.servicefabric/target/
-/Service-Fabric_application/VotingData/bin/
-/Service-Fabric_application/VotingWeb/bin/
+/Service-Fabric_application_charp/VotingData/bin/
+/Service-Fabric_application_charp/VotingWeb/bin/

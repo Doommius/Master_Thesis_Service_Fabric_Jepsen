@@ -1,33 +1,77 @@
-% !TeX spellcheck = en-US
-% !TeX encoding = utf8
-% !TeX program = pdflatex
-% !BIB program = biber
-% -*- coding:utf-8 mod:LaTeX -*-
+%Template by Mark Jervelund - 2015 - mjerv15@student.sdu.dk
 
+\documentclass[a4paper,10pt,titlepage]{report}
 
-% vv  scroll down to line 200 for content  vv
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{ marvosym }
+\usepackage{algpseudocode}
+\usepackage[document]{ragged2e}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{datenumber}
+\usepackage{venndiagram}
+\usepackage{chngcntr}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage{mathtools}
+\newtheorem{theorem}{Theorem}
 
+\usepackage{mathtools} % Bonus
+\DeclarePairedDelimiter\norm\lVert\rVert
+\setdatetoday
+\addtocounter{datenumber}{0} %date for dilierry standard is today
+\setdatebynumber{\thedatenumber}
+\date{}
+\setcounter{secnumdepth}{0}
+\pagestyle{fancy}
+\fancyhf{}
+\title{<Course ID> <course name>}
 
-\let\ifdeutsch\iffalse
-\let\ifenglisch\iftrue
-\input{pre-documentclass}
-\documentclass[
-  % fontsize=11pt is the standard
-  a4paper,  % Standard format - only KOMAScript uses paper=a4 - https://tex.stackexchange.com/a/61044/9075
-  twoside,  % we are optimizing for both screen and two-side printing. So the page numbers will jump, but the content is configured to stay in the middle (by using the geometry package)
-  bibliography=totoc,
-  %               idxtotoc,   %Index ins Inhaltsverzeichnis
-  %               liststotoc, %List of X ins Inhaltsverzeichnis, mit liststotocnumbered werden die Abbildungsverzeichnisse nummeriert
-  headsepline,
-  cleardoublepage=empty,
-  parskip=half,
-  %               draft    % um zu sehen, wo noch nachgebessert werden muss - wichtig, da Bindungskorrektur mit drin
-  draft=false
-]{scrbook}
-\input{config}
-
+\newcommand{\Z}{\mathbb{Z}}
+\lhead{<Course id>}
+\rhead{<Name> (<Student id)}
+\rfoot{Page  \thepage \, of \pageref{LastPage}}
+\counterwithin*{equation}{section}
 
 \begin{document}
+\begin{titlepage}
+\centering
+    \vspace*{9\baselineskip}
+    \huge
+    \bfseries
+    <Title> \\
+    \normalfont
+    <Name>  \\
+    <Email>\\
+    <Website> 	\\
+    \vspace*{9\baselineskip}
+    \normalfont
+	\includegraphics[scale=1]{SDU_logo.png}
+    \vfill\
+    \vspace{5mm}
+    Institute \\
+
+	%Date
+    \textbf{\datedate} \\[2\baselineskip]
+\end{titlepage}
+
+\renewcommand{\thepage}{\roman{page}}% Roman numerals for page counter
+\tableofcontents
+\newpage
+\setcounter{page}{1}
+\renewcommand{\thepage}{\arabic{page}}
+
 
 \renewcommand*{\chapterpagestyle}{preamble}
 
@@ -45,10 +89,6 @@
 \cfoot[]{}
 \ofoot[\usekomafont{pagenumber}\thepage]{\usekomafont{pagenumber}\thepage}
 \ifoot[]{}
-
-
-
-
 
 \chapter{Introduction}
 
@@ -219,7 +259,7 @@ What we are able to tweak
 
 \subsection{What aspects of the service fabric are we  we'd like to test}
 
-
+Reliable collections.
 
 \subsection{What does service Fabric promise wrt ACID}
 
@@ -228,13 +268,27 @@ https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-se
 
 \section{Experiment}
 
+\subsection{Designing the experiment}
 
+\subsection{Development}
+
+\subsection{Issues}
+
+Linux and windows versions being far from interchangeable and applications and services that function on windows/local machines fail crash on deployed cluster
+
+visual studio being unable to load .dmp files to debug crashed applications from the cloud.
+
+Visual studio remote debugger not working
+
+\subsubsec{Azuer}
+
+Configuration issues,
+
+Cluster cecoming unhealty/corrupt and nodes not being configred correctly after a reimage.
 
 \subsection{Introduction}
 
-The Goal of the experiment to to investigate weather Service Fabric is compliance with ACID or not, 
-
-Currently awaiting for PostNord to deliver hardware.
+The Goal of the experiment to to investigate weather Service Fabric is compliance with ACID or not,
 
 
 \subsection{Tooling}
@@ -247,7 +301,7 @@ Currently awaiting for PostNord to deliver hardware.
 \chapter{Related Work}
 
 \chapter{Conclusion and Outlook}
-\label{chap:zusfas}
+\section*{Conclusion}
 
 \section*{Outlook}
 
