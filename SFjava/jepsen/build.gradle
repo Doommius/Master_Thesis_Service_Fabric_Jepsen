@@ -1,0 +1,15 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+subprojects {
+    apply plugin: 'java'
+} 
+allprojects {
+  task hello { 
+    doLast{ task ->
+      println "I'm $task.project.name" 
+    }
+  }
+}
+
+defaultTasks 'clean', 'jar', 'copyDeps'

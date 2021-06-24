@@ -1,0 +1,73 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceSets {
+  main {
+     java.srcDirs = ['src']
+      resources {
+       srcDirs = ['src']
+     }
+   }
+}
+
+
+clean.doFirst {
+    delete "${projectDir}/lib"
+    delete "${projectDir}/out"
+    delete "${projectDir}/../jepsen/JepsentestPkg/Code/lib"
+    delete "${projectDir}/../jepsen/JepsentestPkg/Code/jepsentest.jar"
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    azuresf
+}
+
+dependencies {
+    azuresf ('com.microsoft.servicefabric:sf-actors:1.0.1')
+    compile fileTree(dir: 'lib', include: '*.jar')
+}
+
+task explodeDeps(type: Copy, dependsOn:configurations.azuresf) { task ->
+    configurations.azuresf.filter { it.toString().contains("native") }.each{
+        from zipTree(it)
+    }
+    configurations.azuresf.filter { !it.toString().contains("native") }.each {
+        from it
+    }
+    into "lib"
+    include "lib*.so", "*.jar"
+}
+
+compileJava.dependsOn(explodeDeps)
+
+jar {
+	manifest {
+        def mpath = configurations.azuresf.collect {'lib/'+it.getName()}.join (' ')
+    attributes(
+		'Main-Class': 'statefulservice.JepsentestServiceHost',
+		"Class-Path": mpath)
+	baseName "jepsentest"
+    destinationDir = file('../jepsen/JepsentestPkg/Code/')
+    }
+}
+
+task copyDeps{
+    doLast{
+        copy {
+            from("lib/")
+            into("../jepsen/JepsentestPkg/Code/lib")
+            include('*')
+        }
+    }
+}
+
+
+defaultTasks 'clean', 'jar', 'copyDeps'
+
+
+
+
