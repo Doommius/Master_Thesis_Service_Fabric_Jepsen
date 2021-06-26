@@ -1,3 +1,0 @@
-C:\Users\mark-\Source\Repos\service-fabric-dotnet-quickstart\Voting\obj\x64\Debug\Voting.sfproj.CoreCompileInputs.cache
-C:\Users\mark-\OneDrive\Thesis\service-fabric-dotnet-quickstart\Voting\obj\x64\Debug\Voting.sfproj.CoreCompileInputs.cache
-C:\Users\mark-\OneDrive\Thesis\Service-Fabric_application\Voting\obj\x64\Debug\Voting.sfproj.CoreCompileInputs.cache

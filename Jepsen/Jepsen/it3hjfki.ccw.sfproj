@@ -1,0 +1,18 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(ProjectFile)"/>
+
+  <Target Name="___ServiceFabric_GetNoneAndContentFiles"
+          Outputs="@(___ServiceFabric_Files)">
+    <ItemGroup>
+      <___ServiceFabric_Files Include="@(None);@(Content)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="___ServiceFabric_GetFolderItems"
+          Outputs="@(___ServiceFabric_Folders)">
+    <ItemGroup>
+      <___ServiceFabric_Folders Include="@(Folder)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
