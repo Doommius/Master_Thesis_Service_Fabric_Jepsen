@@ -4,7 +4,7 @@ function Uninstall() {
     Exit
 }
 
-$AppPath = "$DIR/../VotingApplication"
+$AppPath = "$DIR..\VotingApplication"
 $version = "1.0.0"
 
 Copy-ServiceFabricApplicationPackage -ApplicationPackagePath $AppPath -ApplicationPackagePathInImageStore VotingApplication -ShowProgress
@@ -21,3 +21,5 @@ New-ServiceFabricApplication fabric:/VotingApplication VotingApplicationType --a
 if (!$?) {
     Uninstall
 }
+
+Copy-ServiceFabricApplicationPackage -ApplicationPackagePath ../VotingApplication -ApplicationPackagePathInImageStore VotingApplication -ShowProgress
