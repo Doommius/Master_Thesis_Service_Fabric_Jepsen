@@ -36,7 +36,9 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VotingData\VotingData.csproj" />
+    <ProjectReference Include="..\VotingData\VotingData.csproj">
+      <ServiceLaunchUrl>localhost</ServiceLaunchUrl>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <PropertyGroup>

@@ -52,7 +52,7 @@ namespace VotingData.Controllers
             {
                 ConditionalValue<string> returnvalue = await queue.TryDequeueAsync(txn, ct);
 
-                txn.CommitAsync();
+                await txn.CommitAsync();
 
                 if (returnvalue.HasValue)
                 {

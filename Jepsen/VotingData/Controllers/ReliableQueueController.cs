@@ -41,13 +41,13 @@ namespace VotingData.Controllers
         [HttpGet("dequeue")]
         public async Task<IActionResult> get()
         {
-            CancellationToken ct = new CancellationToken();
+           
                         IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
                         using (var txn = this.StateManager.CreateTransaction())
             {
                 ConditionalValue<string> returnvalue  = await queue.TryDequeueAsync(txn);
 
-                txn.CommitAsync();
+                await txn.CommitAsync();
 
                 if (returnvalue.HasValue)
                 {
@@ -67,7 +67,7 @@ namespace VotingData.Controllers
         [HttpPut("enqueue/{value}")]
         public async Task<IActionResult> put(String value)
         {
-            CancellationToken ct = new CancellationToken();
+            
 
             IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
 
