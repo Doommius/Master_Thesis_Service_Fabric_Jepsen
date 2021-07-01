@@ -5,9 +5,11 @@ VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "Jepsen", "Jepsen\Jepsen.sfproj", "{75EDE40E-D87D-4117-A3B3-A6E93123B256}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReliableCollectionsWebAPI", "VotingData\ReliableCollectionsWebAPI.csproj", "{D1BC5A14-EC75-48AF-A0B8-2ED72525D659}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReliableCollectionsWebAPI", "ReliableCollectionsWebAPI\ReliableCollectionsWebAPI.csproj", "{D1BC5A14-EC75-48AF-A0B8-2ED72525D659}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JepsenAPI", "JepsenAPI\JepsenAPI.csproj", "{A2F2AB62-B496-498A-B2A4-8128B3C35E50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JepsenAPI", "JepsenAPI\JepsenAPI.csproj", "{A2F2AB62-B496-498A-B2A4-8128B3C35E50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JepsenAPIStore", "JepsenAPIStore\JepsenAPIStore.csproj", "{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,14 @@ Global
 		{A2F2AB62-B496-498A-B2A4-8128B3C35E50}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A2F2AB62-B496-498A-B2A4-8128B3C35E50}.Release|x64.ActiveCfg = Release|Any CPU
 		{A2F2AB62-B496-498A-B2A4-8128B3C35E50}.Release|x64.Build.0 = Release|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Debug|x64.Build.0 = Debug|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Release|x64.ActiveCfg = Release|Any CPU
+		{90DF3D97-10E5-4F53-B3B7-AA78F68915AD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

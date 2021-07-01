@@ -16,47 +16,42 @@ namespace ReliableCollectionsWebAPI.Controllers
     using System.Fabric;
 
     [Route("api/[controller]")]
-    public class ReliableConcurrentQueueController : Controller
+    public class ReliableQueueController : Controller
     {
         private readonly IReliableStateManager StateManager;
 
-        public ReliableConcurrentQueueController(IReliableStateManager stateManager)
+        public ReliableQueueController(IReliableStateManager stateManager)
         {
             this.StateManager = stateManager;
         }
 
-
         // GET VoteData/name
-        [HttpGet("count")]
+        [HttpGet("")]
         public async Task<IActionResult> Get()
         {
-            IReliableConcurrentQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableConcurrentQueue<String>>("myReliableConcurrentQueue");
-            using (var txn = this.StateManager.CreateTransaction())
+            IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
+           using (var txn = this.StateManager.CreateTransaction())
             {
-                long returnvalue = queue.Count;
-
+                long returnvalue = await queue.GetCountAsync(txn);
                 return this.Json((new KeyValuePair<string, long>("Queue Length", returnvalue)));
-
             }
         }
 
         // PUT VoteData/name
-        [HttpGet("dequeue")]
+        [HttpDelete("")]
         public async Task<IActionResult> get()
         {
-            CancellationToken ct = new CancellationToken();
-
-            IReliableConcurrentQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableConcurrentQueue<String>>("myReliableConcurrentQueue");
-
-            using (var txn = this.StateManager.CreateTransaction())
+           
+                        IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
+                        using (var txn = this.StateManager.CreateTransaction())
             {
-                ConditionalValue<string> returnvalue = await queue.TryDequeueAsync(txn, ct);
+                ConditionalValue<string> returnvalue  = await queue.TryDequeueAsync(txn);
 
                 await txn.CommitAsync();
 
                 if (returnvalue.HasValue)
                 {
-                    return this.Json(new KeyValuePair<string, string>("Queue peek", returnvalue.Value));
+                    return this.Json(new KeyValuePair<string, string>("dequeue", returnvalue.Value));
                 }
                 else
                 {
@@ -68,28 +63,27 @@ namespace ReliableCollectionsWebAPI.Controllers
 
         }
 
-        // PUT VoteData/name/count
-        [HttpPut("enqueue/{value}")]
+        // PUT /name/count
+        [HttpPut("{value}")]
         public async Task<IActionResult> put(String value)
         {
-            CancellationToken ct = new CancellationToken();
+            
 
-            IReliableConcurrentQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableConcurrentQueue<String>>("myReliableConcurrentQueue");
+            IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
 
             using (var txn = this.StateManager.CreateTransaction())
             {
-                await queue.EnqueueAsync(txn, value, ct);
+                await queue.EnqueueAsync(txn, value);
                 await txn.CommitAsync();
-
-
+            
+                
             }
 
-            return new OkResult();
+           return new OkResult();
 
 
 
         }
-
 
     }
 }

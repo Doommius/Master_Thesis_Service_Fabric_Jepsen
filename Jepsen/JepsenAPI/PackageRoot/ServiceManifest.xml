@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ServiceManifest Name="ReliableCollectionsWebAPIPkg"
+<ServiceManifest Name="JepsenAPIPkg"
                  Version="1.0.0"
                  xmlns="http://schemas.microsoft.com/2011/01/fabric"
                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -7,32 +7,20 @@
   <ServiceTypes>
     <!-- This is the name of your ServiceType. 
          This name must match the string used in RegisterServiceType call in Program.cs. -->
-    <StatefulServiceType ServiceTypeName="ReliableCollectionsWebAPIType"  HasPersistedState="true" />
+    <StatelessServiceType ServiceTypeName="JepsenAPIType" />
   </ServiceTypes>
 
   <!-- Code package is your service executable. -->
   <CodePackage Name="Code" Version="1.0.0">
     <EntryPoint>
-      
-        <ExeHost IsExternalExecutable="true">
-          <Program>dotnet</Program>
-          <Arguments>ReliableCollectionsWebAPI.dll</Arguments>
-        </ExeHost>
-
-      <!--<ExeHost>
-        <Program>ReliableCollectionsWebAPI</Program>
-      </ExeHost>-->
-
-      <!--<ExeHost IsExternalExecutable="true">
-          <Program>entrypoint.sh</Program>
-        </ExeHost>-->
-
-
+      <ExeHost>
+        <Program>JepsenAPI</Program>
+        <WorkingFolder>CodePackage</WorkingFolder>
+      </ExeHost>
     </EntryPoint>
     <EnvironmentVariables>
       <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value=""/>
     </EnvironmentVariables>
-    
   </CodePackage>
 
   <!-- Config package is the contents of the Config directory under PackageRoot that contains an 
@@ -44,9 +32,7 @@
       <!-- This endpoint is used by the communication listener to obtain the port on which to 
            listen. Please note that if your service is partitioned, this port is shared with 
            replicas of different partitions that are placed in your code. -->
-      <Endpoint Protocol="http" Name="ServiceEndpoint" Type="Input" Port="25112" />
-      <!--<Endpoint Protocol="https" Name="ServiceEndpointHttps" Type="Input" Port="443" />-->
+      <Endpoint Protocol="http" Name="ServiceEndpoint" Type="Input" Port="80" />
     </Endpoints>
   </Resources>
-
 </ServiceManifest>

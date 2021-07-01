@@ -49,7 +49,7 @@ namespace ReliableCollectionsWebAPI
                                     //.UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
                                     .UseUrls(url)
                                     .Build();
-                    }))
+                    }),"ServiceEndpoint", true)
             };
 
 

@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Services.Runtime;
 
-namespace ReliableCollectionsWebAPI
+namespace JepsenAPIStore
 {
-    [EventSource(Name = "Thesis-Jepsen-ReliableCollectionsWebAPI")]
+    [EventSource(Name = "Thesis-Jepsen-JepsenAPIStore")]
     internal sealed class ServiceEventSource : EventSource
     {
         public static readonly ServiceEventSource Current = new ServiceEventSource();

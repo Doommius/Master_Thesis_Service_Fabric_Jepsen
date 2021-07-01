@@ -38,11 +38,12 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JepsenAPIStore\JepsenAPIStore.csproj" />
     <ProjectReference Include="..\JepsenAPI\JepsenAPI.csproj">
-      <ServiceLaunchUrl>http://localhost:{ServicePort}/weatherforecast</ServiceLaunchUrl>
+      <ServiceLaunchUrl>http://localhost:{ServicePort}/JepsenAPI</ServiceLaunchUrl>
     </ProjectReference>
-    <ProjectReference Include="..\VotingData\ReliableCollectionsWebAPI.csproj">
-      <ServiceLaunchUrl>localhost</ServiceLaunchUrl>
+    <ProjectReference Include="..\ReliableCollectionsWebAPI\ReliableCollectionsWebAPI.csproj">
+      <ServiceLaunchUrl>http://localhost:{ServicePort}</ServiceLaunchUrl>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />

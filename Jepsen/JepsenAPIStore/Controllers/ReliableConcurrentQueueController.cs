@@ -3,7 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace ReliableCollectionsWebAPI.Controllers
+namespace JepsenAPIStore.Controllers
 {
     using System.Collections.Generic;
     using System.Threading;
@@ -27,7 +27,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
 
         // GET VoteData/name
-        [HttpGet("count")]
+        [HttpGet("")]
         public async Task<IActionResult> Get()
         {
             IReliableConcurrentQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableConcurrentQueue<String>>("myReliableConcurrentQueue");
@@ -41,7 +41,7 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
         // PUT VoteData/name
-        [HttpGet("dequeue")]
+        [HttpDelete("")]
         public async Task<IActionResult> get()
         {
             CancellationToken ct = new CancellationToken();
@@ -56,7 +56,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
                 if (returnvalue.HasValue)
                 {
-                    return this.Json(new KeyValuePair<string, string>("Queue peek", returnvalue.Value));
+                    return this.Json(new KeyValuePair<string, string>("Dequeue", returnvalue.Value));
                 }
                 else
                 {
@@ -67,9 +67,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
 
         }
-
-        // PUT VoteData/name/count
-        [HttpPut("enqueue/{value}")]
+        [HttpPut("{value}")]
         public async Task<IActionResult> put(String value)
         {
             CancellationToken ct = new CancellationToken();

@@ -3,7 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace ReliableCollectionsWebAPI.Controllers
+namespace JepsenAPIStore.Controllers
 {
     using System.Collections.Generic;
     using System.Threading;
@@ -26,7 +26,7 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
         // GET VoteData/name
-        [HttpGet("count")]
+        [HttpGet("")]
         public async Task<IActionResult> Get()
         {
             IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
@@ -38,7 +38,7 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
         // PUT VoteData/name
-        [HttpGet("dequeue")]
+        [HttpDelete("dequeue")]
         public async Task<IActionResult> get()
         {
            
@@ -64,7 +64,7 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
         // PUT /name/count
-        [HttpPut("enqueue/{value}")]
+        [HttpPut("{value}")]
         public async Task<IActionResult> put(String value)
         {
             

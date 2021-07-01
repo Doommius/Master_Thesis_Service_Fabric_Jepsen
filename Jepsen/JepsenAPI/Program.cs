@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ReliableCollectionsWebAPI
+namespace JepsenAPI
 {
     internal static class Program
     {
@@ -20,10 +20,10 @@ namespace ReliableCollectionsWebAPI
                 // When Service Fabric creates an instance of this service type,
                 // an instance of the class is created in this host process.
 
-                ServiceRuntime.RegisterServiceAsync("ReliableCollectionsWebAPIType",
-                    context => new ReliableCollectionsWebAPI(context)).GetAwaiter().GetResult();
+                ServiceRuntime.RegisterServiceAsync("JepsenAPIType",
+                    context => new JepsenAPI(context)).GetAwaiter().GetResult();
 
-                ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(ReliableCollectionsWebAPI).Name);
+                ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(JepsenAPI).Name);
 
                 // Prevents this host process from terminating so services keeps running. 
                 Thread.Sleep(Timeout.Infinite);
