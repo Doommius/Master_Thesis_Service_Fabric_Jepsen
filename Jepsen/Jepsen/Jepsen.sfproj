@@ -38,6 +38,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JepsenAPI\JepsenAPI.csproj" />
     <ProjectReference Include="..\VotingData\ReliableCollectionsWebAPI.csproj">
       <ServiceLaunchUrl>localhost</ServiceLaunchUrl>
     </ProjectReference>
