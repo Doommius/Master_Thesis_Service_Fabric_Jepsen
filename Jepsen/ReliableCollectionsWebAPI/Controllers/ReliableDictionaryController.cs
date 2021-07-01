@@ -26,7 +26,6 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
 
-        // GET VoteData
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -52,8 +51,8 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
         // GET VoteData/name
-        [HttpGet("{name}")]
-        public async Task<IActionResult> Get(string name)
+        [HttpGet("{key}")]
+        public async Task<IActionResult> Get(string key)
         {
             CancellationToken ct = new CancellationToken();
 
@@ -69,7 +68,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    if (enumerator.Current.Key == name)
+                    if (enumerator.Current.Key == key)
                     {
                         result.Add(enumerator.Current);
                     }
@@ -80,30 +79,28 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
         }
 
-        // PUT VoteData/name
-        [HttpPut("{name}")]
-        public async Task<IActionResult> Put(string name)
+        [HttpPut("{key}")]
+        public async Task<IActionResult> Put(string key)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                await votesDictionary.AddOrUpdateAsync(tx, name, 1, (key, oldvalue) => oldvalue + 1);
+                await votesDictionary.AddOrUpdateAsync(tx, key, 1, (key, oldvalue) => oldvalue + 1);
                 await tx.CommitAsync();
             }
 
             return new OkResult();
         }
 
-        // PUT VoteData/name/count
-        [HttpPut("{name}/{count}")]
-        public async Task<IActionResult> Put(string name, int count)
+        [HttpPut("{key}/{value}")]
+        public async Task<IActionResult> Put(string key, int value)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                await votesDictionary.AddOrUpdateAsync(tx, name, count, (key, oldvalue) => count);
+                await votesDictionary.AddOrUpdateAsync(tx, key, value, (key, oldvalue) => value);
                 await tx.CommitAsync();
             }
 
@@ -112,8 +109,8 @@ namespace ReliableCollectionsWebAPI.Controllers
 
 
         // POST VoteData/cas
-        [HttpPut("{name}/{count}/{exspected}")]
-        public async Task<IActionResult> put(string name, int count, int exspected)
+        [HttpPut("{key}/{value}/{expected}")]
+        public async Task<IActionResult> put(string key, int value, int expected)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
 
@@ -121,7 +118,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                v = await votesDictionary.TryUpdateAsync(tx, name, count, exspected);
+                v = await votesDictionary.TryUpdateAsync(tx, key, value, expected);
                 await tx.CommitAsync();
             }
 
@@ -138,16 +135,16 @@ namespace ReliableCollectionsWebAPI.Controllers
 
 
         // DELETE VoteData/name
-        [HttpDelete("{name}")]
-        public async Task<IActionResult> Delete(string name)
+        [HttpDelete("{key}")]
+        public async Task<IActionResult> Delete(string key)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                if (await votesDictionary.ContainsKeyAsync(tx, name))
+                if (await votesDictionary.ContainsKeyAsync(tx, key))
                 {
-                    await votesDictionary.TryRemoveAsync(tx, name);
+                    await votesDictionary.TryRemoveAsync(tx, key);
                     await tx.CommitAsync();
                     return new OkResult();
                 }

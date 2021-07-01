@@ -67,7 +67,8 @@ namespace JepsenAPI
 
         /// <summary>
         /// Constructs a service name for a specific poll.
-        /// Example: fabric:/VotingApplication/polls/name-of-poll
+        /// Example: fabric:/
+        /// Application/polls/name-of-poll
         /// </summary>
         /// <param name="poll"></param>
         /// <returns></returns>

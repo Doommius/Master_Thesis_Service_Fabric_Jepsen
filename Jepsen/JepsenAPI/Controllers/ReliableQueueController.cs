@@ -65,15 +65,15 @@ namespace JepsenAPI.Controllers
         }
 
         // PUT: api/Votes/name
-        [HttpPut("{name}")]
-        public async Task<IActionResult> Put(string name)
+        [HttpPut("{key}")]
+        public async Task<IActionResult> Put(string key)
         {
             Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
             Uri proxyAddress = this.GetProxyAddress(serviceName);
-            long partitionKey = this.GetPartitionKey(name);
-            string proxyUrl = $"{proxyAddress}/api/ReliableQueue/{name}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+            long partitionKey = this.GetPartitionKey(key);
+            string proxyUrl = $"{proxyAddress}/api/ReliableQueue/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
-            StringContent putContent = new StringContent($"{{ 'name' : '{name}' }}", Encoding.UTF8, "application/json");
+            StringContent putContent = new StringContent($"{{ 'key' : '{key}' }}", Encoding.UTF8, "application/json");
             putContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             using (HttpResponseMessage response = await this.httpClient.PutAsync(proxyUrl, putContent))
