@@ -38,7 +38,7 @@ namespace JepsenAPIStore.Controllers
         }
 
         // PUT VoteData/name
-        [HttpDelete("dequeue")]
+        [HttpDelete("")]
         public async Task<IActionResult> get()
         {
            

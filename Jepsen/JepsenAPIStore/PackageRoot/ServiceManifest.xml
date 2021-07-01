@@ -21,6 +21,7 @@
     </EntryPoint>
     <EnvironmentVariables>
       <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value=""/>
+      <EnvironmentVariable Name="ReverseProxyBaseUri" Value="http://localhost:19081"/>
     </EnvironmentVariables>
   </CodePackage>
 
