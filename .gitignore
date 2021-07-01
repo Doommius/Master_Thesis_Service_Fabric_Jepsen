@@ -331,3 +331,12 @@ ASALocalRun/
 /jepsen.servicefabric/target/
 /Service-Fabric_application_charp/VotingData/bin/
 /Service-Fabric_application_charp/VotingWeb/bin/
+/Jepsen/JepsenAPI-store/obj/
+/Jepsen/JepsenAPI/obj/
+/Jepsen/JepsenAPI/bin/
+/Jepsen/Jepsen/pkg/
+/Jepsen/Jepsen/obj/x64/
+/old/Service-Fabric_application_charp/VotingData/bin/
+/old/Service-Fabric_application_charp/VotingData/obj/
+/old/Service-Fabric_application_charp/VotingWeb/bin/
+/old/Service-Fabric_application_charp/VotingWeb/obj/

@@ -6,20 +6,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
 
-namespace JepsenAPI
+namespace ReliableCollectionsWebAPI
 {
     /// <summary>
     /// The FabricRuntime creates an instance of this class for each service type instance. 
     /// </summary>
-    internal sealed class JepsenAPI : StatefulService
+    internal sealed class ReliableCollectionsWebAPI : StatefulService
     {
-        public JepsenAPI(StatefulServiceContext context)
+        public ReliableCollectionsWebAPI(StatefulServiceContext context)
             : base(context)
         { }
 
@@ -32,7 +33,7 @@ namespace JepsenAPI
             return new ServiceReplicaListener[]
             {
                 new ServiceReplicaListener(serviceContext =>
-                    new KestrelCommunicationListener(serviceContext, (url, listener) =>
+                    new KestrelCommunicationListener(serviceContext,"ServiceEndpoint", (url, listener) =>
                     {
                         ServiceEventSource.Current.ServiceMessage(serviceContext, $"Starting Kestrel on {url}");
 
@@ -44,11 +45,16 @@ namespace JepsenAPI
                                             .AddSingleton<IReliableStateManager>(this.StateManager))
                                     .UseContentRoot(Directory.GetCurrentDirectory())
                                     .UseStartup<Startup>()
-                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
+                                    .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseReverseProxyIntegration)
+                                    //.UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl)
                                     .UseUrls(url)
                                     .Build();
                     }))
             };
+
+
         }
+
+
     }
 }

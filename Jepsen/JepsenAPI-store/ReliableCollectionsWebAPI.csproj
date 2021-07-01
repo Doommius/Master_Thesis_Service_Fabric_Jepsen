@@ -6,10 +6,7 @@
     <ServerGarbageCollection>True</ServerGarbageCollection>
     <!--<RuntimeIdentifier>win7-x64</RuntimeIdentifier>--> 
     <RuntimeIdentifier>ubuntu.18.04-x64</RuntimeIdentifier>
-    
-    
-    
-    
+
     <!--<RuntimeIdentifier>linux-x64</RuntimeIdentifier>-->
     <!--<RuntimeIdentifiers>linux-x64;win-x64</RuntimeIdentifiers>-->
     
