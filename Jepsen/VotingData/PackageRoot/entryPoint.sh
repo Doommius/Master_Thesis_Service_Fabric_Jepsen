@@ -11,5 +11,5 @@ check_errs()
 DIR=`dirname $0`
 echo 0x3f > /proc/self/coredump_filter
 source $DIR/dotnet-include.sh
-dotnet $DIR/NAME_OF_YOUR_SERVICE_DLL.dll $@
+dotnet $DIR/ReliableCollectionsWebAPI.dll $@
 check_errs $?

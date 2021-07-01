@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Services.Runtime;
 
-namespace VotingData
+namespace ReliableCollectionsWebAPI
 {
-    [EventSource(Name = "MyCompany-Jepsen-VotingData")]
+    [EventSource(Name = "Thesis-Jepsen-ReliableCollectionsWebAPI")]
     internal sealed class ServiceEventSource : EventSource
     {
         public static readonly ServiceEventSource Current = new ServiceEventSource();

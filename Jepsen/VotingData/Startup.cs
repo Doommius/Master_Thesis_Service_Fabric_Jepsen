@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace VotingData
+namespace ReliableCollectionsWebAPI
 {
     public class Startup
     {
@@ -29,7 +29,7 @@ namespace VotingData
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "VotingData", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ReliableCollectionsWebAPI", Version = "v1" });
             });
         }
 
@@ -40,7 +40,7 @@ namespace VotingData
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "VotingData v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReliableCollectionsWebAPI v1"));
             }
 
             app.UseRouting();

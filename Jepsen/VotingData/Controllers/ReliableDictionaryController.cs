@@ -3,7 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace VotingData.Controllers
+namespace ReliableCollectionsWebAPI.Controllers
 {
     using System.Collections.Generic;
     using System.Threading;
@@ -103,7 +103,7 @@ namespace VotingData.Controllers
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                await votesDictionary.AddOrUpdateAsync(tx, name, 1, (key, oldvalue) => count);
+                await votesDictionary.AddOrUpdateAsync(tx, name, count, (key, oldvalue) => count);
                 await tx.CommitAsync();
             }
 
@@ -157,11 +157,5 @@ namespace VotingData.Controllers
                 }
             }
         }
-        /// <summary>
-        /// Constructs a reverse proxy URL for a given service.
-        /// Example: http://localhost:19081/VotingApplication/VotingData/
-        /// </summary>
-        /// <param name="serviceName"></param>
-        /// <returns></returns>
     }
 }

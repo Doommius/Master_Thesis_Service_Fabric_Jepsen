@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "Jepsen", "Jepsen\Jepsen.sfproj", "{75EDE40E-D87D-4117-A3B3-A6E93123B256}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VotingData", "VotingData\VotingData.csproj", "{D1BC5A14-EC75-48AF-A0B8-2ED72525D659}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReliableCollectionsWebAPI", "VotingData\ReliableCollectionsWebAPI.csproj", "{D1BC5A14-EC75-48AF-A0B8-2ED72525D659}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

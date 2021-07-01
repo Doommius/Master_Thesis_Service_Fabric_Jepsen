@@ -26,7 +26,9 @@
     <None Include="PublishProfiles\Cloud.xml" />
     <None Include="PublishProfiles\Local.1Node.xml" />
     <None Include="PublishProfiles\Local.5Node.xml" />
+    <None Include="Scripts\connect.ps1" />
     <None Include="Scripts\Deploy-FabricApplication.ps1" />
+    <None Include="Scripts\forceremove.ps1" />
     <None Include="StartupServiceParameters\Cloud.xml" />
     <None Include="StartupServiceParameters\Local.1Node.xml" />
     <None Include="StartupServiceParameters\Local.5Node.xml" />
@@ -36,13 +38,14 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VotingData\VotingData.csproj">
+    <ProjectReference Include="..\VotingData\ReliableCollectionsWebAPI.csproj">
       <ServiceLaunchUrl>localhost</ServiceLaunchUrl>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <PropertyGroup>
     <ApplicationProjectTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Service Fabric Tools\Microsoft.VisualStudio.Azure.Fabric.ApplicationProject.targets</ApplicationProjectTargetsPath>
+    <DebugProfile>PublishProfiles\Local.1Node.xml</DebugProfile>
   </PropertyGroup>
   <Import Project="$(ApplicationProjectTargetsPath)" Condition="Exists('$(ApplicationProjectTargetsPath)')" />
   <Import Project="..\packages\Microsoft.VisualStudio.Azure.Fabric.MSBuild.1.7.5\build\Microsoft.VisualStudio.Azure.Fabric.Application.targets" Condition="Exists('..\packages\Microsoft.VisualStudio.Azure.Fabric.MSBuild.1.7.5\build\Microsoft.VisualStudio.Azure.Fabric.Application.targets')" />

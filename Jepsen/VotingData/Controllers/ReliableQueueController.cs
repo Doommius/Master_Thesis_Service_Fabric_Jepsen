@@ -3,7 +3,7 @@
 //  Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-namespace VotingData.Controllers
+namespace ReliableCollectionsWebAPI.Controllers
 {
     using System.Collections.Generic;
     using System.Threading;
@@ -51,7 +51,7 @@ namespace VotingData.Controllers
 
                 if (returnvalue.HasValue)
                 {
-                    return this.Json(new KeyValuePair<string, string>("Queue peek", returnvalue.Value));
+                    return this.Json(new KeyValuePair<string, string>("dequeue", returnvalue.Value));
                 }
                 else
                 {
