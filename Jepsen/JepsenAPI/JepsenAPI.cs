@@ -74,7 +74,7 @@ namespace JepsenAPI
         /// <returns></returns>
         internal static Uri GetJepsenAPIStoreServiceName(ServiceContext context)
         {
-            return new Uri($"{context.CodePackageActivationContext.ApplicationName}");
+            return new Uri($"{context.CodePackageActivationContext.ApplicationName}/JepsenAPIStore");
         }
     }
 }

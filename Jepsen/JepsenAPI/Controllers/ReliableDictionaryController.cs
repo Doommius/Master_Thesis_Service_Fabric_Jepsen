@@ -47,11 +47,13 @@ namespace JepsenAPI.Controllers
 
             List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
 
+            result.Add(new KeyValuePair<String, int>($"{serviceName}", 1));
+            result.Add(new KeyValuePair<String, int>($"{proxyAddress}", 2));
+
             foreach (Partition partition in partitions)
             {
-                string proxyUrl =
-                    $"{proxyAddress}/api/ReliableDictionary?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
-
+                string proxyUrl = $"{proxyAddress}api/ReliableDictionary?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
+                result.Add(new KeyValuePair<String, int>(proxyUrl, 3));
                 using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
                 {
                     if (response.StatusCode != System.Net.HttpStatusCode.OK)
@@ -63,8 +65,7 @@ namespace JepsenAPI.Controllers
                 }
             }
 
-            result.Add(new KeyValuePair<String, int>(serviceName.AbsoluteUri, 1));
-            result.Add(new KeyValuePair<String, int>(proxyAddress.AbsoluteUri, 2));
+            
 
             return this.Json(result);
         }
@@ -114,7 +115,7 @@ namespace JepsenAPI.Controllers
             foreach (Partition partition in partitions)
             {
                 string proxyUrl =
-                    $"{proxyAddress}/api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+                    $"{proxyAddress}api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
                 using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
                 {
@@ -137,7 +138,7 @@ namespace JepsenAPI.Controllers
             Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
             Uri proxyAddress = this.GetProxyAddress(serviceName);
             long partitionKey = this.GetPartitionKey(key);
-            string proxyUrl = $"{proxyAddress}/api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+            string proxyUrl = $"{proxyAddress}api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
             StringContent putContent = new StringContent($"{{ 'name' : '{key}' }}", Encoding.UTF8, "application/json");
             putContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -159,7 +160,7 @@ namespace JepsenAPI.Controllers
             Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
             Uri proxyAddress = this.GetProxyAddress(serviceName);
             long partitionKey = this.GetPartitionKey(key);
-            string proxyUrl = $"{proxyAddress}/api/ReliableDictionary/{key}/{value}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+            string proxyUrl = $"{proxyAddress}api/ReliableDictionary/{key}/{value}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
             StringContent putContent = new StringContent($"{{ 'name' : '{key}' }}", Encoding.UTF8, "application/json");
             putContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -175,13 +176,13 @@ namespace JepsenAPI.Controllers
         }
 
         // PUT: api/Votes/name
-        [HttpPut("{key}​/{count}​/{exspected}")]
+        [HttpPut("{key}​/{value}​/{exspected}")]
         public async Task<IActionResult> Put(string key, int value, int exspected)
         {
             Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
             Uri proxyAddress = this.GetProxyAddress(serviceName);
             long partitionKey = this.GetPartitionKey(key);
-            string proxyUrl = $"{proxyAddress}/api/ReliableDictionary/{key}/{value}/{exspected}/?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+            string proxyUrl = $"{proxyAddress}api/ReliableDictionary/{key}/{value}/{exspected}/?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
             StringContent putContent = new StringContent($"{{ 'key' : '{key}' }}", Encoding.UTF8, "application/json");
             putContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -203,7 +204,7 @@ namespace JepsenAPI.Controllers
             Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
             Uri proxyAddress = this.GetProxyAddress(serviceName);
             long partitionKey = this.GetPartitionKey(key);
-            string proxyUrl = $"{proxyAddress}/api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+            string proxyUrl = $"{proxyAddress}api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
             using (HttpResponseMessage response = await this.httpClient.DeleteAsync(proxyUrl))
             {
@@ -224,7 +225,8 @@ namespace JepsenAPI.Controllers
         /// <returns></returns>
         private Uri GetProxyAddress(Uri serviceName)
         {
-            return new Uri($"{this.reverseProxyBaseUri}{serviceName.AbsolutePath}");
+            return new Uri($"{this.reverseProxyBaseUri}");
+            //return new Uri($"{this.reverseProxyBaseUri}{serviceName.AbsolutePath}");
         }
 
         /// <summary>
