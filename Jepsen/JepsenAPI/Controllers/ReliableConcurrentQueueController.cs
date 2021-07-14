@@ -43,7 +43,7 @@ namespace JepsenAPI.Controllers
 
             ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 
-            List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
+            KeyValuePair<string, long> result = new KeyValuePair<string, long>();
 
             foreach (Partition partition in partitions)
             {
@@ -57,7 +57,7 @@ namespace JepsenAPI.Controllers
                         continue;
                     }
 
-                    result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, long>>>(await response.Content.ReadAsStringAsync()));
+                    result = (JsonConvert.DeserializeObject<KeyValuePair<string, long>>(await response.Content.ReadAsStringAsync()));
                 }
             }
 
@@ -95,14 +95,14 @@ namespace JepsenAPI.Controllers
             ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 
             string proxyUrl = $"{proxyAddress}api/ReliableConcurrentQueue/?PartitionKey=0&PartitionKind=Int64Range";
-            List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+            KeyValuePair<string, string> result = new KeyValuePair<string, string>();
             using (HttpResponseMessage response = await this.httpClient.DeleteAsync(proxyUrl))
             {
                 if (response.StatusCode != System.Net.HttpStatusCode.OK)
                 {
                     return this.StatusCode((int)response.StatusCode);
                 }
-                result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, string>>>(await response.Content.ReadAsStringAsync()));
+                result = (JsonConvert.DeserializeObject<KeyValuePair<string, string>>(await response.Content.ReadAsStringAsync()));
             }
             return this.Json(result);
         }
