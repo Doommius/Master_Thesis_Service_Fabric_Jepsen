@@ -43,12 +43,12 @@ namespace JepsenAPI.Controllers
 
             ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 
-            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+            List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
 
             foreach (Partition partition in partitions)
             {
                 string proxyUrl =
-                    $"{proxyAddress}/api/ReliableQueue?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
+                    $"{proxyAddress}api/ReliableQueue?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
 
                 using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
                 {
@@ -57,7 +57,7 @@ namespace JepsenAPI.Controllers
                         continue;
                     }
 
-                    result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, int>>>(await response.Content.ReadAsStringAsync()));
+                    result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, long>>>(await response.Content.ReadAsStringAsync()));
                 }
             }
 
@@ -71,7 +71,7 @@ namespace JepsenAPI.Controllers
             Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
             Uri proxyAddress = this.GetProxyAddress(serviceName);
             long partitionKey = this.GetPartitionKey(key);
-            string proxyUrl = $"{proxyAddress}/api/ReliableQueue/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
+            string proxyUrl = $"{proxyAddress}api/ReliableQueue/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
 
             StringContent putContent = new StringContent($"{{ 'key' : '{key}' }}", Encoding.UTF8, "application/json");
             putContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -94,15 +94,15 @@ namespace JepsenAPI.Controllers
             Uri proxyAddress = this.GetProxyAddress(serviceName);
             ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 
-            string proxyUrl = $"{proxyAddress}/api/ReliableQueue/?PartitionKey=0&PartitionKind=Int64Range";
-            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+            string proxyUrl = $"{proxyAddress}api/ReliableQueue/?PartitionKey=0&PartitionKind=Int64Range";
+            List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
             using (HttpResponseMessage response = await this.httpClient.DeleteAsync(proxyUrl))
             {
                 if (response.StatusCode != System.Net.HttpStatusCode.OK)
                 {
                     return this.StatusCode((int)response.StatusCode);
                 }
-                result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, int>>>(await response.Content.ReadAsStringAsync()));
+                result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, string>>>(await response.Content.ReadAsStringAsync()));
             }
             return this.Json(result);
         }
@@ -116,7 +116,8 @@ namespace JepsenAPI.Controllers
         /// <returns></returns>
         private Uri GetProxyAddress(Uri serviceName)
         {
-            return new Uri($"{this.reverseProxyBaseUri}{serviceName.AbsolutePath}");
+            return new Uri($"{this.reverseProxyBaseUri}");
+            //return new Uri($"{this.reverseProxyBaseUri}{serviceName.AbsolutePath}");
         }
 
         /// <summary>
