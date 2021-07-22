@@ -52,15 +52,15 @@
     \bfseries
     <Title> \\
     \normalfont
-    <Name>  \\
-    <Email>\\
-    <Website> 	\\
+    Mark Jervelund \\
+    Mark@jervelund.com \\
+    Doommius.com (Maybe change to m.jervelund.com or exclude ?) 	\\
     \vspace*{9\baselineskip}
     \normalfont
 	\includegraphics[scale=1]{SDU_logo.png}
     \vfill\
     \vspace{5mm}
-    Institute \\
+    Institute Of mathematics and Computer Science, SDU \\
 
 	%Date
     \textbf{\datedate} \\[2\baselineskip]
@@ -78,38 +78,48 @@
 
   \section*{Abstract}
 
+Databases allow modern society to store, manage and distribute data at a previously unprecedentedly scale. having data is a normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require much high performance, storage, latency and  availability then current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
 
-% Headline and footline
-\renewcommand*{\chapterpagestyle}{scrplain}
-\pagestyle{scrheadings}
-\pagestyle{scrheadings}
-\ihead[]{}
-\chead[]{}
-\ohead[]{\headmark}
-\cfoot[]{}
-\ofoot[\usekomafont{pagenumber}\thepage]{\usekomafont{pagenumber}\thepage}
-\ifoot[]{}
+Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
+
+First, I Present ACID, It's constraints, what faults occur in both database systems, how their manifests themselves, whats the underlying causes often are for these faults, and what limits the ACID properties imposes on a given system, what relaxations we can introduce to a system to still gain the same result but where we might allow conditional or future commits, eventual consistency, some degree of data-loss, dirty reads, and other relaxations in a given system.\\
+
+Then, I Present Jepsen, a CLojure framework\cite{Jepsen} developed by K. Kingsbury that allow for testing of distributed systems, This is solved via a direct serialization graph (DSG) and queries to the target system that are carefully chosen that allows for traceability, and recoverability.  \\
+
+
+Then, I present Azure Service Fabric(SF), SF is a distributed container orchestration system made my Microsoft, that allows for hosting of services, or apps. It includes a few different built in functions, but the primary interest here lie within the reliable containers aspect of SF, and what claims Microsoft makes concerning the behaviour of this data.\\
+
+Then, I will present what modern database systems promise, what properties of ACID they follow, which they relax, and which they disregard, and well as what they gain, and which tradeoffs they endure.\\
+
+Then i will design, and attempt to implement and execute a Jepsen test against service Fabrics reliable containers, and compare these results to the claims Microsoft has made.\\
+
+Finally, I will present how the ACID properties compare to modern uses cases of databases, do we need to follow them strictly or can simply disregard them in some uses cases? What are the exceptions, and what is there to gain ?\\
+\\
+
+
 
 \chapter{Introduction}
 
-This thesis starts with \cref{chap:k2}.
+Highly Distributed systems are becoming more and more common as the world grows evermore interconnected, faster paced, increasing data driven with higher expectations of services and product. where the end user expects reliability, availability combined with low- latency and cost, How do we guarantee this is a distributed system that spans the planet. Is it even possible to get both, and is it even needed in most use cases?\\
+
+Most people are familiar with how YouTube, Facebook, Google and Reddit behave and what quirks they sometimes present, Most people remember the YouTube video counter that got stuck and only update once a day or where depending on which endpoint you connected to you were given a different numbers. These are both examples of induce eventual consistency. Here it might be that you are seeing different comments on posts depending on what region you connect from, but eventually both pages will reach consistency, 
 
 We can also typeset \verb|<text>verbatim text</text>|.
 Backticks are also rendered correctly: \verb|`words in backticks`|.
 
-\chapter{Study}
-\label{chap:k2}
-
-\section{Things to read(temp list)}
-
-https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
-
-https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections
 
 
 
 
-\section{Jepsen}
+\section{ACID Properties}
+
+
+
+
+
+
+
+
 \subsection{Introduction}
 "
 Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems’ failure modes. In each analysis we explore whether the system lives up to its documentation’s claims.
@@ -166,6 +176,12 @@ read committed	no	yes	yes
 repeatable read	no	no	y
 serializable	no	no	no
 \textcolor{red}{Maybe also include something about snapshot isolation} 
+
+
+\subsection{Modern Database systems, and the trade offs they make.}
+
+
+Atomicity, and Isolation as we often write the data to a arbitrary node, that accepts after the data has been distributed outside of it's rack, availability zone or region. and where the newest timestamp then overrules all other written data without care of data on other nodes which can breaks Atomicity, and Isolation, as a check and set(CAS), or update statement might uses stale data and due to it's newer timestamp any data written in the meantime gets discarded. Solutions here might require waiting for full distribution of any data prior to the query executing, but this would drastically slow down the entire system. This does however not factor in issues related to system faults
 """
 
 \subsection{Historically}
@@ -373,5 +389,23 @@ All links were last followed on March 17, 2018.
 
 \pagestyle{empty}
 \renewcommand*{\chapterpagestyle}{empty}
+
+
+
+
+
+\chapter{Needs to be relocated}
+
+
+\section{Things to read(temp list)}
+
+https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
+
+https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections
+
+
+
+
+\section{Jepsen}
 
 \end{document}

@@ -1,2 +1,0 @@
-$ConnectArgs = @{  ConnectionEndpoint = 'https://jepsen.northeurope.cloudapp.azure.com:19080';  X509Credential = $True;  StoreLocation = 'CurrentUser';  StoreName = "MY";  ServerCommonName = "https://jepsen.northeurope.cloudapp.azure.com:19080";  FindType = 'FindByThumbprint';  FindValue = "E58AE7E7077522C401927883CFC3E610411134B1"   }
-Connect-ServiceFabricCluster @ConnectArgs
