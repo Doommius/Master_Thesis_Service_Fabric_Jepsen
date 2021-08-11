@@ -92,8 +92,9 @@ sorting=ynt
 
 Databases allow modern society to store, manage and distribute data at a previously unprecedentedly scale. having data is a normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require much high performance, storage, latency and  availability then current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
 
-Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
 
+Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
+\vspace{5mm}
 First, I Present ACID \& Base, their constraints, what faults occur in database systems, how their manifests themselves, whats the underlying causes often are, and what limits the ACID properties imposes on a given system. Here Base will be introduced to explain what relaxations are introduced to a system where gaining the desire results for certain use cases. \\
 
 Then, I Present Jepsen, a CLojure framework\cite{jepsonio} developed by K. Kingsbury that allow for testing of distributed systems, This is solved via a direct serialization graph (DSG) and queries to the target system that are carefully chosen that allows for traceability, and recoverability.  \\
@@ -103,7 +104,7 @@ Then, I present Azure Service Fabric(SF), SF is a distributed container orchestr
 
 Then, I will present what modern database systems promise, what properties of ACID they follow, which they relax, and which they disregard, and well as what they gain, and which tradeoffs they suffer, Here a main focus will be on Service Fabric.\\
 
-Then i will design, and attempt to implement and execute a Jepsen test against service Fabrics reliable containers, and compare these results to the claims Microsoft has made.\\
+Then I will present the attempt to implement and execute a Jepsen test against service Fabrics reliable containers, and compare these results to the claims Microsoft has made.\\
 
 Finally, I will present how the ACID properties compare to modern uses cases of databases, do we need to follow them strictly or can simply disregard them in some uses cases? What are the exceptions, and what is there to gain ?\\
 
@@ -122,7 +123,7 @@ How do we test and verify that the systems that handle tasks that require compli
 Database and data store models can be categories into two main groups, ACID and BASE. Consistent or available. The underlying reason for this limitation is either latency between nodes in a system, scale-ability both in terms of storage or Capacity in terms of queries to the system. Both models of designing the system has it's trade-offs which will be presented later in the paper.
 \subsection{ACID}
 
-The ACID Model of handling database transactions is considered monolithic by some, however they still serve a vital a critical function for handling critical systems that require atomicity, consistency across the entire dataset, reliability, and durability 
+The ACID Model of handling database transactions is considered monolithic by some, however they still serve a vital a critical function for handling critical systems that require atomicity, consistency across the entire data-set, reliability, and durability 
 The ACID acronym is defined as follows in the DBMS book\cite{DBMSbook}.
 
 \begin{itemize}
@@ -145,7 +146,7 @@ ACID therefor offers strong consistency with rigorous handling of transaction is
 \subsection{BASE}
 The BASE model allows designing of a system where we value availability, throughput and scale-ability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. This can benefit some applications where overwriting old data isn't an issue or where the newest version of data might not be required as long as it'll come eventually. The use for these databases are hugely beneficial for social media, logging, and other hyperscale system where consistency isn't required.\\
 
-The Base Acronym was defined by Eric Brewer \cite{brewer2000towards} and is defined as follows. 
+The Base Acronym was defined by Eric Brewer\cite{brewer2000towards} and is defined as follows. 
 
 \begin{itemize}
     \item Basically Available – Rather than enforcing immediate consistency, BASE-modelled NoSQL databases will ensure availability of data by spreading and replicating it across the nodes of the database cluster.
@@ -159,22 +160,23 @@ The BASE model of databases often have a weak consistency where stale data is co
 
 The CAP Theorem was defined by Eric Brewer\cite{CAP} where it states that it is impossible for a distributed database system to provide Consistency, Availability, and Partition Tolerance in a single system, and that only two of these guarantees can be met.\\
 
-The acronym in Cap is defined by
-\begin{itemize}
-    \item Basically available indicates that the system does guarantee availability, in terms of the CAP theorem.
-\item Soft state indicates that the state of the system may change over time, even without input. This is because of the eventual consistency model.
-\item Eventual consistency indicates that the system will become consistent over time, given that the system doesn't receive input during that time.
-\end{itemize}
+It should be noted that the definitions of the terms differ from the definitions in ACID. They are all important when it comes to a distributed systems and their behaviors. firstly Consistency in ACID is define as constraints on the data. By the CAP consistency concept, ACID would follow Sequential consistency as defined by Lamport\cite{lamport1993how}: “the program behaves as if the memory accesses of all processes were interleaved and then executed sequentially.” while the consistency model in CAP is defined as Atomic Consistency (also called linearizability) is sequential plus a real-time constraint: “Unlike sequential consistency, linearizability implicitly assumes the notion of an observable global time across all processes. Operations are modeled by an interval which consists of the period of time between the invocation and response for the operation and each operation is assumed to take effect instantaneously at some point within this interval.” \cite{CSL-TR-95-685}
 
-However these definitions differ from the definitions in ACID, However they are quite important when it comes to distributed systems and their behavior. 
-Consistency in ACID is define as constraints on the data. By the CAP consistency concept, ACID would follow Sequential consistency as defined by Lamport\cite{lamport1993how}: “the program behaves as if the memory accesses of all processes were interleaved and then executed sequentially.” while the consistency model in CAP is defined as Atomic Consistency (also called linearizability) is sequential plus a real-time constraint: “Unlike sequential consistency, linearizability implicitly assumes the notion of an observable global time across all processes. Operations are modeled by an interval which consists of the period of time between the invocation and response for the operation and each operation is assumed to take effect instantaneously at some point within this interval.” \cite{CSL-TR-95-685}
+as CAP states we can only have 2 of the 3 properties in any given data-share system. The three different options will be explained below.
+
+CP Database, A system that deliveries Consistency and Partition tolerance but the trade off here is Availability, If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols, and most distributed databases. an Example of a CP database would be MongoDB and Service Fabrics Reliable collections, These work by having partitions that contain a master and a set of replicates. The replicates simple follow the masters transaction log and apply it to their own data set. If the Primary becomes unavailable the Replicate with the most recent transaction log simply comes the new Master, doing this switch the partition becomes unavailable while the replicates catches up to the new master. this causes the network to remain consistent but limits availability.  \\
+
+AP If our system foregoes Consistency, and deliverers availability and partition tolerance, In the case of a partition between nodes we keep serving from all nodes but in this case we might serve stale data and occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of a AP database would be Cassandra, where the CP have a master/replicate architecture, This would cover DNS, Caching systems and databases such as Cassandra. Cassandra uses a masterless architecture, It does mean that there is multiple points of failure rather then a single one. It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
+
+CA Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. this results in a single node, or single cluster system as any distribution of the system introduces network instability and latency that would break the system. In this case it would cover single node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
+
 
 The concept of linearizability will be investigated deeper doing the presentation of Jepsen where this is a key way of investigating weather a system lives up to the guarantees of a given system.
 
 
 \subsection{Consistency models.}
 
-2 consistency models were mentioned already, Atomic Consistency and Sequential consistency, 2 more consistency models are defined, Causal+ Consistency and  Eventual Consistency
+Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential consistency, There exist 2 more within common use, these two are Causal+ Consistency and  Eventual Consistency. They differ in way the consistency is handled by all end up in the same state eventually.
 
 \subsection{Isolation levels}
 
@@ -326,9 +328,24 @@ Checker. PLDI ’10, 2010.
 Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers, one of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.
 
 
+\subsection{Structure of the Framework}
+
+
 \subsection{DataStore}
 
 So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage 
+
+\subsection{Design of the Datastore}
+
+The Data-store is designed as independent partitions where the user is in charge of querying the partitions separately for all data to be returned. eg Each leader only has the data in it's partition and is unable to query other partitions for data. This causes the issue of handling data partitioning and querying on the user.
+
+Eg if we have 5 partitions out endpoint is required for query partition 1-5 prior to being able to return data to the client,
+
+Already at this point we are unable to guarantee consistent data as any read/write occurring doing a read of the portion can cause the stale/dirty reads from the clients perspective.
+
+An exsample.
+
+client A wants to read all data from the datastore and starts reading from node 1-5 sequentially. halfway into the transaction Client B writes a value to node 1 and 4. Client A's transaction will now be dirty as it will contain data from a future commit on node 4 and at the same time stale data from node 1
 
 
 
