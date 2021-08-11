@@ -12,7 +12,17 @@
   year      = {2005},
   publisher = {Prentice Hall PTR},
   isbn      = {0131488740},
-  doi       = {10.1.1/jpb001},
+  doi       = {10.1.1/jpb001}
+}
+
+@book{DBMSbook,
+author = {Ramakrishnan, Raghu and Gehrke, Johannes},
+title = {Database Management Systems},
+year = {2000},
+isbn = {0072440422},
+publisher = {McGraw-Hill, Inc.},
+address = {USA},
+edition = {2nd}
 }
 
 
@@ -43,56 +53,75 @@
 }
 
 
-G. Lowe. Testing and Verifying Concurrent Objects.
-Concurrency and Computation: Practice and
-Experience, 29(4), 2017
-
-J. M. Wing and C. Gong. Testing and Verifying
-Concurrent Objects. Journal of Parallel and
-Distributed Computing, 17(1-2), 1993.
-
-P. B. Gibbons and E. Korach. Testing shared
-memories. SIAM Journal on Computing, 26(4), 1997
-
-S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
-Line-up: A Complete and Automatic Linearizability
-Checker. PLDI ’10, 2010.
-
-
-
-
-
-% !! DO NOT USE `label =   {ASF}` in other Misc entries !!
-
-@Misc{ApacheODE,
-  author = {{The Apache Software Foundation}},
-  title =  {Apache ODE\texttrademark{} -- The Orchestration Director Engine},
-  year =   {2016},
-  label =  {ASF},
-  url =    {http://ode.apache.org}
+@REPORT{CSL-TR-95-685,
+    author = {Kourosh Gharachorloo},
+    title = {MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS},
+    publisher = {DARPA contract N00039-91-C-0138},
+    organization={CSR, Stanford University},
+    year = {1995},
+    url = {http://i.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf}
 }
 
-@Article{RVvdA2016,
-  author =    {H.A. Reijers and I. Vanderfeesten and W.M.P. van der Aalst},
-  title =     {The effectiveness of workflow management systems: A longitudinal study},
-  journal =   {International Journal of Information Management},
-  year =      {2016},
-  volume =    {36},
-  number =    {1},
-  pages =     {126--141},
-  month =     feb,
-  doi =       {10.1016/j.ijinfomgt.2015.08.003},
-  publisher = {Elsevier {BV}}
+@article{CAP,
+author = {Gilbert, Seth and Lynch, Nancy},
+title = {Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services},
+year = {2002},
+issue_date = {June 2002},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {33},
+number = {2},
+issn = {0163-5700},
+url = {https://doi.org/10.1145/564585.564601},
+doi = {10.1145/564585.564601},
+abstract = {When designing distributed web services, there are three properties that are commonly
+desired: consistency, availability, and partition tolerance. It is impossible to achieve
+all three. In this note, we prove this conjecture in the asynchronous network model,
+and then discuss solutions to this dilemma in the partially synchronous model.},
+journal = {SIGACT News},
+month = jun,
+pages = {51–59},
+numpages = {9}
 }
 
-@Book{Duden2001,
-  author    = {Duden},
-  title     = {Die Deutsche Rechtschreibung},
-  year      = {2001},
-  edition   = {22., völlig neu bearbeitete und erweiterte Auflage},
-  note      = {Aktualisierter Nachdruck},
-  publisher = {Dudenverlag},
-  isbn      = {3-411-04012-2},
+@inproceedings{brewer2000towards,
+  title={Towards robust distributed systems},
+  author={Brewer, Eric A},
+  booktitle={PODC},
+  volume={7},
+  number={10.1145},
+  pages={343477--343502},
+  year={2000},
+  organization={Portland, OR}
 }
 
-@Comment{jabref-meta: databaseType:biblatex;}
+@Article{lamport1993how,
+author = {Lamport, Leslie},
+title = {How to Make a Correct Multiprocess Program Execute Correctly on a Multiprocessor},
+year = {1993},
+month = {February},
+abstract = {This paper was inspired by Kourosh Gharachorloo's thesis. The problem he addressed was how to execute a multiprocess program on a computer whose memory did not provide sequential consistency (see [35]), but instead required explicit synchronization operations (such as Alpha's memory barrier instruction). He presented a method for deducing what synchronization operations had to be added to a program. I realized that, if one proved the correctness of an algorithm using the two-arrow formalism of [33], the proof would tell you what synchronization operations were necessary. This paper explains how.},
+url = {https://www.microsoft.com/en-us/research/publication/make-correct-multiprocess-program-execute-correctly-multiprocessor/},
+pages = {779-782},
+journal = {IEEE Transactions on Computers  SRC Research Report 96},
+volume = {46},
+edition = {Also appeared as SRC Research Report 96},
+number = {7},
+}
+
+
+
+%G. Lowe. Testing and Verifying Concurrent Objects.
+%Concurrency and Computation: Practice and
+%Experience, 29(4), 2017
+%
+%J. M. Wing and C. Gong. Testing and Verifying
+%Concurrent Objects. Journal of Parallel and
+%Distributed Computing, 17(1-2), 1993.
+%
+%P. B. Gibbons and E. Korach. Testing shared
+%memories. SIAM Journal on Computing, 26(4), 1997
+%
+%S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
+%Line-up: A Complete and Automatic Linearizability
+%Checker. PLDI ’10, 2010.
