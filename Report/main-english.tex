@@ -25,6 +25,7 @@
 \usepackage[english]{babel}
 \usepackage{amssymb,amsmath,amsthm}
 \usepackage{mathtools}
+\usepackage{wrapfig}
 \usepackage{multirow}
 
 \usepackage{mathtools} % Bonus
@@ -171,10 +172,52 @@ AP If our system foregoes Consistency, and deliverers availability and partition
 CA Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. this results in a single node, or single cluster system as any distribution of the system introduces network instability and latency that would break the system. In this case it would cover single node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
 
 
-The concept of linearizability will be investigated deeper doing the presentation of Jepsen where this is a key way of investigating weather a system lives up to the guarantees of a given system.
+
+\subsection{Consistency and consistency models.}
 
 
-\subsection{Consistency models.}
+\begin{wrapfigure}{r}{0.5\linewidth}
+    \centering
+       \includegraphics[scale=0.4]{Report/images/consistency models.PNG}
+     \caption{Picture from https://jepsen.io/consistency}
+     \label{fig:jepsenioconsistency}
+\end{wrapfigure}
+
+
+For explaining the the concepts within consistency i will use the a paper by Ballis et al on "Highly available transactions"\cite{10.14778/2732232.2732237} that displays a good model for preventing the different consistency models and their relation to other consistency models.\\
+
+
+\subsubsection{Strict Serializability}
+
+For a system to be Strict Serializatbility, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.    
+
+Formally Strict Serializatbility is define as as Serviceable system that is compatible with a Time dependent order.
+"A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}
+Here it should be clarified that the Obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serialzable system with the time constraint from Linearizability.
+
+\subsubsection{Serialzable}
+
+
+
+\subsubsection{Repeatable Read}
+
+\subsubsection{Cursor Statbility}
+
+\subsubsection{Read committed}
+
+\subsubsection{Read Uncommitted}
+
+\subsubsection{Snapshot isolation}
+
+\subsubsection{Monotonic atomic view}
+
+\subsubsection{Linearizable}
+\subsubsection{Sequential}
+\subsubsection{Casual}
+\subsubsection{Writes Follows Reads}
+\subsubsection{Monotonic Reads}
+\subsubsection{Monotonic Writes}
+\subsubsection{Read your writes}
 
 Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential consistency, There exist 2 more within common use, these two are Causal+ Consistency and  Eventual Consistency. They differ in way the consistency is handled by all end up in the same state eventually.
 

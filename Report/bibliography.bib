@@ -38,9 +38,67 @@ edition = {2nd}
   title =  {Aphyr, Jepsen test postgres.},
   year =   {2013},
   url =    {https://aphyr.com/posts/282-jepsen-postgres}
+  }
 
 
+@article{10.14778/2732232.2732237,
+author = {Bailis, Peter and Davidson, Aaron and Fekete, Alan and Ghodsi, Ali and Hellerstein, Joseph M. and Stoica, Ion},
+title = {Highly Available Transactions: Virtues and Limitations},
+year = {2013},
+issue_date = {November 2013},
+publisher = {VLDB Endowment},
+volume = {7},
+number = {3},
+issn = {2150-8097},
+url = {https://doi.org/10.14778/2732232.2732237},
+doi = {10.14778/2732232.2732237},
+abstract = {To minimize network latency and remain online during server failures and network partitions,
+many modern distributed data storage systems eschew transactional functionality, which
+provides strong semantic guarantees for groups of multiple operations over multiple
+data items. In this work, we consider the problem of providing Highly Available Transactions
+(HATs): transactional guarantees that do not suffer unavailability during system partitions
+or incur high network latency. We introduce a taxonomy of highly available systems
+and analyze existing ACID isolation and distributed data consistency guarantees to
+identify which can and cannot be achieved in HAT systems. This unifies the literature
+on weak transactional isolation, replica consistency, and highly available systems.
+We analytically and experimentally quantify the availability and performance benefits
+of HATs---often two to three orders of magnitude over wide-area networks---and discuss
+their necessary semantic compromises.},
+journal = {Proc. VLDB Endow.},
+month = nov,
+pages = {181–192},
+numpages = {12}
+}
 
+
+@article{10.1145/78969.78972,
+author = {Herlihy, Maurice P. and Wing, Jeannette M.},
+title = {Linearizability: A Correctness Condition for Concurrent Objects},
+year = {1990},
+issue_date = {July 1990},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {12},
+number = {3},
+issn = {0164-0925},
+url = {https://doi.org/10.1145/78969.78972},
+doi = {10.1145/78969.78972},
+abstract = {A concurrent object is a data object shared by concurrent processes. Linearizability
+is a correctness condition for concurrent objects that exploits the semantics of abstract
+data types. It permits a high degree of concurrency, yet it permits programmers to
+specify and reason about concurrent objects using known techniques from the sequential
+domain. Linearizability provides the illusion that each operation applied by concurrent
+processes takes effect instantaneously at some point between its invocation and its
+response, implying that the meaning of a concurrent object's operations can be given
+by pre- and post-conditions. This paper defines linearizability, compares it to other
+correctness conditions, presents and demonstrates a method for proving the correctness
+of implementations, and shows how to reason about concurrent objects, given they are
+linearizable.},
+journal = {ACM Trans. Program. Lang. Syst.},
+month = jul,
+pages = {463–492},
+numpages = {30}
+}
 
 
 @Misc{Knossos,
