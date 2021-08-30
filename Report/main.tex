@@ -27,16 +27,16 @@
 \usepackage{mathtools}
 \usepackage{wrapfig}
 \usepackage{multirow}
-
 \usepackage{mathtools} % Bonus
+\usepackage[
+    backend=biber,
+    style=numeric,
+    sorting=ynt
+]{biblatex}
 
 \newtheorem{theorem}{Theorem}
 
-\usepackage[
-backend=biber,
-style=alphabetic,
-sorting=ynt
-]{biblatex}
+
 
 \addbibresource{bibliography.bib}
 
@@ -57,9 +57,6 @@ sorting=ynt
 \rfoot{Page  \thepage \, of \pageref{LastPage}}
 \counterwithin*{equation}{section}
 
-
-
-
 \begin{document}
 \begin{titlepage}
 \centering
@@ -73,7 +70,7 @@ sorting=ynt
     Doommius.com \\
     \vspace*{9\baselineskip}
     \normalfont
-	\includegraphics[scale=1]{Report/logos/SDU_BLACK.png}
+	\includegraphics[scale=1]{logos/SDU_BLACK.png}
     \vfill\
     \vspace{5mm}
     Institute Of Mathematics and Computer Science, SDU \\
@@ -178,7 +175,7 @@ CA Database delivers consistency and availability but doesn't allow for partitio
 
 \begin{wrapfigure}{r}{0.5\linewidth}
     \centering
-       \includegraphics[scale=0.4]{Report/images/consistency models.PNG}
+       \includegraphics[scale=0.4]{images/consistency models.PNG}
      \caption{Picture from https://jepsen.io/consistency}
      \label{fig:jepsenioconsistency}
 \end{wrapfigure}

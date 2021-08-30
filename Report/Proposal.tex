@@ -1,8 +1,8 @@
 \section{'Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks'}
 
 \section{Introduction}
-The goal of this project is to assess how Jepsen\cite{2} tests allow us to verify the properties of ACID\cite{8} in a cloud system. 
-The Jepsen test is a method used to evaluate the compliance of a system in relation to the ACID properties. This is done is by analysing the system via Blackbox\cite{4} tests , in the sense that the internals of the system work are not relevant. We look at the service from a client-side and not any underlying structures or frameworks.  
+The goal of this project is to assess how Jepsen\footnote[1]{https://aphyr.com/tags/jepsen } tests allow us to verify the properties of ACID\footnote[2]{Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510} in a cloud system.
+The Jepsen test is a method used to evaluate the compliance of a system in relation to the ACID properties. This is done is by analysing the system via Blackbox\footnote[3]{https://youtu.be/tRc0O9VgzB0?t=293} tests , in the sense that the internals of the system work are not relevant. We look at the service from a client-side and not any underlying structures or frameworks.
 The ACID properties are 
 \begin{itemize}
 \item	Atomicity \\
@@ -14,15 +14,15 @@ Ensures that concurrent execution of transactions leaves the database in the sam
 \item	Durability \\
 Guarantees that once a transaction has been committed, it will remain committed even in the case of a system failure 
 \end{itemize}
-\cite{8} \\
-We plan to apply these methods on Service Fabric\cite{5} , to verify if this system is compliant with the ACID properties. Service Fabric is a framework developed by Microsoft, designed to allow developers to build Hyper-Scale Cloud (HSC) deployments on the Azure\cite{6} platform.    
+\footnote[2]{Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510} \\
+We plan to apply these methods on Service Fabric\footnote[4]{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview  } , to verify if this system is compliant with the ACID properties. Service Fabric is a framework developed by Microsoft, designed to allow developers to build Hyper-Scale Cloud (HSC) deployments on the Azure\footnote[5]{https://microsoft.com/en-us/azure/ } platform.
 The motivation behind this thesis is to study the ACID properties in an HSC environment and evaluate how the constraints of ACID hold up in practice, as well as verifying if these constraints are met, and more importantly if they are not. 
 \section{Plan}
      
 The project is segmented into three parts. The writing of the report will take place at all times throughout the process, and the final phase should be a finalization and corrections phase.  
 \subsection{The study phase  }
 \begin{itemize}
-\item	The first part of the study will focus on analysing the previous\cite{3} Jepsen tests performed on other systems. This will allow us to define a strategy in terms of: which tools, tactics and methods are worth investigating, and what type of faults should be taken note of. This information is useful for two aspects:  
+\item	The first part of the study will focus on analysing the previous\footnote[6]{https://jepsen.io/analyses } Jepsen tests performed on other systems. This will allow us to define a strategy in terms of: which tools, tactics and methods are worth investigating, and what type of faults should be taken note of. This information is useful for two aspects:
 \begin{itemize}
 \item	where our focus should be when testing,  
 \item	which tools and packages we should be familiarize with. 
@@ -63,35 +63,7 @@ The project is segmented into three parts. The writing of the report will take p
 \end{itemize}
 \end{itemize}
 
-\section{Goal    }  
+\section{Goal}
 The goal of the project is to deep dive into Jepsen tests with a focus on “Service Fabric” as the subject. The optimal goal of the project is to verify if the database aspects of “Service Fabric” comply with the ACID properties, and to locate the fault cases in case they don’t.    
 Risk assessment 
 There are a few risks in the project. In the case no faults are found within the Service Fabric, this reduces the scope of the project. If no faults are found, time allowing, different framework can be analysed. On the contrary, if the number of faults in the framework is more extensive than expected, then the scope of the project may grow uncontrollably. In this case, choices will be made to select a subset of the data to focus on.
- 
-
-\begin{thebibliography}{9}
-\bibitem{1} 
-https://github.com/jepsen-io/jepsen 
-
-\bibitem{2} 
-https://aphyr.com/tags/jepsen 
-
-\bibitem{3} 
-https://jepsen.io/analyses 
-
-\bibitem{4}
-https://youtu.be/tRc0O9VgzB0?t=293
-
-\bibitem{5} 
-https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview  
-
-\bibitem{6} 
-https://microsoft.com/en-us/azure/ 
-
-\bibitem{gitservicefabric} 
-https://github.com/microsoft/service-fabric  
-
-\bibitem{8}
-Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510
-
-\end{thebibliography}
