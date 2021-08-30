@@ -9,20 +9,34 @@
 *.userosscache
 *.sln.docstates
 
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+
 # Build results
-/jepsen.servicefabric/[Dd]ebug/
-/jepsen.servicefabric/[Dd]ebugPublic/
-/jepsen.servicefabric/[Rr]elease/
-/jepsen.servicefabric/[Rr]eleases/
-/jepsen.servicefabric/x64/
-/jepsen.servicefabric/x86/
-/jepsen.servicefabric/bld/
-/jepsen.servicefabric/[Bb]in/
-/jepsen.servicefabric/[Oo]bj/
-/jepsen.servicefabric/[Ll]og/
+/Jepsen/ReliableCollectionsWebAPI/[Dd]ebug/
+/Jepsen/ReliableCollectionsWebAPI/[Dd]ebugPublic/
+/Jepsen/ReliableCollectionsWebAPI/[Rr]elease/
+/Jepsen/ReliableCollectionsWebAPI/[Rr]eleases/
+/Jepsen/ReliableCollectionsWebAPI/x64/
+/Jepsen/ReliableCollectionsWebAPI/x86/
+/Jepsen/ReliableCollectionsWebAPI/bld/
+/Jepsen/ReliableCollectionsWebAPI/[Bb]in/
+/Jepsen/ReliableCollectionsWebAPI/[Oo]bj/
+/Jepsen/ReliableCollectionsWebAPI/[Ll]og/
+
+# Build results
+/Jepsen/JepsenAPIStore/[Dd]ebug/
+/Jepsen/JepsenAPIStore/[Dd]ebugPublic/
+/Jepsen/JepsenAPIStore/[Rr]elease/
+/Jepsen/JepsenAPIStore/[Rr]eleases/
+/Jepsen/JepsenAPIStore/x64/
+/Jepsen/JepsenAPIStore/x86/
+/Jepsen/JepsenAPIStore/bld/
+/Jepsen/JepsenAPIStore/[Bb]in/
+/Jepsen/JepsenAPIStore/[Oo]bj/
+/Jepsen/JepsenAPIStore/[Ll]og/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
