@@ -121,7 +121,7 @@ How do we test and verify that the systems that handle tasks that require compli
 Database and data store models can be categories into two main groups, ACID and BASE. Consistent or available. The underlying reason for this limitation is either latency between nodes in a system, scale-ability both in terms of storage or Capacity in terms of queries to the system. Both models of designing the system has it's trade-offs which will be presented later in the paper.
 \subsection{ACID}
 
-The ACID Model of handling database transactions is considered monolithic by some, however they still serve a vital a critical function for handling critical systems that require atomicity, consistency across the entire data-set, reliability, and durability 
+The ACID Model of handling database transactions is considered monolithic by some, however they still serve a vital a critical function for handling critical systems that require atomicity, consistency across the entire data-set, reliability, and durability
 The ACID acronym is defined as follows in the DBMS book\cite{DBMSbook}.
 
 \begin{itemize}
@@ -144,7 +144,7 @@ ACID therefor offers strong consistency with rigorous handling of transaction is
 \subsection{BASE}
 The BASE model allows designing of a system where we value availability, throughput and scale-ability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. This can benefit some applications where overwriting old data isn't an issue or where the newest version of data might not be required as long as it'll come eventually. The use for these databases are hugely beneficial for social media, logging, and other hyperscale system where consistency isn't required.\\
 
-The Base Acronym was defined by Eric Brewer\cite{brewer2000towards} and is defined as follows. 
+The Base Acronym was defined by Eric Brewer\cite{brewer2000towards} and is defined as follows.
 
 \begin{itemize}
     \item Basically Available – Rather than enforcing immediate consistency, BASE-modelled NoSQL databases will ensure availability of data by spreading and replicating it across the nodes of the database cluster.
@@ -186,7 +186,7 @@ For explaining the the concepts within consistency i will use the a paper by Bal
 
 \subsubsection{Strict Serializability}
 
-For a system to be Strict Serializatbility, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.    
+For a system to be Strict Serializatbility, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.
 
 Formally Strict Serializatbility is define as as Serviceable system that is compatible with a Time dependent order.
 "A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}
@@ -194,7 +194,8 @@ Here it should be clarified that the Obvious way that that if we have transactio
 
 \subsubsection{Serialzable}
 
-
+200
+Serializability defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}
 
 \subsubsection{Repeatable Read}
 
@@ -220,17 +221,17 @@ Two of the consistency models were already mentioned in the previous section nam
 
 \subsection{Isolation levels}
 
-The Isolation level as defined by the ISO/IEC 9075 standard which defines SQL, This means that any database system should present to what level that they follow the isolation levels. in this we have 4 levels that can lead to unintended behavior within a single transaction. 
+The Isolation level as defined by the ISO/IEC 9075 standard which defines SQL, This means that any database system should present to what level that they follow the isolation levels. in this we have 4 levels that can lead to unintended behavior within a single transaction.
 
 The 4 Isolation levels are defined as:
 read uncommitted
-       The read uncommitted does not issue shared lock, which allows session S2 write access to the data S1 is reading.\textcolor{red}{write more in dept} 
+       The read uncommitted does not issue shared lock, which allows session S2 write access to the data S1 is reading.\textcolor{red}{write more in dept}
  read commited
- \textcolor{red}{write more in dept} 
+ \textcolor{red}{write more in dept}
 repeatable read
-\textcolor{red}{write more in dept} 
+\textcolor{red}{write more in dept}
 serializable
-\textcolor{red}{write more in dept} 
+\textcolor{red}{write more in dept}
 
 
 
@@ -248,17 +249,17 @@ read uncommitted	yes	yes	yes
 read committed	no	yes	yes
 repeatable read	no	no	y
 serializable	no	no	no
-\textcolor{red}{Maybe also include something about snapshot isolation} 
+\textcolor{red}{Maybe also include something about snapshot isolation}
 
 \subsection{Faults and manifistation}
 
-'Dirty read' is when a S1 can read data that S2 has written but not yet committed, It is considered dirty as S2 can rollback the transaction where S1 read data that must be considered non existent. \textcolor{red}{Make example diagram} 
+'Dirty read' is when a S1 can read data that S2 has written but not yet committed, It is considered dirty as S2 can rollback the transaction where S1 read data that must be considered non existent. \textcolor{red}{Make example diagram}
 \\
-The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. so if S1 read the some data again they will have changed. this results in two equal select statements returning different results.  \textcolor{red}{Make example diagram} 
+The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. so if S1 read the some data again they will have changed. this results in two equal select statements returning different results.  \textcolor{red}{Make example diagram}
 
 Phantom read
 The Third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
- \textcolor{red}{Make example diagram} 
+ \textcolor{red}{Make example diagram}
 
 
 
@@ -306,7 +307,7 @@ The State of the art is Jepsen, or rather one of the State of the Art projects.
 
 Jepsen supports quite a few different modules but the most power full features goes by the name Elle, inferring isolation anomalies from Experimental Observations. \\
 
-The way this works is be inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history. 
+The way this works is be inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.
 
 this means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.
 
@@ -373,7 +374,7 @@ Service Fabric (SF) is a presented as a distributed systems platform something a
 
 \subsection{DataStore}
 
-So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage 
+So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage
 
 \subsection{Design of the Datastore}
 
@@ -405,6 +406,16 @@ Reliable collections.
 \subsection{What does service Fabric promise wrt ACID}
 
 https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections-transactions-locks
+
+\section{Cassadra}
+
+\section{Postgres}
+
+\section{Mongodb}
+
+\section{Future Technologies that can have an impact}
+
+Atomic clocks ?
 
 
 \chapter{Performing a Jepses test}
@@ -502,7 +513,7 @@ All links were last followed on March 17, 2018.
 \multicolumn{1}{l}{}            & Week 28      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
 \multicolumn{1}{l}{}            & Week 29      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
 \multicolumn{1}{l}{}            & Week 30      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
-\multicolumn{1}{l}{}            & Week 31      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                      
+\multicolumn{1}{l}{}            & Week 31      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}
 \end{tabular}
 
 
