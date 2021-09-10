@@ -1,0 +1,35 @@
+#!/usr/bin/expect -f
+spawn echo "SSH KEYS: Generating Key Pair"
+spawn ssh-keygen -t rsa -N "" -f SF_cluster.key
+spawn echo "SSH KEYS: Key Pair Generated"
+spawn echo "SSH KEYS: 10.0.0.4 Starting"
+spawn ssh-copy-id -i SF_cluster.key.pub -f -o StrictHostKeyChecking=no 10.0.0.4
+expect "password:"
+send "P&g68KTBG9&eHxY347sO2^eHa\n"
+expect eof
+spawn echo "SSH KEYS: 10.0.0.4 Complete"
+spawn echo "SSH KEYS: 10.0.0.5 Starting"
+spawn ssh-copy-id -i SF_cluster.key.pub -f -o StrictHostKeyChecking=no 10.0.0.5
+expect "password:"
+send "P&g68KTBG9&eHxY347sO2^eHa\n"
+expect eof
+spawn echo "SSH KEYS: 10.0.0.5 Complete"
+spawn echo "SSH KEYS: 10.0.0.6 Starting"
+spawn ssh-copy-id -i SF_cluster.key.pub -f -o StrictHostKeyChecking=no 10.0.0.6
+expect "password:"
+send "P&g68KTBG9&eHxY347sO2^eHa\n"
+expect eof
+spawn echo "SSH KEYS: 10.0.0.6 Complete"
+spawn echo "SSH KEYS: 10.0.0.7 Starting"
+spawn ssh-copy-id -i SF_cluster.key.pub -f -o StrictHostKeyChecking=no 10.0.0.7
+expect "password:"
+send "P&g68KTBG9&eHxY347sO2^eHa\n"
+expect eof
+spawn echo "SSH KEYS: 10.0.0.7 Complete"
+spawn echo "SSH KEYS: 10.0.0.8 Starting"
+spawn ssh-copy-id -i SF_cluster.key.pub -f -o StrictHostKeyChecking=no 10.0.0.8
+expect "password:"
+send "P&g68KTBG9&eHxY347sO2^eHa\n"
+expect eof
+spawn echo "SSH KEYS: 10.0.0.8 Complete"
+

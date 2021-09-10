@@ -34,6 +34,7 @@
             :db db
             :initialized? (atom false)
             :nemesis nemesis
+            :pure-generators true
             :checker (checker/compose
                       {:perf        (checker/perf {:nemeses (:perf nemesis)})
                        :clock       (checker/clock-plot)
@@ -45,7 +46,7 @@
                         (->> (:generator workload)
                              (gen/stagger (/ (:rate opts)))
                              (gen/nemesis
-                              (gen/seq
+                              (map gen/once
                                (cycle [(gen/sleep 10)
                                        {:type :info :f :start}
                                        (gen/sleep 10)

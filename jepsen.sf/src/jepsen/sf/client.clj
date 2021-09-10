@@ -45,7 +45,7 @@
          ))
 
 
-(defn get
+(defn getsf
   ([url]
    (http/get url))
   ([url key]
@@ -54,14 +54,14 @@
    (http/get (str url key)
              {:query-params {(keyword consistency) nil}})))
 
-(defn put!
+(defn putsf!
   ([url key value]
    (http/put (str url key value)))
   ([url key value consistency]
    (http/put (str url key value)
              {:query-params {(keyword consistency) nil}})))
 
-(defn cas!
+(defn cassf!
   ([url key value new-value]
    (http/put (str url key value new-value)))
   ([url key value new-value consistency]
