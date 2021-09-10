@@ -170,7 +170,7 @@ CA Database delivers consistency and availability but doesn't allow for partitio
 
 
 
-\subsection{Consistency and consistency models.}
+\subsection{Consistency models}
 
 
 \begin{wrapfigure}{r}{0.5\linewidth}
@@ -181,7 +181,7 @@ CA Database delivers consistency and availability but doesn't allow for partitio
 \end{wrapfigure}
 
 
-For explaining the the concepts within consistency i will use the a paper by Ballis et al on "Highly available transactions"\cite{10.14778/2732232.2732237} that displays a good model for preventing the different consistency models and their relation to other consistency models.\\
+For explaining the the concepts within consistency i will use the a paper by Ballis et al on "Highly available transactions"\cite{10.14778/2732232.2732237} that displays a good model for presenting the different consistency models and their relation to other consistency models.\\
 
 
 \subsubsection{Strict Serializability}
@@ -192,11 +192,17 @@ Formally Strict Serializatbility is define as as Serviceable system that is comp
 "A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}
 Here it should be clarified that the Obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serialzable system with the time constraint from Linearizability.
 
-\subsubsection{Serialzable}
+\subsubsection{Serializable}
 
-Serializability defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}
+Serializability is a relaxation of Strict Serializability that foregoes that real time constraint, it defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}
+
+The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole, this means that in case of a network partition some or all notes will be stuck until the network is healed. Futher as no real time constraint,  we can observe stale reads, This occurs when Process A completes a Write, Then process B begin a read, the read is not guaranteed to observe the Write from process A, 
 
 \subsubsection{Repeatable Read}
+
+Repeatable Read closely resembles a Serializable system, however in RR,
+
+
 
 \subsubsection{Cursor Stability}
 
