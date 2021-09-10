@@ -438,21 +438,25 @@ visual studio being unable to load .dmp files to debug crashed applications from
 
 Visual studio remote debugger not working
 
-\subsubsection{Azuer}
+\subsubsection{Azure}
 
 Configuration issues,
 
 Cluster cecoming unhealty/corrupt and nodes not being configred correctly after a reimage.
 
-\subsection{Introduction}
 
-The Goal of the experiment to to investigate weather Service Fabric is compliance with ACID or not,
+\subsection{Running the test}
 
+Steps.
 
-\subsection{Tooling}
+1 start Service Fabric cluster in azure.
+2. Add Jepsen node to Vlan of the cluster.
+3. Deploy SF application to the cluster. This is currently done via Visual studio but could also be automated from the jepson node.
+4. Deploy Jepsen code to the Jepsen node.
+5. Run Jepsen test.
+6. Retrive Test data from test node.
+7. Clean up.
 
-
-%LaTeX hints are provided in \cref{chap:latexhints}.
 
 %\blinddocument
 
