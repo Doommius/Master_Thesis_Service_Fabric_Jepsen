@@ -10,13 +10,11 @@
             [cheshire.core :as json]
             [slingshot.slingshot :refer [throw+ try+]]))
 
-(def dir "/opt")
-(def binary "consul")
-(def config-file "/opt/consul.json")
+(def dir "/mnt/sfroot/_App/JepsenType_App1/JepsenAPIStorePkg.Code.1.0.0/")
+(def binary "JepsenAPIStore")
+(def config-file "/mnt/sfroot/_App/JepsenType_App1/JepsenAPIStorePkg.Config.1.0.0/Settings.xml")
 ;; TODO Condense these into `dir`, we don't need to sprawl these files in tests
-(def pidfile "/var/run/consul.pid")
 (def logfile "var/log/sfnode/sfnodelog")
-(def data-dir "/var/lib/consul")
 (def retry-interval "5s")
 
 (defn db
@@ -28,10 +26,11 @@
             (info node "Configuring cluster")
 
             (info node "Cluster Configure")
+      
             )
 
     (teardown! [_ test node]
-     (info node "Cleaning up Cluster killed")
+     (info node "Cleaning up Cluster")
 
       (info node "Cluster Cleaned"))
 

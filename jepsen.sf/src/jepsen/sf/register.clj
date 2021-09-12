@@ -26,26 +26,26 @@
         (case (:f op)
           :read (let [consistency (:consistency test)
                       res (if consistency
-                            (c/get client k consistency)
-                            (c/get client k))
+                            (c/getsf client k consistency)
+                            (c/getsf client k))
                       v (-> res c/parse :value)]
                   (assoc op :type :ok :value (independent/tuple k v)))
 
           :write (let [consistency (:consistency test)
                         _ (if consistency
-                           (c/put! client k value consistency)
-                           (c/put! client k value))]
+                           (c/putsf! client k value consistency)
+                           (c/putsf! client k value))]
                    (assoc op :type :ok))
 
           :cas   (let [consistency (:consistency test)
                        [value value'] value
                        res (if consistency
-                             (c/cas! client
+                             (c/cassf! client
                                      k
                                      value
                                      value'
                                      consistency)
-                             (c/cas! client
+                             (c/cassf! client
                                      k
                                      value
                                      value'))]
