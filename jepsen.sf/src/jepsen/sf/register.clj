@@ -16,7 +16,7 @@
 (defrecord Client [client]
   client/Client
   (open! [this test node]
-    (let [client (str "http://" (net/ip (name node)) ":8080/api/Votes")]
+    (let [client (str "http://" (net/ip (name node)) ":35847/api/Votes")]
       (assoc this :client client)))
 
   (invoke! [_ test op]

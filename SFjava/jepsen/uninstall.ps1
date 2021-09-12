@@ -1,4 +1,0 @@
-
-Remove-ServiceFabricApplication fabric:/jepsen 
-Unregister-ServiceFabricApplicationType jepsenType 1.0.0
-Remove-ServiceFabricApplicationPackage jepsen
