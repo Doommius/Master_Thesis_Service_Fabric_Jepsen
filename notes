@@ -1,0 +1,57 @@
+Service fabric:
+	connect in-home/neighborhood compute as a edge network, and use it as a CDN.
+
+Federation:
+	Connect a group of systems and this allows for failture detection via seeing if a system is in the federation.
+		Check if if the currect primary/master is still alive.
+	Planatary scale system: thats a new one.
+	Allows for multiple primaries/leaders
+	Allows for building replicated state machines.
+	Target replicate set size is maintained, and allows for replicates to go down temp for updates etc, but if one goes down permanentely it will spawn a new one.
+
+ 
+
+ Notes
+ https://dl.acm.org/doi/pdf/10.1145/3190508.3190546
+ https://github.com/Microsoft/service-fabric/tree/master/docs/architecture
+ https://github.com/microsoft/service-fabric
+ https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-controlled-chaos
+ 
+
+
+
+Jepson notes/reading
+ https://aphyr.com/posts/294-call-me-maybe-cassandra
+ https://jepsen.io/analyses/postgresql-12.3
+
+
+https://www.youtube.com/watch?time_continue=5&v=eSaFVX4izsQ&feature=emb_title
+
+
+Service Fabric:
+
+
+ Things that should be done of part of the thesis
+
+ Study of the Service Fabric framework
+
+ Study of Jepsen analysis, backround and how it can be applied to SF
+
+Experiments and testing of the system via a  test.
+
+
+Data analasisys step and results from the experiments
+
+Reporting findings and write report.
+
+
+
+
+Thigs to read up on
+https://github.com/aphyr/distsys-class
+
+snapshot isolation
+Wall clock related to partioning and lost writes, timeouts, and dirty writes
+
+Talk to the engineers where things could fail.
+
