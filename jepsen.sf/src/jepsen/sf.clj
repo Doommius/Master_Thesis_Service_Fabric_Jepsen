@@ -3,7 +3,7 @@
   (:require [clojure.tools.logging :refer [debug info warn]]
             [clojure.string :as str]
             [jepsen.cli :as cli]
-            [jepsen.os.debian :as debian]
+            [jepsen.os.ubuntu :as ubuntu]
             [jepsen.checker :as checker]
             [jepsen.generator :as gen]
             [jepsen.nemesis :as nemesis]
@@ -30,7 +30,7 @@
     (merge tests/noop-test
            opts
            {:name (str "sf " (:version opts) " " workload-name)
-            :os debian/os
+            :os ubuntu/os
             :db db
             :initialized? (atom false)
             :nemesis nemesis

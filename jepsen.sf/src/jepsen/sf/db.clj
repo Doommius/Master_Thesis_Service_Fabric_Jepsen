@@ -14,9 +14,7 @@
 (def binary "JepsenAPIStore")
 (def config-file "/mnt/sfroot/_App/JepsenType_App1/JepsenAPIStorePkg.Config.1.0.0/Settings.xml")
 ;; TODO Condense these into `dir`, we don't need to sprawl these files in tests
-(def pidfile "/var/run/consul.pid")
 (def logfile "var/log/sfnode/sfnodelog")
-(def data-dir "/var/lib/consul")
 (def retry-interval "5s")
 
 (defn db
@@ -28,10 +26,11 @@
             (info node "Configuring cluster")
 
             (info node "Cluster Configure")
+      
             )
 
     (teardown! [_ test node]
-     (info node "Cleaning up Cluster killed")
+     (info node "Cleaning up Cluster")
 
       (info node "Cluster Cleaned"))
 
