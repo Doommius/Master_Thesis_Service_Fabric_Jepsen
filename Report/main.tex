@@ -224,20 +224,12 @@ Repeatable Read closely resembles a Serializable system, however in RR,
 
 Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential consistency, There exist 2 more within common use, these two are Causal+ Consistency and  Eventual Consistency. They differ in way the consistency is handled by all end up in the same state eventually.
 
-\subsection{Isolation levels}
 
-The Isolation level as defined by the ISO/IEC 9075 standard which defines SQL, This means that any database system should present to what level that they follow the isolation levels. in this we have 4 levels that can lead to unintended behavior within a single transaction.
 
-The 4 Isolation levels are defined as:
-read uncommitted
-       The read uncommitted does not issue shared lock, which allows session S2 write access to the data S1 is reading.\textcolor{red}{write more in dept}
- read commited
- \textcolor{red}{write more in dept}
-repeatable read
-\textcolor{red}{write more in dept}
-serializable
-\textcolor{red}{write more in dept}
 
+
+
+\subsection{Faults, manifestation, and causes}
 
 
 First the 3 types of behavior is explained as these are used to explain the 4 levels of isolation. the are categorized as the 3 below.
@@ -256,7 +248,7 @@ repeatable read	no	no	y
 serializable	no	no	no
 \textcolor{red}{Maybe also include something about snapshot isolation}
 
-\subsection{Faults and manifistation}
+
 
 'Dirty read' is when a S1 can read data that S2 has written but not yet committed, It is considered dirty as S2 can rollback the transaction where S1 read data that must be considered non existent. \textcolor{red}{Make example diagram}
 \\
@@ -267,11 +259,16 @@ The Third and last type is phantom read which is a special case of non-repeatabl
  \textcolor{red}{Make example diagram}
 
 
+\subsubsection{dirty read}
+\subsubsection{Non-repeatable read and}
+\subsubsection{Phantom read}
+
+\subsubsection{Long Fork}
 
 
 
-\chapter{Jepsen}
 
+\section {Jepsen}
 
 \subsection{Introduction}
 "
@@ -335,12 +332,6 @@ https://aphyr.com/posts/291-call-me-maybe-zookeeper
 
 
 
-
-
-
-
-\subsection{methods used in Jepsen tests}
-
 \subsection{related work to Jepsen}
 
 
@@ -364,24 +355,65 @@ Checker. PLDI ’10, 2010.
 
 
 
-\chapter{Modern Datastores}
 
 
-\section{Service Fabric}
+
+
+\section{Modern Datastores}
+
+
 
 \subsection{Introduction}
+
+The Thesis will primacy focus on Service Fabrics but investigation into other data stores in also done to allow comparisons and investigation into what different models affect the behavior of the database systems.
+
+\subsection{Service Fabric}
+
+
+\subsubsection{Introduction}
 
 Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers, one of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.
 
 
-\subsection{Structure of the Framework}
+
+\subsubsection{System Architecture}
+
+The architecture behind Service Fabric is built via a layered approach, that by Microsoft's words allow developers to write applications that are highly Available, Saleable, manageable and testable, 
 
 
-\subsection{DataStore}
+
+\subsubsubsection{Transport subsystem}}
+The transport subsystem implements a point-to-point datagram communication channel. This channel is used for communication within service fabric clusters and communication between the service fabric cluster and clients. It supports one-way and request-reply communication patterns, which provides the basis for implementing broadcast and multicast in the Federation layer. The transport subsystem secures communication by using X509 certificates or Windows security. This subsystem is used internally by Service Fabric and is not directly accessible to developers for application programming.
+
+\subsubsubsection{Federation subsystem}
+In order to reason about a set of nodes in a distributed system, you need to have a consistent view of the system. The federation subsystem uses the communication primitives provided by the transport subsystem and stitches the various nodes into a single unified cluster that it can reason about. It provides the distributed systems primitives needed by the other subsystems - failure detection, leader election, and consistent routing. The federation subsystem is built on top of distributed hash tables with a 128-bit token space. The subsystem creates a ring topology over the nodes, with each node in the ring being allocated a subset of the token space for ownership. For failure detection, the layer uses a leasing mechanism based on heart beating and arbitration. The federation subsystem also guarantees through intricate join and departure protocols that only a single owner of a token exists at any time. This provides leader election and consistent routing guarantees.
+
+\subsubsubsection{Reliability subsystem}
+The reliability subsystem provides the mechanism to make the state of a Service Fabric service highly available through the use of the Replicator, Failover Manager, and Resource Balancer.
+
+The Replicator ensures that state changes in the primary service replica will automatically be replicated to secondary replicas, maintaining consistency between the primary and secondary replicas in a service replica set. The replicator is responsible for quorum management among the replicas in the replica set. It interacts with the failover unit to get the list of operations to replicate, and the reconfiguration agent provides it with the configuration of the replica set. That configuration indicates which replicas the operations need to be replicated. Service Fabric provides a default replicator called Fabric Replicator, which can be used by the programming model API to make the service state highly available and reliable.
+The Failover Manager ensures that when nodes are added to or removed from the cluster, the load is automatically redistributed across the available nodes. If a node in the cluster fails, the cluster will automatically reconfigure the service replicas to maintain availability.
+The Resource Manager places service replicas across failure domains in the cluster and ensures that all failover units are operational. The Resource Manager also balances service resources across the underlying shared pool of cluster nodes to achieve optimal uniform load distribution.
+\subsubsubsection{Management subsystem}
+The management subsystem provides end-to-end service and application lifecycle management. PowerShell cmdlets and administrative APIs enable you to provision, deploy, patch, upgrade, and de-provision applications without loss of availability. The management subsystem performs this through the following services.
+
+Cluster Manager: This is the primary service that interacts with the Failover Manager from reliability to place the applications on the nodes based on the service placement constraints. The Resource Manager in failover subsystem ensures that the constraints are never broken. The cluster manager manages the lifecycle of the applications from provision to de-provision. It integrates with the health manager to ensure that application availability is not lost from a semantic health perspective during upgrades.
+Health Manager: This service enables health monitoring of applications, services, and cluster entities. Cluster entities (such as nodes, service partitions, and replicas) can report health information, which is then aggregated into the centralized health store. This health information provides an overall point-in-time health snapshot of the services and nodes distributed across multiple nodes in the cluster, enabling you to take any needed corrective actions. Health query APIs enable you to query the health events reported to the health subsystem. The health query APIs return the raw health data stored in the health store or the aggregated, interpreted health data for a specific cluster entity.
+Image Store: This service provides storage and distribution of the application binaries. This service provides a simple distributed file store where the applications are uploaded to and downloaded from.
+\subsubsubsection{Hosting subsystem}
+The cluster manager informs the hosting subsystem (running on each node) which services it needs to manage for a particular node. The hosting subsystem then manages the lifecycle of the application on that node. It interacts with the reliability and health components to ensure that the replicas are properly placed and are healthy.
+
+\subsubsubsection{Communication subsystem}
+This subsystem provides reliable messaging within the cluster and service discovery through the Naming service. The Naming service resolves service names to a location in the cluster and enables users to manage service names and properties. Using the Naming service, clients can securely communicate with any node in the cluster to resolve a service name and retrieve service metadata. Using a simple Naming client API, users of Service Fabric can develop services and clients capable of resolving the current network location despite node dynamism or the re-sizing of the cluster.
+
+\subsubsubsection{Testability subsystem}
+Testability is a suite of tools specifically designed for testing services built on Service Fabric. The tools let a developer easily induce meaningful faults and run test scenarios to exercise and validate the numerous states and transitions that a service will experience throughout its lifetime, all in a controlled and safe manner. Testability also provides a mechanism to run longer tests that can iterate through various possible failures without losing availability. This provides you with a test-in-production environment.
+
+\subsubsection{Reliable Collections}
 
 So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage
 
-\subsection{Design of the Datastore}
+\subsubsection{Design of the Datastore}
 
 The Data-store is designed as independent partitions where the user is in charge of querying the partitions separately for all data to be returned. eg Each leader only has the data in it's partition and is unable to query other partitions for data. This causes the issue of handling data partitioning and querying on the user.
 
@@ -395,42 +427,75 @@ client A wants to read all data from the datastore and starts reading from node 
 
 
 
-\subsection{Promises}
+\subsubsection{Promises}
 
 
-\subsection{Configuration}
+\subsubsection{Configuration}
 
 
 What we are able to tweak
 
 
-\subsection{What aspects of the service fabric are we  we'd like to test}
+\subsubsection{What aspects of the service fabric are we  we'd like to test}
 
 Reliable collections.
 
-\subsection{What does service Fabric promise wrt ACID}
+\subsubsection{What does service Fabric promise wrt ACID}
 
 https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections-transactions-locks
 
-\section{Cassadra}
+\subsection{Cassadra}
 
-\section{Postgres}
+\subsection{Postgres}
 
-\section{Mongodb}
+\subsection{Mongodb}
 
-\section{Future Technologies that can have an impact}
+\subsection{Future Technologies that can have an impact}
  Atomic clocks ?    
 
 
 
 
-\chapter{Performing a Jepses test}
+\chapter{Jepsen Test on Service Fabric Reliable collections}
 
-\subsection{Designing the experiment}
+\section{Introduction}
 
-\subsection{Development}
 
-\subsection{Issues}
+\subsection{Test Goal}
+
+
+\section{Design}
+
+\subsection{Infrastructure}
+
+\subsection{Node Types}
+
+\subsubsection{SF node}
+
+\subsection{Jepsen Host name}
+
+\section{Services}
+
+\subsection{SF services}
+
+
+\subsection{Reliable collections service}
+
+\subsection{Front end}
+
+
+\subsection{Jepsen Service}
+
+\subsection{Considerations}
+
+
+\section{Implementation}
+
+\subsection{SF Services}
+
+
+
+\subsubsection{Issues}
 
 Linux and windows versions being far from interchangeable and applications and services that function on windows/local machines fail crash on deployed cluster
 
@@ -445,7 +510,10 @@ Configuration issues,
 Cluster cecoming unhealty/corrupt and nodes not being configred correctly after a reimage.
 
 
-\subsection{Running the test}
+\subsection{Jepsen Service}
+
+
+\section{Execution of the test}
 
 Steps.
 
@@ -458,6 +526,11 @@ Steps.
 7. Clean up.
 
 
+\section{Results}
+
+
+
+
 %\blinddocument
 
 \chapter{Related Work}
@@ -467,7 +540,7 @@ Steps.
 
 \section*{Outlook}
 
-All links were last followed on March 17, 2018.
+
 
 
 
