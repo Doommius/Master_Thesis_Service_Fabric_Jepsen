@@ -479,63 +479,82 @@ The technique used for selecting placement of nodes is done via Simulated Anneal
 
 \subsubsection{Reliable Collections}
 
+Reliable collections provide stateful services in Service fabric via Reliable Directories and reliable Queues that are available for C# and java programming, and are promised to be:
+\begin{itemize}
+    \item Available and Fault-tolerant via replication,
+    \item Persistent via disk
+    \item Efficient via asynchronous via API that are non blocking. 
+    \item Transnational via APIs with ACID semantics.
+\end{itemize}
+
+One of the key differences between storage systems build on SF and other highly-available systems is that states are kept locally in the replica while also being made highly-available, this causes most reads to be local.
+
+Writes are relayed from the primary replica to secondary replicas via passive replication and are considered complete when the majority of secondaries acknowledges it. the relaxations allow an application to achieve weaker consistency by relaxing where a read can go, eg always read from primary to read from secondary. 
+
+SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable,available, self-*, and upgradable because the lower layers assure consistency"\cite{SFpaper} 
+
+\paragraph{Consistency models/isolation levels}
+SF reliable collections promise two Select-able consistency models that the user can pick. Repeatable Read and Snapshot isolation. eg there is no promise about Serializability of the transactions.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l|l|l}
+     & \multicolumn{2}{c@{}}{\text{Role}}\\
+    \text{Operation} & Primary & Secondary \\
+        Single Entity Read & Repeatable Read & Snapshot\\
+        Enumeration, Count & Snapshot & Snapshot
+    \end{tabular}
+    \caption{isolation level defaults for Reliable Dictionary and Queue operations.}
+    \cite{SF_RC_Transactions}
+\end{table}
+
+\subsubsection{Programming for Service Fabric}
 
 
-So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage
+\subsection{Comparison}
 
-\subsubsection{Design of the Datastore}
-
-The Data-store is designed as independent partitions where the user is in charge of querying the partitions separately for all data to be returned. eg Each leader only has the data in it's partition and is unable to query other partitions for data. This causes the issue of handling data partitioning and querying on the user.
-
-Eg if we have 5 partitions out endpoint is required for query partition 1-5 prior to being able to return data to the client,
-
-Already at this point we are unable to guarantee consistent data as any read/write occurring doing a read of the portion can cause the stale/dirty reads from the clients perspective.
-
-An exsample.
-
-client A wants to read all data from the datastore and starts reading from node 1-5 sequentially. halfway into the transaction Client B writes a value to node 1 and 4. Client A's transaction will now be dirty as it will contain data from a future commit on node 4 and at the same time stale data from node 1
-
-
-
-\subsubsection{Promises}
-
-
-\subsubsection{Configuration}
-
-
-What we are able to tweak
-
-
-\subsubsection{What aspects of the service fabric are we  we'd like to test}
-
-Reliable collections.
-
-\subsubsection{What does service Fabric promise wrt ACID}
-
-https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections-transactions-locks
+In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Redis Therefor comparisons will be made to these as they are compared in a lot of aspect, the investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
 
 \subsection{Cassadra}
 
-\subsection{Postgres}
+\subsection{Redis}
 
-\subsection{Mongodb}
-
-\subsection{Future Technologies that can have an impact}
- Atomic clocks ?    
-
-
+\subsection{Dynamo}
 
 
 \chapter{Jepsen Test on Service Fabric Reliable collections}
 
 \section{Introduction}
 
+The Goal of the thesis was to attempt to preform a Jepsen test on service fabric with it's reliable collection as the data store feature that powers a lot of the services being the target of this endeavor. To preform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service fabric core components. there for a few different applications and services need to be learnt, understood, designed, implemented, test, executed, and at last the data generated from this can be analyzed.
+\begin{itemize}
+    \item Learning the required tools to implement the services and applications in the first place. C#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself
+    \item Understanding the problem, requirement, topology, architectures and how we want to test these things
+    \item Designing the Services, Libraries, APIs, testing suite, and the infrastructure and networking of the cluster and azure.
+    \item implement the  Services, Libraries, APIs and testing suite required for things to talk to each other.
+    \item Test all the code and configurations and ensure things work as intended.
+    \item execute the test itself
+    \item analyse the data from the test.
+\end{itemize}
+
+I will only write deeper about designing, implementing testing, executing and analysing the results. however this does not mean that the learning and understanding phase of the project was any smaller, quite the contrary, Learning 2 new programming languages that I've never interacted with before isn't a easy task, adding in the complexity of write code for cloud framework that i had no prior experience working on didn't help either. spicing it with up with outdated documentation, incompatibility between versions of the framework and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute forcing solutions to a lot of issues due to lacking features on the Linux version of the cluster.
+
+\section{Design & implementation}
+The Design of the services required for preforming the Jepsen test were designed on the fly as no prior experience was had with Service Fabric, Jepsen, C# or Clojure.
+\subsection{Initial Design}
+
+The initial design of the of the testing suite contained two applications, A stateful service Fabric application and a Clojure application running the Jepsen test.
+
+\subsubsection{Service Fabric Statefull Service}
+
+The Service Fabric stateful service should contain the desired operation that our jepsen test can interact with, the first designed endpoints were insert/add, Update, Check and set, delete and delete all on a reliable directory class.It would be implemented using C# as the lack of documentation for java made this this seem easier in the beginning and due to all documentation being in C#. The service would expose these end point via a web endpoint and kestrel was selected for this as it was a native provided already integrated into SF and was the one most ex samples used and was therefor deemed the safest choice to proceed with.
+
+A diagram of the service looks as the following.
+
+\textcolor{red}{TODO Draw diagram showing the first service}
 
 
-\subsection{Test Goal}
 
-
-\section{Design}
 
 \subsection{Infrastructure}
 
@@ -561,6 +580,12 @@ https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-se
 
 
 \section{Implementation}
+
+
+Designing the test started with a basic idea of what was needed in terms of services and infrastructure was 2 applications. a Service fabric stateful service that made itself available to the Jepsen service via an API and the jepsen Service itself running on a separate machine in the cluster that would control the cluster nodes via ssh as well as in charge of sending the required requests to the service. These assumptions was where the first code was written to both learn C# and clojure as well as learning the required frameworks needed as well.
+
+This turned out not to be the case as SF only allows writes to the primary and if you need more primaries you need to add a 2nd layer of services to both forward write requests to the correct portion or to query all partition if data is needed from the whole cluster. Then the issue arouse that a lot of my Clojure code was fairly hard coded which often broke when changes in the cluster occurred, combined with 
+
 
 \subsection{SF Services}
 
@@ -616,6 +641,9 @@ Steps.
 
 \section*{Outlook}
 
+
+\section{Future Work}
+ Atomic clocks ?    
 
 
 
