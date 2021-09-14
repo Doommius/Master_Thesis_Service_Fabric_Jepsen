@@ -67,7 +67,6 @@
     \normalfont
     Mark Jervelund \\
     Mark@jervelund.com \\
-    Doommius.com \\
     \vspace*{9\baselineskip}
     \normalfont
 	\includegraphics[scale=1]{logos/SDU_BLACK.png}
@@ -89,39 +88,41 @@
 \section*{Abstract}
 
 Databases allow modern society to store, manage and distribute data at a previously unprecedentedly scale. having data is a normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require much high performance, storage, latency and  availability then current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
-
+\vspace{5mm}
 
 Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
 \vspace{5mm}
 First, I Present ACID \& Base, their constraints, what faults occur in database systems, how their manifests themselves, whats the underlying causes often are, and what limits the ACID properties imposes on a given system. Here Base will be introduced to explain what relaxations are introduced to a system where gaining the desire results for certain use cases. \\
-
+\vspace{5mm}
 Then, I Present Jepsen, a CLojure framework\cite{jepsonio} developed by K. Kingsbury that allow for testing of distributed systems, This is solved via a direct serialization graph (DSG) and queries to the target system that are carefully chosen that allows for traceability, and recoverability.  \\
-
+\vspace{5mm}
 
 Then, I present Azure Service Fabric(SF), SF is a distributed container orchestration system made my Microsoft, that allows for hosting of services, or apps. It includes a few different built in functions, but the primary interest here lie within the reliable containers aspect of SF, and what claims Microsoft makes concerning the behaviour of this data.\\
-
+\vspace{5mm}
 Then, I will present what modern database systems promise, what properties of ACID they follow, which they relax, and which they disregard, and well as what they gain, and which tradeoffs they suffer, Here a main focus will be on Service Fabric.\\
-
+\vspace{5mm}
 Then I will present the attempt to implement and execute a Jepsen test against service Fabrics reliable containers, and compare these results to the claims Microsoft has made.\\
-
+\vspace{5mm}
 Finally, I will present how the ACID properties compare to modern uses cases of databases, do we need to follow them strictly or can simply disregard them in some uses cases? What are the exceptions, and what is there to gain ?\\
 
 
 \chapter{Introduction}
 
 Highly Distributed systems are becoming more and more common as the world grows evermore interconnected, faster paced, increasing data driven with higher expectations of services and product. where the end user expects reliability, availability combined with low- latency and cost, How do we guarantee this is a distributed system that spans the planet. Is it even possible to get both, and is it even needed in most use cases?\\
-
+\vspace{5mm}
 Most people are familiar with how YouTube, Facebook, Google and Reddit behave. What quirks they sometimes present, Most people remember the YouTube video counter that got stuck around 300, and didn't update for a while, The reason it got stuck was induced, however the number it got stuck on was not, The system was designed to stop at 301, but often went higher. This is an example of the system not being entirely consistent, most nodes where in the correct state of stopping counting when the number got larger then 300, however as some nodes around the globe weren't in an consistent state these still counted the views onto the displayed counter when they were supposed to have been sent to a different table that verified the views before considering them legitimate. This number is still not consistent around the world however for human use cases the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about. a lot of user facing services aren't required to be ACID compliant, however there are use cases where this can have an impact is when dealing with data that is produced and consumed in real time, if this is finance, automated or autonomous systems, or other areas where having consistent, atomic and isolated transactions are of the utmost importance. these cases are where it doesn't matter what server we are querying the information from it has to be the most recent sample, and if we at any point are able to query stale data we end up being at the risk of either making an illegal transaction or an autonomous system making a wrong decision, This can a trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users account. or autonomous vehicle that might making decisions with stale data that can lead to fatal accidents. \\
-
+\vspace{5mm}
 How do we test and verify that the systems that handle tasks that require compliance with ACID also do so. To understand this we first need to understand the basis for and expected behavior of ACID and the different levels of each of the properties of ACID.
 
 
+\newpage
 \section{Database transaction models}
 
 Database and data store models can be categories into two main groups, ACID and BASE. Consistent or available. The underlying reason for this limitation is either latency between nodes in a system, scale-ability both in terms of storage or Capacity in terms of queries to the system. Both models of designing the system has it's trade-offs which will be presented later in the paper.
 \subsection{ACID}
 
-The ACID Model of handling database transactions is considered monolithic by some, however they still serve a vital a critical function for handling critical systems that require atomicity, consistency across the entire data-set, reliability, and durability
+The ACID Model of handling database transactions is considered monolithic by some, however they still serve a vital a critical function for handling critical systems that require atomicity, consistency across the entire data-set, reliability, and durability.\\
+\vspace{5mm}
 The ACID acronym is defined as follows in the DBMS book\cite{DBMSbook}.
 
 \begin{itemize}
@@ -143,7 +144,7 @@ ACID therefor offers strong consistency with rigorous handling of transaction is
 
 \subsection{BASE}
 The BASE model allows designing of a system where we value availability, throughput and scale-ability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. This can benefit some applications where overwriting old data isn't an issue or where the newest version of data might not be required as long as it'll come eventually. The use for these databases are hugely beneficial for social media, logging, and other hyperscale system where consistency isn't required.\\
-
+\vspace{5mm}
 The Base Acronym was defined by Eric Brewer\cite{brewer2000towards} and is defined as follows.
 
 \begin{itemize}
@@ -161,15 +162,15 @@ The CAP Theorem was defined by Eric Brewer\cite{CAP} where it states that it is 
 It should be noted that the definitions of the terms differ from the definitions in ACID. They are all important when it comes to a distributed systems and their behaviors. firstly Consistency in ACID is define as constraints on the data. By the CAP consistency concept, ACID would follow Sequential consistency as defined by Lamport\cite{lamport1993how}: “the program behaves as if the memory accesses of all processes were interleaved and then executed sequentially.” while the consistency model in CAP is defined as Atomic Consistency (also called linearizability) is sequential plus a real-time constraint: “Unlike sequential consistency, linearizability implicitly assumes the notion of an observable global time across all processes. Operations are modeled by an interval which consists of the period of time between the invocation and response for the operation and each operation is assumed to take effect instantaneously at some point within this interval.” \cite{CSL-TR-95-685}
 
 as CAP states we can only have 2 of the 3 properties in any given data-share system. The three different options will be explained below.
+\begin{itemize}
+\item Consistency and Partition tolerance(CP) \\ A system that deliveries Consistency and Partition tolerance but the trade off here is Availability, If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols, and most distributed databases. an Example of a CP database would be MongoDB and Service Fabrics Reliable collections, These work by having partitions that contain a master and a set of replicates. The replicates simple follow the masters transaction log and apply it to their own data set. If the Primary becomes unavailable the Replicate with the most recent transaction log simply comes the new Master, doing this switch the partition becomes unavailable while the replicates catches up to the new master. this causes the network to remain consistent but limits availability.  \\
 
-CP Database, A system that deliveries Consistency and Partition tolerance but the trade off here is Availability, If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols, and most distributed databases. an Example of a CP database would be MongoDB and Service Fabrics Reliable collections, These work by having partitions that contain a master and a set of replicates. The replicates simple follow the masters transaction log and apply it to their own data set. If the Primary becomes unavailable the Replicate with the most recent transaction log simply comes the new Master, doing this switch the partition becomes unavailable while the replicates catches up to the new master. this causes the network to remain consistent but limits availability.  \\
+\item Availability and Partition tolerance (AP) \\ If our system foregoes Consistency, and deliverers availability and partition tolerance, In the case of a partition between nodes we keep serving from all nodes but in this case we might serve stale data and occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of a AP database would be Cassandra, where the CP have a master/replicate architecture, This would cover DNS, Caching systems and databases such as Cassandra. Cassandra uses a masterless architecture, It does mean that there is multiple points of failure rather then a single one. It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
 
-AP If our system foregoes Consistency, and deliverers availability and partition tolerance, In the case of a partition between nodes we keep serving from all nodes but in this case we might serve stale data and occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of a AP database would be Cassandra, where the CP have a master/replicate architecture, This would cover DNS, Caching systems and databases such as Cassandra. Cassandra uses a masterless architecture, It does mean that there is multiple points of failure rather then a single one. It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
+\item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. this results in a single node, or single cluster system as any distribution of the system introduces network instability and latency that would break the system. In this case it would cover single node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
+\end{itemize}
 
-CA Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. this results in a single node, or single cluster system as any distribution of the system introduces network instability and latency that would break the system. In this case it would cover single node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
-
-
-
+\newpage
 \subsection{Consistency models}
 
 
@@ -186,41 +187,53 @@ For explaining the the concepts within consistency i will use the a paper by Bal
 
 \subsubsection{Strict Serializability}
 
-For a system to be Strict Serializatbility, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.
+For a system to be Strict Serializatbility, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.\\
+\vspace{5mm}
 
 Formally Strict Serializatbility is define as as Serviceable system that is compatible with a Time dependent order.
-"A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}
+"A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}\\
 Here it should be clarified that the Obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serialzable system with the time constraint from Linearizability.
 
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Serializable}
 
-Serializability is a relaxation of Strict Serializability that foregoes that real time constraint, it defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}
+Serializability is a relaxation of Strict Serializability that foregoes that real time constraint, it defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
+\vspace{5mm}
 
 The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole, this means that in case of a network partition some or all notes will be stuck until the network is healed. Futher as no real time constraint,  we can observe stale reads, This occurs when Process A completes a Write, Then process B begin a read, the read is not guaranteed to observe the Write from process A, 
+
+\textcolor{red}{TODO Make Diagram}
 
 \subsubsection{Repeatable Read}
 
 Repeatable Read closely resembles a Serializable system, however in RR,
 
 
-
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Cursor Stability}
-
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Read committed}
-
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Read Uncommitted}
-
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Snapshot isolation}
-
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Monotonic atomic view}
-
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Linearizable}
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Sequential}
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Casual}
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Writes Follows Reads}
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Monotonic Reads}
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Monotonic Writes}
+\textcolor{red}{TODO Make Diagram}
 \subsubsection{Read your writes}
+\textcolor{red}{TODO Make Diagram}
 
 Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential consistency, There exist 2 more within common use, these two are Causal+ Consistency and  Eventual Consistency. They differ in way the consistency is handled by all end up in the same state eventually.
 
@@ -265,26 +278,23 @@ The Third and last type is phantom read which is a special case of non-repeatabl
 
 \subsubsection{Long Fork}
 
+\subsubsection{Split Brain}
+
+The Network is split into 2 or more parts where they each believe different truths,
 
 
+\subsection{Transient Anomalies}
 
-\section {Jepsen}
+Process 1 writes A, then process 1 tried to read A but a doesn't exist in the node, and later process a is able to read A
+
+\
+
+
+\section{Database Consistency testing}
+
+
 
 \subsection{Introduction}
-"
-Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems’ failure modes. In each analysis we explore whether the system lives up to its documentation’s claims.
-"\cite{jepsonio}
-\\
-
-Going from the above quite Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given, and in a world where distributed, hyper scale or even planetary scale systems are becoming the norm the way data storage is done is required to behave in an expected manner, the reason that expected manner is used rather than correct manner is that we may allow certain faults to occur and eventual consistency to allow for higher throughput applications and that some data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. //
-
-Two different examples of this is the YouTube 301 views that happened around 2015, where the number of views weren't globally distributed right away. while comments and likes were, this meant two things. //
-
-Comments were available globally in real time, while views would also commit globally doing low load times, or off hours to maximize utilization of resources.
-
-another more modern scenario where the real time data distribution and correctness is of the utmost importance is within transactions in the finance industry,  where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is non longer available, otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.//
-
-
 
 
 \subsection{Modern Database systems, and the trade offs they make.}
@@ -302,6 +312,22 @@ these checking are generally quite efficient and run in polynomial time, but the
 This means that this has been a giant scope project where case by case tests are predefined and where we only test for certain scopes, which more importantly mean that tests have been done but the test coverage haven't been perfect and a lot of anomalies are never detected.
 
 \textcolor{red}{Need to add some more to this section, add examples are past test, diagrams, papers etc}
+
+\subsection{Jepsen}
+"
+Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems’ failure modes. In each analysis we explore whether the system lives up to its documentation’s claims.
+"\cite{jepsonio}
+\\
+\vspace{5mm}
+
+Going from the above quite Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given, and in a world where distributed, hyper scale or even planetary scale systems are becoming the norm the way data storage is done is required to behave in an expected manner, the reason that expected manner is used rather than correct manner is that we may allow certain faults to occur and eventual consistency to allow for higher throughput applications and that some data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. //
+
+Two different examples of this is the YouTube 301 views that happened around 2015, where the number of views weren't globally distributed right away. while comments and likes were, this meant two things. //
+
+Comments were available globally in real time, while views would also commit globally doing low load times, or off hours to maximize utilization of resources.
+
+another more modern scenario where the real time data distribution and correctness is of the utmost importance is within transactions in the finance industry,  where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is non longer available, otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.//
+
 
 \subsection{State of the art.}
 
@@ -358,7 +384,7 @@ Checker. PLDI ’10, 2010.
 
 
 
-
+\newpage
 \section{Modern Datastores}
 
 
@@ -374,42 +400,86 @@ The Thesis will primacy focus on Service Fabrics but investigation into other da
 
 Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers, one of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.
 
-
+\includegraphics[scale=0.5]{Report/images/service-fabric-architecture.png}
 
 \subsubsection{System Architecture}
 
-The architecture behind Service Fabric is built via a layered approach, that by Microsoft's words allow developers to write applications that are highly Available, Saleable, manageable and testable, 
+The architecture behind Service Fabric is built via a layered approach, that by Microsoft's words allow developers to write applications that are highly Available, Saleable, manageable and testable. These layers are built on 5 Core and 2 supporting subsystems.  our main interest lies within the reliable collection so i will only be investigating the layers and services that lay below this.
 
 
 
-\subsubsubsection{Transport subsystem}}
-The transport subsystem implements a point-to-point datagram communication channel. This channel is used for communication within service fabric clusters and communication between the service fabric cluster and clients. It supports one-way and request-reply communication patterns, which provides the basis for implementing broadcast and multicast in the Federation layer. The transport subsystem secures communication by using X509 certificates or Windows security. This subsystem is used internally by Service Fabric and is not directly accessible to developers for application programming.
+\paragraph{Transport subsystem}
 
-\subsubsubsection{Federation subsystem}
-In order to reason about a set of nodes in a distributed system, you need to have a consistent view of the system. The federation subsystem uses the communication primitives provided by the transport subsystem and stitches the various nodes into a single unified cluster that it can reason about. It provides the distributed systems primitives needed by the other subsystems - failure detection, leader election, and consistent routing. The federation subsystem is built on top of distributed hash tables with a 128-bit token space. The subsystem creates a ring topology over the nodes, with each node in the ring being allocated a subset of the token space for ownership. For failure detection, the layer uses a leasing mechanism based on heart beating and arbitration. The federation subsystem also guarantees through intricate join and departure protocols that only a single owner of a token exists at any time. This provides leader election and consistent routing guarantees.
+The lowest layer in the core stack that provides secure communication within the cluster itself and between the cluster and clients. This functionality is provided via point to point communication channels that support one way and request reply patterns, in other terms UDP and TCP. This also provides basis for broadcast and multicast within the cluster. Security is handled via wither windows security or x509 certificates. (TODO these might be serving the name purpose and the documentation might just be odd.)
 
-\subsubsubsection{Reliability subsystem}
-The reliability subsystem provides the mechanism to make the state of a Service Fabric service highly available through the use of the Replicator, Failover Manager, and Resource Balancer.
+\paragraph{Federation subsystem}
 
-The Replicator ensures that state changes in the primary service replica will automatically be replicated to secondary replicas, maintaining consistency between the primary and secondary replicas in a service replica set. The replicator is responsible for quorum management among the replicas in the replica set. It interacts with the failover unit to get the list of operations to replicate, and the reconfiguration agent provides it with the configuration of the replica set. That configuration indicates which replicas the operations need to be replicated. Service Fabric provides a default replicator called Fabric Replicator, which can be used by the programming model API to make the service state highly available and reliable.
-The Failover Manager ensures that when nodes are added to or removed from the cluster, the load is automatically redistributed across the available nodes. If a node in the cluster fails, the cluster will automatically reconfigure the service replicas to maintain availability.
-The Resource Manager places service replicas across failure domains in the cluster and ensures that all failover units are operational. The Resource Manager also balances service resources across the underlying shared pool of cluster nodes to achieve optimal uniform load distribution.
-\subsubsubsection{Management subsystem}
-The management subsystem provides end-to-end service and application lifecycle management. PowerShell cmdlets and administrative APIs enable you to provision, deploy, patch, upgrade, and de-provision applications without loss of availability. The management subsystem performs this through the following services.
+The next subsystem in the stack is the Federation subsystem that uses the communication channels provided by the transport subsystem to gather the nodes in the system into a unified service fabric cluster, and provides system primitives that allow for Failure detection, leader Election and consistent routing within the distributed system.
 
-Cluster Manager: This is the primary service that interacts with the Failover Manager from reliability to place the applications on the nodes based on the service placement constraints. The Resource Manager in failover subsystem ensures that the constraints are never broken. The cluster manager manages the lifecycle of the applications from provision to de-provision. It integrates with the health manager to ensure that application availability is not lost from a semantic health perspective during upgrades.
-Health Manager: This service enables health monitoring of applications, services, and cluster entities. Cluster entities (such as nodes, service partitions, and replicas) can report health information, which is then aggregated into the centralized health store. This health information provides an overall point-in-time health snapshot of the services and nodes distributed across multiple nodes in the cluster, enabling you to take any needed corrective actions. Health query APIs enable you to query the health events reported to the health subsystem. The health query APIs return the raw health data stored in the health store or the aggregated, interpreted health data for a specific cluster entity.
-Image Store: This service provides storage and distribution of the application binaries. This service provides a simple distributed file store where the applications are uploaded to and downloaded from.
-\subsubsubsection{Hosting subsystem}
-The cluster manager informs the hosting subsystem (running on each node) which services it needs to manage for a particular node. The hosting subsystem then manages the lifecycle of the application on that node. It interacts with the reliability and health components to ensure that the replicas are properly placed and are healthy.
+The core of the subsystem is built around a SF-ring that was developed internally at Microsoft in the early 2000s, where both keys and nodes are mapped to a point in the ring, with keys being owned by the node closest to it in the ring. where each node also uses this ring to keep track of its immediate successor and predecessor nodes that it stores in a Neighborhood set, this set is then used by the Federation layer to run consistent membership and failure detection. Nodes also maintain long distance routing partners that are used for consistent routing.
 
-\subsubsubsection{Communication subsystem}
-This subsystem provides reliable messaging within the cluster and service discovery through the Naming service. The Naming service resolves service names to a location in the cluster and enables users to manage service names and properties. Using the Naming service, clients can securely communicate with any node in the cluster to resolve a service name and retrieve service metadata. Using a simple Naming client API, users of Service Fabric can develop services and clients capable of resolving the current network location despite node dynamism or the re-sizing of the cluster.
+The membership and Failure detection is doing using tow key design principles.
 
-\subsubsubsection{Testability subsystem}
-Testability is a suite of tools specifically designed for testing services built on Service Fabric. The tools let a developer easily induce meaningful faults and run test scenarios to exercise and validate the numerous states and transitions that a service will experience throughout its lifetime, all in a controlled and safe manner. Testability also provides a mechanism to run longer tests that can iterate through various possible failures without losing availability. This provides you with a test-in-production environment.
+Strongly Consistent membership and Decoupling Failure Detection from Failure Decision
+
+\begin{itemize}
+    \item \textbf{Strongly Consistent membership} All nodes must monitoring a given nodes status must agree on weather the node is up or down. for use in the SF ring this means that the all nodes on the node's Neighborhood set must agree on its status.
+    \item \textbf{Decoupling Failure Detection from Failure Decision}: failure detection protocols can lead to conflicting states, therefor the decision is decoupled from detection.
+\end{itemize}
+
+To solve the issues of decoupling the failure detection and decision that is used need distribute all decisions to the responsible nodes and ensure that these decisions are all done in a consistent and reliable manner. For the monitoring aspect of this s distributed monitoring and leasing solution is implemented by SF. This implementation solves this via Lease Renewal Request(LR) and LRack. A node is simply required to maintain valid leases from all of it's monitors and these leases have to be renewed every lease period, this leasing period is calculated based on round trip times but is typically around 30 s. If a node fails to renew any of these leases it considers moving itself from the set, and if a monitor misses a request from It it considers marked the monitor as failed. both these decisions need to be approved by a Arbitrator group. if a node fails to receive a LRack within a timeout based on round trip time it repeats the LR until it receives a LRack, Due to the nature of the SF-ring these monitor relations are symmetrical, but this Lease protocol is still run independently, there are however other cases, It a node fails the renewal process is stops renewing leases to any other nodes, or if a node detects a other node as having failed it stops sending renewal request to it. these 2 cases have the potential to cause inconsistencies if they were operating alone, however decision of deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
+
+The decision of deciding on failures is preformed by the Arbitrator group this is separate from the neighborhood set. They operates independently and have two it has two ways of deciding if a given node has failed. The way that the groups stays consistent when members join or leave the group is that when a Arbitrator joins the set, it initially rejects all requests in the first t seconds, this is done to prevent new Arbitrator making conflicting decisions with the excising nodes, and to prevent failed nodes to exist in the distributed membership protocol. this ensures that detected nodes leave before being forgotten.
+
+\begin{enumerate}
+    \item X detects Y as failed and sends fail(Y) to the arbitrator
+    \item The arbitrator Ads Y to a recently failed list and sends ack(fail(y)) containing a timeout for Y to X, if The arbitrator already marked X as having failed and ignores the request, 
+    \item If X receives this request it waits for the TO to claim Ys area of the ring. and if re receives no response within the timeout it leaves itself.
+\end{enumerate}
+
+If a node is already in the recently failed list it returns the same response as the the first reporter except it calculates in time since first detection so the portion of the ring is claimed by the neighbors at the same time. This also means that the routing can continue after to with a laxity added. as all routing request for a node are added to a queued if a node is marked a failed. and the queue is released after TO+laxity that allows a neighboring node to claim that part of the ring and allows to these routing request to be preform when by it's successors.
+
+If the case of two nodes report each other as failed the conflict is resolved either by majority, eg the node that was reported first to the most Arbitrators leave or an alternate variant that heals the membership if both nodes are healthy and allows both to stay. in cases of network congestion or partitions that result in multiple nodes detection each other as failed, in traditional distributed hash tables this can result in inconsistencies in the membership lists or ring. 
+
+The implementation in SF is presented as being failure tolerant towards cascade failures as the decision isn't made by the detectors themselves but by arbitrators. an example is used that if a given node is only dependent by it neighbors and ½ of them fails to renew it's lease it will leave itself. No mention here is written about how the node handles being fragmented into two partitions and rejoined later, but mentions that this approach scales to entire data centers, no mentioned about how it scales across regions or outside of data centers.
+
+\includegraphics[scale=0.3]{Report/images/servicefabric-fig-ring-topology.jpeg}
+
+SF-Ring and consistent routing.(need to rewrite/reword this to a more coherent sentence.)
+
+The Distributed Hash table used for service fabric routing is a evolution of SF-ring that was developed within Microsoft in the 2000s. The routing used offer symmetry and due to this it allows bidirectional routing that allow for lookup and routing via binary search, this allows SF to in practice routes message around the ring in a fast manner, with multiple routing options in that there always exists 2 routing partners on either side of the destination that both helps distributed the load and is able to route even with stale routing tables. Initially all packages were routed using this method however this has changed over the years, today the hash table is used to build a routing table and maintain it when a new node is added to the cluster, and ti route message to virtual addresses. After discovery a direct route is used via the destination IP address. 
+
+Routing tables work differently depending on the size of the cluster. however it is able to route in two ways, If the size of the routing table is smaller then the number of nodes a direct route is used, if there exist more nodes in the cluster then the routing tables it stitches to routing via routing tables to reduce memory consummation but causing an increase in time complexity to O(Log(n)) from O(1)
+
+Routing Tokens.
+Each node owns a token that includes a portion of the routing token it is responsible for. The sf-ring protocol ensures two properties, That each token is only owned by one node at any given time, and that eventually every token is owned by 1 node. This is ensure in the way that SF handles nodes joining and leaving the ring. Initially the bootstrap node owns the entire ring. after this inertial bootstrap node any joining node will split the ring segment between them.(TODO I was unable to find information on this precisely is handled however from the wording in the paper the initally split would be 50/50 and a third node would be 50/25/25?  is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done)
+
+
+These routing tokens are also used for leader election, Simply the owner of a given key is the owner.
+
+\paragraph{Reliability subsystem}
+The reliability subsystem is in charge of load balancing, replication and availability. These three aspects are provided via 3 services, Failover Manager, Naming and Resolution, and a Placement and Load Balancer service.
+
+The Failover Manager is running as stateful service, that has a instance running on each node in the cluster, that provide 3 actions, start a replica, move a replica, reconfiguration.
+
+\begin{itemize}
+\item \textbf{Create a replica} Create a new replica when instructed by the PLB
+\item \textbf{Move a replica} migrate a replica when instructed by the PLB to a different node.
+    \item \textbf{Reconfiguration} If a primary replica becomes unavailable to promotes a secondary as the new primary, in case the old primary comes back only it is demoted to secondary. 
+\end{itemize}
+
+A service called Failover Master Manager is also running that is able to restart the failure manager via a cached state in case it fails. in case the master fails it is able to rebuilt its state via the SF-ring, the Master Failover manager is running on the node who's token range contains ID0.
+
+The naming and resolution service maps instance names to endpoints that running services are listening on, this also allows for consistent routing from outside of the cluster via URI that doesn't change over a their lifetimes. 
+
+The Placement and Load Balancer(PLB) service is stateful and is in charge of placing replicas and instances of services at nodes and ensure even load throughout the cluster. they claim that unlike other solutions where services are hashed onto the ring in SF the PLB explicitly assigns each services replicas Primary and Secondaries to nodes in the Ring. it continually monitors the cluster for available resources to both assigned and migrate services to underutilized nodes and migrates services away from a node that is about to be upgraded or is overloaded due to a long workload spike.
+
+The technique used for selecting placement of nodes is done via Simulated Annealing, as it is presented to provide a near optimal solution as to where services can be placed, This way the system is modeled is via resource use in the system where a even load is desired, but some constraints need be met such as fault tolerance, avoiding replica co location and some service might have strict set of nodes to run on. 
+
 
 \subsubsection{Reliable Collections}
+
+
 
 So as mentioned above Service Fabric Contains stateful services, these use reliable collections that are in memory storage
 
@@ -494,7 +564,7 @@ https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-se
 
 \subsection{SF Services}
 
-\subsection{Local Dev setup]
+\subsection{Local Dev setup}
 
 docker run -i -d -p 19000:19000 -p 19080:19080 -p 80:80 -p 25102:25102 -p 25112:25112 dffdac13e6ad
 
