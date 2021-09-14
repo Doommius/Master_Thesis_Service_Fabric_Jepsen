@@ -1,29 +1,32 @@
-DOC  := main.tex
+filename=main
 
-RERUN := "(undefined references|Rerun to get (cross-references|the bars|point totals) right|Table widths have changed. Rerun LaTeX.|Linenumber reference failed)"
-RERUNBIB := "No file.*\.bbl|Citation.*undefined"
+pdf: ps
+	ps2pdf ${filename}.ps
 
-all: figs doc
+pdf-print: ps
+	ps2pdf -dColorConversionStrategy=/LeaveColorUnchanged -dPDFSETTINGS=/printer ${filename}.ps
 
-figs:
-	@$(MAKE) -C $@
+text: html
+	html2text -width 100 -style pretty ${filename}/${filename}.html | sed -n '/./,$$p' | head -n-2 >${filename}.txt
 
-doc: $(DOC:.tex=.pdf)
+html:
+	@#latex2html -split +0 -info "" -no_navigation ${filename}
+	htlatex ${filename}
 
-%.pdf: %.tex
-	pdflatex $<
-	@egrep -q $(RERUNBIB) $*.log && bibtex $* && pdflatex $<; true
-	@egrep -q $(RERUN) $*.log && pdflatex $<; true
-	@egrep -q $(RERUN) $*.log && pdflatex $<; true
+ps:	dvi
+	dvips -t letter ${filename}.dvi
 
-latexmk:
-	-latexmk -pvc -pdf $(DOC)
+dvi:
+	latex ${filename}
+	bibtex ${filename}||true
+	latex ${filename}
+	latex ${filename}
 
-purge:
-	-rm -f *.{aux,dvi,log,bbl,blg,brf,fls,toc,thm,out,fdb_latexmk}
+read:
+	evince ${filename}.pdf &
 
-clean: purge
-	$(MAKE) -C figs $@
-	-rm -f $(DOC:.tex=.pdf)
+aread:
+	acroread ${filename}.pdf
 
-.PHONY: all figs purge clean
+clean:
+	rm -f ${filename}.{ps,pdf,log,aux,out,dvi,bbl,blg}
