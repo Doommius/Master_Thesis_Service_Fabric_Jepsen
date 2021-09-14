@@ -170,7 +170,7 @@ numpages = {9}
 author = {Lamport, Leslie},
 title = {How to Make a Correct Multiprocess Program Execute Correctly on a Multiprocessor},
 year = {1993},
-month = {February},
+month = {2},
 abstract = {This paper was inspired by Kourosh Gharachorloo's thesis. The problem he addressed was how to execute a multiprocess program on a computer whose memory did not provide sequential consistency (see [35]), but instead required explicit synchronization operations (such as Alpha's memory barrier instruction). He presented a method for deducing what synchronization operations had to be added to a program. I realized that, if one proved the correctness of an algorithm using the two-arrow formalism of [33], the proof would tell you what synchronization operations were necessary. This paper explains how.},
 url = {https://www.microsoft.com/en-us/research/publication/make-correct-multiprocess-program-execute-correctly-multiprocessor/},
 pages = {779-782},
@@ -179,6 +179,32 @@ volume = {46},
 edition = {Also appeared as SRC Research Report 96},
 number = {7},
 }
+
+@inproceedings{SFpaper,
+author = {Kakivaya, Gopal and Xun, Lu and Hasha, Richard and Ahsan, Shegufta Bakht and Pfleiger, Todd and Sinha, Rishi and Gupta, Anurag and Tarta, Mihail and Fussell, Mark and Modi, Vipul and Mohsin, Mansoor and Kong, Ray and Ahuja, Anmol and Platon, Oana and Wun, Alex and Snider, Matthew and Daniel, Chacko and Mastrian, Dan and Li, Yang and Rao, Aprameya and Kidambi, Vaishnav and Wang, Randy and Ram, Abhishek and Shivaprakash, Sumukh and Nair, Rajeet and Warwick, Alan and Narasimman, Bharat S. and Lin, Meng and Chen, Jeffrey and Mhatre, Abhay Balkrishna and Subbarayalu, Preetha and Coskun, Mert and Gupta, Indranil},
+title = {Service Fabric: A Distributed Platform for Building Microservices in the Cloud},
+year = {2018},
+isbn = {9781450355841},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3190508.3190546},
+doi = {10.1145/3190508.3190546},
+abstract = {We describe Service Fabric (SF), Microsoft's distributed platform for building, running,
+and maintaining microservice applications in the cloud. SF has been running in production
+for 10+ years, powering many critical services at Microsoft. This paper outlines key
+design philosophies in SF. We then adopt a bottom-up approach to describe low-level
+components in its architecture, focusing on modular use and support for strong semantics
+like fault-tolerance and consistency within each component of SF. We discuss lessons
+learned, and present experimental results from production data.},
+booktitle = {Proceedings of the Thirteenth EuroSys Conference},
+articleno = {33},
+numpages = {15},
+keywords = {failure detection, microservices, distributed systems, production systems, scheduling},
+location = {Porto, Portugal},
+series = {EuroSys '18}
+}
+
+
 
 
 
