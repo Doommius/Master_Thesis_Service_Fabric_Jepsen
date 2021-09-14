@@ -2,12 +2,11 @@ sudo apt update
 sudo apt upgrade
 sudo apt install -y leiningen expect iproute2
 echo "SSH KEYS: Start"
-FILE=/home/jervelund/jepsen.sf/SF_cluster.key
-if [ -f "$FILE" ]; then
-    echo "SSH KEYS: $FILE exists. assuming ssh keys are already installed"
+if [ -f "/home/jervelund/jepsen.sf/SF_cluster.key" ]; then
+    echo "SSH KEYS: Key exists. assuming ssh keys are already installed"
     echo "SSH KEYS: Aassuming ssh keys are already installed"
 else
-    echo "SSH KEYS: $FILE Generating SSH key and installing it to cluster."
+    echo "SSH KEYS: KEY Generating SSH key and installing it to cluster."
     expect gen_install_sshkey.expect
 fi
 echo "SSH KEYS: Complete"
