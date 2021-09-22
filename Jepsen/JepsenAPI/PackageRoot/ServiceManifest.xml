@@ -2,8 +2,7 @@
 <ServiceManifest Name="JepsenAPIPkg"
                  Version="1.0.0"
                  xmlns="http://schemas.microsoft.com/2011/01/fabric"
-                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+>
   <ServiceTypes>
     <!-- This is the name of your ServiceType. 
          This name must match the string used in RegisterServiceType call in Program.cs. -->
@@ -13,9 +12,9 @@
   <!-- Code package is your service executable. -->
   <CodePackage Name="Code" Version="1.0.0">
     <EntryPoint>
-      <ExeHost>
-        <Program>JepsenAPI</Program>
-        <WorkingFolder>CodePackage</WorkingFolder>
+      <ExeHost IsExternalExecutable="true">
+        <Program>dotnet</Program>
+        <Arguments>JepsenAPI.dll</Arguments>
       </ExeHost>
     </EntryPoint>
     <EnvironmentVariables>

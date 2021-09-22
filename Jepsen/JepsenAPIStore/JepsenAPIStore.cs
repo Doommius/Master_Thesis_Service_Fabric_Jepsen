@@ -49,7 +49,7 @@ namespace JepsenAPIStore
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseReverseProxyIntegration)
                                     .UseUrls(url)
                                     .Build();
-                    }))
+                    }),"ServiceEndpoint", true)
             };
 
 

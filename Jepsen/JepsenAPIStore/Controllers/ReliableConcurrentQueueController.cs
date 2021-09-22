@@ -26,7 +26,7 @@ namespace JepsenAPIStore.Controllers
         }
 
 
-        // GET VoteData/name
+        // GET api/ReliableConcurrentQueue/
         [HttpGet("")]
         public async Task<IActionResult> Get()
         {

@@ -36,7 +36,7 @@ namespace JepsenAPI.Controllers
 
 
 
-        // GET: api/Votes
+        // GET: api/ReliableDictionary
         [HttpGet("")]
         public async Task<IActionResult> Get()
         {

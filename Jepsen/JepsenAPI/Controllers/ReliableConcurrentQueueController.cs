@@ -34,7 +34,7 @@ namespace JepsenAPI.Controllers
             this.reverseProxyBaseUri = Environment.GetEnvironmentVariable("ReverseProxyBaseUri");
         }
 
-        // GET: api/Votes
+        // GET: api/
         [HttpGet("")]
         public async Task<IActionResult> Get()
         {

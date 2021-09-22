@@ -61,7 +61,7 @@ namespace JepsenAPI
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url)
                                     .Build();
-                            }))
+                            }),"ServiceEndpoint")
             };
         }
 

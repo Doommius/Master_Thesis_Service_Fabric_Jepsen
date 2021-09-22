@@ -13,6 +13,7 @@
                     [checker   :as checker]
                     [model     :as model]
                     [generator :as gen]
+                    [cli :as cli]
                     [nemesis   :as nemesis]
                     [store     :as store]
                     [report    :as report]
@@ -319,3 +320,9 @@
   []
   (disque-test "partitions"
                {:nemesis (nemesis/partition-random-halves)}))
+
+(defn -main
+  [& args]
+  (cli/run! (merge (single-node-restarts-test)
+                  (partitions-test))
+           args))

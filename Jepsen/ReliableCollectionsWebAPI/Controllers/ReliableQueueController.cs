@@ -25,7 +25,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             this.StateManager = stateManager;
         }
 
-        // GET VoteData/name
+        // get api/ReliableQueue/ to get 
         [HttpGet("")]
         public async Task<IActionResult> Get()
         {
@@ -37,7 +37,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
         }
 
-        // PUT VoteData/name
+        // delete api/ReliableQueue/ to pop element
         [HttpDelete("")]
         public async Task<IActionResult> get()
         {
