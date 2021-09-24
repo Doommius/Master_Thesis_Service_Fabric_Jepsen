@@ -4,12 +4,13 @@
             :jvm-opts ["-Djava.awt.headless=true"]
             :license {:name "Eclipse Public License"
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
-            :dependencies [[org.clojure/clojure "1.10.0"]
+            :dependencies [[org.clojure/clojure "1.10.3"]
                            [jepsen "0.2.4"]
-                           [clj-http "3.12.3"]
-                           [SF_Driver "0.0.1"]]
+                           [cheshire "5.9.0"]
+                           [clj-http "0.3.6"]
+                           ]
 
-            :repl-options {:init-ns jepsen.sf}
+            :repl-options {:init-ns jepsen.SFJepsen}
             :main jepsen.SFJepsen.runner
             )
 

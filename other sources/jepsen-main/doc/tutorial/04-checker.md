@@ -20,7 +20,7 @@ that model. We'll require `knossos.model` and `jepsen.checker`:
             [jepsen.os.debian :as debian]
             [knossos.model :as model]
             [slingshot.slingshot :refer [try+]]
-            [verschlimmbesserung.core :as v]))
+            [SF_driver.core :as v]))
 ```
 
 Remember how we chose to model our operations as reads, writes, and cas operations?

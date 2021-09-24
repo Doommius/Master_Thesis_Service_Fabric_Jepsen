@@ -123,7 +123,7 @@ single-key test into one which operates on multiple keys. The
             [jepsen.os.debian :as debian]
             [knossos.model :as model]
             [slingshot.slingshot :refer [try+]]
-            [verschlimmbesserung.core :as v]))
+            [SF_driver.core :as v]))
 ```
 
 We have a generator that emits operations on a single key, like `{:type :invoke,

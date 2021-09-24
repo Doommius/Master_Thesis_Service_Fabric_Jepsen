@@ -24,7 +24,7 @@ Via [Clojars](https://clojars.org/verschlimmbesserung), as usual.
 Require the library and define a client.
 
 ```clj
-user=> (require '[verschlimmbesserung.core :as v])
+user=> (require '[SF_driver.core :as v])
 nil
 user=> (def c (v/connect "http://localhost:4001"))
 #'user/c

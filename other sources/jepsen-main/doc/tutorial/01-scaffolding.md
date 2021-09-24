@@ -40,7 +40,7 @@ Verschlimmbesserung: a library for talking to etcd.
   :main jepsen.etcdemo
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [jepsen "0.2.1-SNAPSHOT"]
-                 [verschlimmbesserung "0.1.3"]])
+                 [SF_driver "0.1.3"]])
 ```
 
 Let's try running this program with `lein run`.

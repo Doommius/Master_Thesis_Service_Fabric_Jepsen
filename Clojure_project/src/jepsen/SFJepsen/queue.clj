@@ -19,10 +19,7 @@
             [jepsen.os.debian :as debian]
             [jepsen.tests.cycle.append :as append]
             [knossos.core :as knossos]
-            [clj-http [client :as httpclient]
-             [conn-mgr :as conn-mgr]]
-            [jepsen.SFJepsen [generators :as generators] [nemesis :as nemesis]]
-            [SF_Driver :as sfc]
+            [jepsen.SFJepsen.Driver.core :as sfc]
             )
   (:import (java.util.concurrent TimeUnit)
            (knossos.model Model)
@@ -34,33 +31,33 @@
   "How long to wait for items to become available in the queue, in ms"
   1)
 
-(defn queue-client
-  "Uses :enqueue, :dequeue, and :drain events to interact with a Hazelcast
-  queue."
-  ([]
-   (queue-client nil nil))
-  ([conn queue]
-   (reify client/Client
-     (setup! [_ test node]
-       (let [conn (sfc/connect (concat "http://" node ":35112/api"))]
-         (queue-client conn (.getQueue conn "jepsen.queue"))))
+(defrecord Client [conn]
+  "Uses :enqueue, :dequeue, and :drain events to interact with a Hazelcast queue."
+  (reify client/Client
+    (setup! [_ test node]
+      (let [conn (sfc/connect (concat "http://" node ":35112/api"))]
+        (Client conn)))
 
-     (invoke! [this test op]
-       (case (:f op)
-         :enqueue (do (.put queue (:value op))
-                      (assoc op :type :ok))
-         :dequeue (if-let [v (.poll queue
-                                    queue-poll-timeout TimeUnit/MILLISECONDS)]
-                    (assoc op :type :ok, :value v)
-                    (assoc op :type :fail, :error :empty))
-         :drain (loop [values []]
-                  (if-let [v (.poll queue
-                                    queue-poll-timeout TimeUnit/MILLISECONDS)]
-                    (recur (conj values v))
-                    (assoc op :type :ok, :value values)))))
+    (invoke! [this test op]
+      (case (:f op)
+        :enqueue (do (sfc/enqueue conn (:value op))
+                     (assoc op :type :ok))
+        :dequeue (if-let [v (sfc/dequeue conn)]
+                   (assoc op :type :ok, :value v)
+                   (assoc op :type :fail, :error :empty))
+        :peek (if-let [v (sfc/queuepeek conn)]
+                (assoc op :type :ok, :value v)
+                (assoc op :type :fail, :error :empty))
+        :count (if-let [v (sfc/queuecount conn)]
+                 (assoc op :type :ok, :value v)
+                 (assoc op :type :fail, :error :empty))
+        :drain (loop [values []]
+                 (if-let [v (repeat (sfc/queuecount conn) (sfc/dequeue conn))]
+                   (recur (conj values v))
+                   (assoc op :type :ok, :value values)))))
 
-     (teardown! [this test]
-       (.shutdown conn)))))
+    (teardown! [this test]
+      (.shutdown conn))))
 
 (defn queue-gen
   "A generator for queue operations. Emits enqueues of sequential integers."
@@ -77,7 +74,7 @@
   "Constructs a queue client and generator. Returns {:client
   ..., :generator ...}."
   []
-  {:client          (queue-client)
+  {:client          (Client)
    :generator       (queue-gen)
    :final-generator (->> {:type :invoke, :f :drain}
                          gen/once

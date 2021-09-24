@@ -56,17 +56,20 @@ namespace ReliableCollectionsWebAPI.Controllers
 
                 if (returnvalue.HasValue)
                 {
-                    return this.Json(new KeyValuePair<string, string>("Queue peek", returnvalue.Value));
+                    return this.Json(new KeyValuePair<string, string>("deQueue", returnvalue.Value));
                 }
                 else
                 {
-                    return new BadRequestResult();
+                    return new OkResult();
                 }
             }
 
 
 
         }
+
+ 
+
 
         // PUT VoteData/name/count
         [HttpPut("{value}")]

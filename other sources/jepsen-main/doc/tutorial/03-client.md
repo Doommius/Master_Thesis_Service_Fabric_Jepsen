@@ -43,7 +43,7 @@ writing an empty implementation of Jepsen's Client protocol:
 (ns jepsen.etcdemo
   (:require [clojure.tools.logging :refer :all]
             [clojure.string :as str]
-            [verschlimmbesserung.core :as v]
+            [SF_driver.core :as v]
             [jepsen [cli :as cli]
                     [client :as client]
                     [control :as c]
@@ -149,7 +149,7 @@ seconds of reads, randomly staggered about a second apart. We'll pull in `jepsen
 (ns jepsen.etcdemo
   (:require [clojure.tools.logging :refer :all]
             [clojure.string :as str]
-            [verschlimmbesserung.core :as v]
+            [SF_driver.core :as v]
             [jepsen [cli :as cli]
                     [client :as client]
                     [control :as c]

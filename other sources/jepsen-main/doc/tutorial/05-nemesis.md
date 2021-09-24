@@ -21,7 +21,7 @@ provides several built-in failure modes.
             [jepsen.os.debian :as debian]
             [knossos.model :as model]
             [slingshot.slingshot :refer [try+]]
-            [verschlimmbesserung.core :as v]))
+            [SF_driver.core :as v]))
 ```
 
 We'll pick a simple nemesis to start, and add it to the `:nemesis` key for the

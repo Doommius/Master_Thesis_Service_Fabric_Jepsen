@@ -65,7 +65,7 @@ Slingshot too.
               [client :as client]
               [generator :as gen]]
             [slingshot.slingshot :refer [try+]]
-            [verschlimmbesserung.core :as v]))
+            [SF_driver.core :as v]))
 ```
 
 We'll need a new client that can add things to sets, and read them back--but we

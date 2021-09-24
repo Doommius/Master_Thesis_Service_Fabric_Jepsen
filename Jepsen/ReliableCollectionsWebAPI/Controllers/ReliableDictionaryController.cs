@@ -84,6 +84,8 @@ namespace ReliableCollectionsWebAPI.Controllers
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
 
+            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
                 await votesDictionary.AddOrUpdateAsync(tx, key, 1, (key, oldvalue) => oldvalue + 1);
@@ -104,7 +106,10 @@ namespace ReliableCollectionsWebAPI.Controllers
                 await tx.CommitAsync();
             }
 
-            return new OkResult();
+            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+            result.Add(new KeyValuePair<string, int>(key, value));
+            return this.Json(result);
+
         }
 
 
@@ -124,11 +129,13 @@ namespace ReliableCollectionsWebAPI.Controllers
 
             if (v)
             {
-                return new OkResult();
+                List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+                result.Add(new KeyValuePair<string, int>(key, value));
+                return this.Json(result);
             }
             else
             {
-                return new BadRequestResult();
+                return new OkResult();
             }
 
         }
@@ -150,7 +157,7 @@ namespace ReliableCollectionsWebAPI.Controllers
                 }
                 else
                 {
-                    return new NotFoundResult();
+                    return new OkResult();
                 }
             }
         }
