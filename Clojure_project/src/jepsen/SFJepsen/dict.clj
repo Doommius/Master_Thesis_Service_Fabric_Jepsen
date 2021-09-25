@@ -49,7 +49,7 @@
             :write (do (sfc/write conn k v)
                        (assoc op :type :ok))
             :cas (let [[old new] v]
-                   (assoc op :type (if (sfc/cas conn k old new)
+                   (assoc op :type (if (= new (sfc/cas conn k old new))
                                      :ok
                                      :fail))))
           (catch java.net.SocketTimeoutException e
@@ -57,11 +57,15 @@
               :type (if (= :read (:f op)) :fail :info)
               :error :timeout))
           (catch java.net.ConnectException e
+            ;(info e)
             (assoc op
               :type (if (= :read (:f op)) :fail :info)
-              :error :refused))
+              :error :ConnectException))
           (catch [:errorCode 400] e
-            (assoc op :type :fail, :error :not-found)))
+            (assoc op :type :fail, :error :Connectrefused))
+          (catch [:errorCode 204] e
+            (assoc op :type :fail, :error :not-found))
+          )
         ))
 
     (teardown! [_ test]
@@ -77,18 +81,12 @@
   "A generator for queue operations. Emits enqueues of sequential integers."
   [opts]
   (->> (independent/concurrent-generator
-         5
+         20
          (range)
          (fn [k]
            (->> (gen/mix [r w cas])
-                (gen/stagger (/ (:rate opts)))
                 (gen/limit (:ops-per-key opts)))))
-       (gen/nemesis
-         (cycle [(gen/sleep 5000)
-                 {:type :info, :f :start}
-                 (gen/sleep 5000)
-                 {:type :info, :f :stop}]))
-       (gen/time-limit (:time-limit opts))))
+       ))
 
 
 

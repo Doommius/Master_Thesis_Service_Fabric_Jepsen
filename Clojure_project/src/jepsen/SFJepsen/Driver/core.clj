@@ -38,12 +38,12 @@
 (def Quri "ReliableQueue")
 (def CQuri "ReliableConcurrent")
 
-(def default-timeout "milliseconds" 100)
+(def default-timeout "milliseconds" 200)
 
 (def default-swap-retry-delay
   "How long to wait (approximately) between retrying swap! operations which
   failed. In milliseconds."
-  50)
+  100)
 
 (defn connect
   "Creates a new etcd client for the given server URI. Example:
@@ -178,10 +178,22 @@
 (defn parse
   "Parse an inputstream or string as JSON"
   [response]
-  (when-not (:body response)
-    (throw+ {:type     ::missing-body
-             :response response}))
-  (if (or (not (= 200 (response :status))) (= "[]" (response :body)) (= "" (response :body))) false ((first (json/parse-string (response :body) true)) :Value))
+
+
+
+
+  (when (= 204 (response :status)) (throw+ {:type      :not-found
+                                            :errorCode 204
+                                            }))
+  (when (= 405 (response :status)) (throw+ {:type      :Error
+                                            :errorCode 405
+                                            }))
+  (when (= 500 (response :status)) (throw+ {:type      :not_primary
+                                            :errorCode 405
+                                            }))
+  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type :missing-body}))
+
+  ((first (json/parse-string (response :body) true)) :Value)
   )
 
 
@@ -227,7 +239,6 @@
                      :wait?       :wait
                      :wait-index  :waitIndex})
         (http-opts client)
-        (info (url client RDuri key))
         (http/get (url client RDuri key))
         parse))
   )
@@ -284,7 +295,7 @@
   ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
-        (info (url client RDuri key value))
+
         (http/put (url client RDuri key value))
         parse)))
 
@@ -294,7 +305,7 @@
   ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
-        (info (url client RDuri key value))
+
         (http/put (url client RDuri key value))
         parse)))
 
@@ -326,7 +337,7 @@
                      :prev-value :prevValue
                      :prev-index :prevIndex})
         (http-opts client)
-        (info (url client RDuri key))
+
         (http/delete (url client RDuri key))
         parse)))
 
@@ -366,12 +377,9 @@
           (remap-keys {:prev-index  :prevIndex
                        :prev-exist? :prevExist})
           (http-opts client)
-          (info (url client RDuri key value value' ))
           (http/put (url client RDuri key value value'))
           parse)
      (catch [:errorCode 404] _ false)
-
-
 
      )))
 

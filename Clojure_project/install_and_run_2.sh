@@ -12,7 +12,7 @@ fi
 echo "SSH KEYS: Complete"
 
 echo "Jepsen Test: Start"
-lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes
+lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 100 --time-limit 500 -r 1 --ops-per-key 500
 
 echo "Jepsen Test: END"
 

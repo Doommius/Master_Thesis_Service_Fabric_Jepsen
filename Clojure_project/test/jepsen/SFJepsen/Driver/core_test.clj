@@ -62,12 +62,9 @@
   )
 
 
-(deftest missing-values
-  (is (false? (sfc/get c "SDFSDFSDFSD:nonexistent"))))
+;(deftest missing-values
+;  (is (false? (sfc/get c "SDFSDFSDFSD:nonexistent"))))
 
-(deftest create-test!
-  (println (sfc/create c "randkey1337" 123123))
-  )
 
 (deftest cas-test!
   (is (= 0 (sfc/write c "foo" 0)))

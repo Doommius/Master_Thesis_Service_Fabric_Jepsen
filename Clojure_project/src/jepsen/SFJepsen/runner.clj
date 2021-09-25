@@ -147,7 +147,7 @@
     :default false]
 
    [nil "--key-count NUM" "Number of keys in active rotation."
-    :default 500
+    :default 128
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 
@@ -185,7 +185,7 @@
     :parse-fn parse-long]
 
    ["-r" "--rate HZ" "Approximate request rate, in hz"
-    :default 100
+    :default 25
     :parse-fn read-string
     :validate [pos? "Must be a positive number."]]
 

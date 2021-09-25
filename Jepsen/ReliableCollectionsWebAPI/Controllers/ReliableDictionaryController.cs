@@ -25,6 +25,8 @@ namespace ReliableCollectionsWebAPI.Controllers
             this.stateManager = stateManager;
         }
 
+        public System.Fabric.ReplicaRole ReplicaRole { get; }
+
 
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -97,7 +99,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
             catch (FabricNotPrimaryException)
             {
-                return BadRequest("Not Primary");
+                return new ForbidResult("Not Primary");
             }
 
         }
@@ -120,7 +122,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
             catch (FabricNotPrimaryException)
             {
-                return BadRequest("Not Primary");
+                return new ForbidResult("Not Primary");
             }
 
 
@@ -145,7 +147,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
             catch (FabricNotPrimaryException)
             {
-                return BadRequest("Not Primary");
+                return new ForbidResult("Not Primary");
             }
  
             if (!v)
@@ -187,7 +189,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
             catch (FabricNotPrimaryException)
             {
-                return BadRequest("Not Primary");
+                return new ForbidResult("Not Primary");
             }
 
         }
