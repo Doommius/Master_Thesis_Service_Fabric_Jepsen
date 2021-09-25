@@ -79,11 +79,10 @@
       )))
 
 
-
 (defn just-deploy
   [opts]
   (info "Deploy new service to cluster and waiting until built and deploy is complete.")
-  (db opts)
+  (db)
 
   )
 

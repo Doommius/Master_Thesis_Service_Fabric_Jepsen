@@ -54,28 +54,29 @@ namespace ReliableCollectionsWebAPI.Controllers
         [HttpGet("{key}")]
         public async Task<IActionResult> Get(string key)
         {
+
+        
             CancellationToken ct = new CancellationToken();
 
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
+            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                var list = await votesDictionary.CreateEnumerableAsync(tx);
-
-                var enumerator = list.GetAsyncEnumerator();
-
-                List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-
-                while (await enumerator.MoveNextAsync(ct))
+                ConditionalValue<int> conditionalValue = await votesDictionary.TryGetValueAsync(tx, key);
+                if (conditionalValue.HasValue)
                 {
-                    if (enumerator.Current.Key == key)
-                    {
-                        result.Add(enumerator.Current);
-                    }
+                    int value = conditionalValue.Value;
+                    result.Add(new KeyValuePair<string, int>(key, value));
 
+                    return this.Json(result);
+                }
+                else
+                {
+                    return NoContent();
                 }
 
-                return this.Json(result);
             }
         }
 
@@ -84,31 +85,44 @@ namespace ReliableCollectionsWebAPI.Controllers
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
 
-            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-
-            using (ITransaction tx = this.stateManager.CreateTransaction())
+            try
             {
-                await votesDictionary.AddOrUpdateAsync(tx, key, 1, (key, oldvalue) => oldvalue + 1);
-                await tx.CommitAsync();
+                using (ITransaction tx = this.stateManager.CreateTransaction())
+                {
+                    await votesDictionary.AddOrUpdateAsync(tx, key, 1, (key, oldvalue) => oldvalue + 1);
+                    await tx.CommitAsync();
+                }
+
+                return new OkResult();
+            }
+            catch (FabricNotPrimaryException)
+            {
+                return BadRequest("Not Primary");
             }
 
-            return new OkResult();
         }
 
         [HttpPut("{key}/{value}")]
         public async Task<IActionResult> Put(string key, int value)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
-
-            using (ITransaction tx = this.stateManager.CreateTransaction())
+            try
             {
-                await votesDictionary.AddOrUpdateAsync(tx, key, value, (key, oldvalue) => value);
-                await tx.CommitAsync();
+                using (ITransaction tx = this.stateManager.CreateTransaction())
+                {
+                    await votesDictionary.AddOrUpdateAsync(tx, key, value, (key, oldvalue) => value);
+                    await tx.CommitAsync();
+                }
+
+                List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+                result.Add(new KeyValuePair<string, int>(key, value));
+                return this.Json(result);
+            }
+            catch (FabricNotPrimaryException)
+            {
+                return BadRequest("Not Primary");
             }
 
-            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-            result.Add(new KeyValuePair<string, int>(key, value));
-            return this.Json(result);
 
         }
 
@@ -118,25 +132,34 @@ namespace ReliableCollectionsWebAPI.Controllers
         public async Task<IActionResult> put(string key, int value, int expected)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
+            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
 
-            bool v = false;
-
-            using (ITransaction tx = this.stateManager.CreateTransaction())
+            Boolean v;
+            try
             {
-                v = await votesDictionary.TryUpdateAsync(tx, key, value, expected);
-                await tx.CommitAsync();
+                using (ITransaction tx = this.stateManager.CreateTransaction())
+                {
+                    v = await votesDictionary.TryUpdateAsync(tx, key, value, expected);
+                    await tx.CommitAsync();
+                }
+            }
+            catch (FabricNotPrimaryException)
+            {
+                return BadRequest("Not Primary");
+            }
+ 
+            if (!v)
+            {
+                using (ITransaction tx = this.stateManager.CreateTransaction())
+                {
+                    ConditionalValue<int> conditionalValue = await votesDictionary.TryGetValueAsync(tx, key);
+                    value = conditionalValue.Value;
+                }
+
             }
 
-            if (v)
-            {
-                List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-                result.Add(new KeyValuePair<string, int>(key, value));
-                return this.Json(result);
-            }
-            else
-            {
-                return new OkResult();
-            }
+            result.Add(new KeyValuePair<string, int>(key, value));
+            return this.Json(result);
 
         }
 
@@ -146,20 +169,27 @@ namespace ReliableCollectionsWebAPI.Controllers
         public async Task<IActionResult> Delete(string key)
         {
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
-
-            using (ITransaction tx = this.stateManager.CreateTransaction())
+            try
             {
-                if (await votesDictionary.ContainsKeyAsync(tx, key))
+                using (ITransaction tx = this.stateManager.CreateTransaction())
                 {
-                    await votesDictionary.TryRemoveAsync(tx, key);
-                    await tx.CommitAsync();
-                    return new OkResult();
-                }
-                else
-                {
-                    return new OkResult();
+                    if (await votesDictionary.ContainsKeyAsync(tx, key))
+                    {
+                        await votesDictionary.TryRemoveAsync(tx, key);
+                        await tx.CommitAsync();
+                        return new OkResult();
+                    }
+                    else
+                    {
+                        return new NotFoundResult();
+                    }
                 }
             }
+            catch (FabricNotPrimaryException)
+            {
+                return BadRequest("Not Primary");
+            }
+
         }
     }
 }

@@ -1,11 +1,10 @@
-(ns SF_driver.core-test
+(ns jepsen.SFJepsen.Driver.core_test
   (:require [clojure.test :refer :all]
-            [clojure.pprint :refer [pprint]]
-            [clj-http.client :as http]
+            [clojure.tools.logging :refer [debug info warn]]
             [cheshire.core :refer :all]
-            [SF_driver.core :as sfc]))
+            [jepsen.SFJepsen.Driver.core :as sfc]))
 
-(def c (sfc/connect "http://jepsen.northeurope.cloudapp.azure.com:35112/api"))
+(def c (sfc/connect "jepsen.northeurope.cloudapp.azure.com" {:timeout 100}))
 
 ; Delete all data before each test
 ;(use-fixtures :each #(do (sfc/delete-all! c nil) (%)))
@@ -39,21 +38,24 @@
     (is (= "foo/bar" (sfc/encode-key '(:foo :bar))))
     (is (= "foo/bar/baz" (sfc/encode-key ["foo/bar" "baz"])))))
 
-(deftest reset-get-test
+(deftest write-get-test
   (testing "a simple key"
-    (sfc/reset! c "test" 10)
+    (sfc/write c "test" 10)
     (is (= 10 (sfc/get c "test")))
     )
 
   (testing "Paths and unicode"
-    (sfc/reset! c "ℵ" 20)
+    (sfc/write c "ℵ" 20)
     (is (= 20 (sfc/get c "ℵ")))
     )
   )
 
 (deftest puthttp
   (testing "Does the testput?"
-    (is(= 200 ((http/put "http://jepsen.northeurope.cloudapp.azure.com:35112/api/ReliableDictionary/rand/10"):status)))
+
+    (is (= (str "http://" (:endpoint c) ":35112/api") (sfc/base-url c)))
+
+    (is (= 10 (sfc/write c "rand" 10)))
     ;(print (sfc/get c "rand"))
     (is (= 10 (sfc/get c "rand")))
     )
@@ -64,16 +66,16 @@
   (is (false? (sfc/get c "SDFSDFSDFSD:nonexistent"))))
 
 (deftest create-test!
-      (println (sfc/create! c "randkey1337" 123123))
-)
+  (println (sfc/create c "randkey1337" 123123))
+  )
 
 (deftest cas-test!
-  (sfc/reset! c "foo" 0)
+  (is (= 0 (sfc/write c "foo" 0)))
   (is (= 0 (sfc/get c "foo")))
-  (is (false? (sfc/cas! c "foo" 5 5)))
+  (is (= 0 (sfc/cas c "foo" 5 10)))
   (is (= 0 (sfc/get c "foo")))
-
-  (sfc/cas! c "foo" 52 0)
+  (is (= 5 (sfc/write c "foo" 5)))
+  (is (= 52 (sfc/cas c "foo" 52 5)))
   (is (= 52 (sfc/get c "foo"))))
 
 

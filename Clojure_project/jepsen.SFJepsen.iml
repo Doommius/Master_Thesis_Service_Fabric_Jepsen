@@ -16,6 +16,7 @@
     <orderEntry type="library" name="Leiningen: byte-streams:0.2.5-alpha2" level="project" />
     <orderEntry type="library" name="Leiningen: ch.qos.logback/logback-classic:1.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: ch.qos.logback/logback-core:1.2.3" level="project" />
+    <orderEntry type="library" name="Leiningen: cheshire:5.9.0" level="project" />
     <orderEntry type="library" name="Leiningen: clj-http:3.12.3" level="project" />
     <orderEntry type="library" name="Leiningen: clj-ssh:0.5.14" level="project" />
     <orderEntry type="library" name="Leiningen: clj-stacktrace:0.2.8" level="project" />
@@ -24,8 +25,10 @@
     <orderEntry type="library" name="Leiningen: clojure-complete:0.2.5" level="project" />
     <orderEntry type="library" name="Leiningen: com.boundary/high-scale-lib:1.0.6" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-annotations:2.8.0" level="project" />
-    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.8.9" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.9.9" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-databind:2.8.9" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.dataformat/jackson-dataformat-cbor:2.9.9" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.dataformat/jackson-dataformat-smile:2.9.9" level="project" />
     <orderEntry type="library" name="Leiningen: com.hierynomus/asn-one:0.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.hierynomus/sshj:0.30.0" level="project" />
     <orderEntry type="library" name="Leiningen: com.jcraft/jsch.agentproxy.connector-factory:0.0.9" level="project" />
@@ -76,14 +79,14 @@
     <orderEntry type="library" name="Leiningen: org.bouncycastle/bcprov-jdk15on:1.67" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojars.pallix/analemma:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/algo.generic:0.1.2" level="project" />
-    <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.10.0" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.10.3" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/core.rrb-vector:0.1.1" level="project" />
-    <orderEntry type="library" name="Leiningen: org.clojure/core.specs.alpha:0.2.44" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/core.specs.alpha:0.2.56" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/data.codec:0.1.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/data.fressian:1.0.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/java.classpath:0.3.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/math.combinatorics:0.1.6" level="project" />
-    <orderEntry type="library" name="Leiningen: org.clojure/spec.alpha:0.2.176" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/spec.alpha:0.2.194" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.cli:1.0.194" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.logging:1.1.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.namespace:0.2.11" level="project" />
@@ -107,5 +110,6 @@
     <orderEntry type="library" name="Leiningen: ring:1.8.1" level="project" />
     <orderEntry type="library" name="Leiningen: slingshot:0.12.2" level="project" />
     <orderEntry type="library" name="Leiningen: spootnik/unilog:0.7.25" level="project" />
+    <orderEntry type="library" name="Leiningen: tigris:0.1.1" level="project" />
   </component>
 </module>

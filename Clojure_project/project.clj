@@ -7,8 +7,7 @@
             :dependencies [[org.clojure/clojure "1.10.3"]
                            [jepsen "0.2.4"]
                            [cheshire "5.9.0"]
-                           [clj-http "0.3.6"]
-                           ]
+                           [clj-http "3.12.3"]]
 
             :repl-options {:init-ns jepsen.SFJepsen}
             :main jepsen.SFJepsen.runner

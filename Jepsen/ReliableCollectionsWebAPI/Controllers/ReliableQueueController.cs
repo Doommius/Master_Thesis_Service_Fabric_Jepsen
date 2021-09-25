@@ -109,7 +109,7 @@ namespace ReliableCollectionsWebAPI.Controllers
         {
             
 
-            IReliableQueue<int> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<int>>("myReliableQueue");
+            IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
 
             using (var txn = this.StateManager.CreateTransaction())
             {

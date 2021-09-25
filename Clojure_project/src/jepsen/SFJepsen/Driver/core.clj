@@ -22,10 +22,9 @@
   The get variant returns a more streamlined representation: just the node
   value itself."
   (:refer-clojure :exclude [swap! reset! get set])
-  (:require [clojure.core :as core]
-            [clojure.core.reducers :as r]
+  (:require [clojure.core.reducers :as r]
             [clojure.string :as str]
-            [clojure.java.io :as io]
+            [clojure.tools.logging :refer [debug info warn]]
             [clj-http.client :as http]
             [clj-http.util :as http.util]
             [cheshire.core :as json]
@@ -36,15 +35,15 @@
 
 (def api-version "")
 (def RDuri "ReliableDictionary")
-(def Quri "ReliableQueue" )
-(def CQuri "ReliableConcurrent" )
+(def Quri "ReliableQueue")
+(def CQuri "ReliableConcurrent")
 
-(def default-timeout "milliseconds" 1000)
+(def default-timeout "milliseconds" 100)
 
 (def default-swap-retry-delay
   "How long to wait (approximately) between retrying swap! operations which
   failed. In milliseconds."
-  100)
+  50)
 
 (defn connect
   "Creates a new etcd client for the given server URI. Example:
@@ -67,8 +66,8 @@
   "Constructs the base URL for all etcd requests. Example:
 
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
-  [client]
-  (str (:endpoint client)))
+  [clientaddress]
+  (str "http://" (:endpoint clientaddress) ":35112/api"))
 
 (defn decompose-string
   "Splits a string on slashes, ignoring any leading slash."
@@ -108,7 +107,7 @@
   [prefix key]
   ;;(concat [prefix] (normalise-key key))
 
-  (concat (normalise-key key)))
+  (str (normalise-key key)))
 
 
 (defn ^String encode-key-seq
@@ -127,12 +126,16 @@
   "The URL for a key under a specified root-key.
   (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
   ([client uri]
+
    (str (base-url client) "/" uri))
   ([client uri key-seq]
+
    (str (base-url client) "/" uri "/" key-seq))
   ([client uri key value]
+
    (str (base-url client) "/" uri "/" key "/" value))
   ([client uri key value1 value2]
+
    (str (base-url client) "/" uri "/" key "/" value1 "/" value2)))
 
 (defn key-url
@@ -170,8 +173,7 @@
    :follow-redirects      true
    :force-redirects       true                              ; Etcd uses 307 for side effects like PUT
    :socket-timeout        (or (:timeout opts) (:timeout client))
-   :conn-timeout          (or (:timeout opts) (:timeout client))
-   :query-params          (dissoc opts :timeout :root-key)})
+   :conn-timeout          (or (:timeout opts) (:timeout client))})
 
 (defn parse
   "Parse an inputstream or string as JSON"
@@ -179,8 +181,7 @@
   (when-not (:body response)
     (throw+ {:type     ::missing-body
              :response response}))
-  (println response)
-  (if (or  (not (= 200 (response :status)) )(= "[]"(response :body)) (= ""(response :body))) false ((first (json/parse-string (response :body) true)) :Value))
+  (if (or (not (= 200 (response :status))) (= "[]" (response :body)) (= "" (response :body))) false ((first (json/parse-string (response :body) true)) :Value))
   )
 
 
@@ -191,14 +192,14 @@
 (defn node->pair
   "Transforms an etcd node representation of a directory into a [key value]
   pair, recursively. Prefix is the length of the key prefix to drop; etcd
-  represents keys as full paths at all levels."
+  represents keys as full key at all levels."
   [prefix-len node]
   (MapEntry. (subs (:key node) prefix-len)
              (node->value node)))
 
 (defn node->value
   "Transforms an etcd node representation into a value, recursively. Prefix is
-  the length of the key prefix to drop; etcd represents keys as full paths at
+  the length of the key prefix to drop; etcd represents keys as full key at
   all levels."
   ([node] (node->value 1 node))
   ([prefix node]
@@ -226,6 +227,7 @@
                      :wait?       :wait
                      :wait-index  :waitIndex})
         (http-opts client)
+        (info (url client RDuri key))
         (http/get (url client RDuri key))
         parse))
   )
@@ -272,49 +274,51 @@
          node->value)
      (catch [:status 404] _ nil))))
 
-(defn reset!
+(defn write
   "Resets the current value of a given key to `value`. Options:
 
   :ttl
   :timeout"
   ([client key value]
-   (reset! client key value {}))
+   (write client key value {}))
   ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
+        (info (url client RDuri key value))
         (http/put (url client RDuri key value))
         parse)))
 
 (defn create!*
-  ([client path value]
-   (create!* client path value {}))
-  ([client path value opts]
+  ([client key value]
+   (create!* client key value {}))
+  ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
-        (http/put (url client RDuri path value))
+        (info (url client RDuri key value))
+        (http/put (url client RDuri key value))
         parse)))
 
-(defn create!
-  "Creates a new, automatically named object under the given path with the
+(defn create
+  "Creates a new, automatically named object under the given key with the
   given value, and returns the full key of the created object. Options:
 
   :timeout
   :ttl"
-  ([client path value]
-   (create! client path value {}))
-  ([client path value opts]
-   (-> (create!* client path value opts)
+  ([client key value]
+   (create client key value {}))
+  ([client key value opts]
+   (-> (create!* client key value opts)
        :node
        :key)))
 
-(defn delete!
+(defn delete
   "Deletes the given key. Options:
 
   :timeout
   :dir?
   :recursive?"
   ([client key]
-   (delete! client key {}))
+   (delete client key {}))
   ([client key opts]
    (->> opts
         (remap-keys {:recursive? :recursive
@@ -322,25 +326,26 @@
                      :prev-value :prevValue
                      :prev-index :prevIndex})
         (http-opts client)
+        (info (url client RDuri key))
         (http/delete (url client RDuri key))
         parse)))
 
-(defn delete-all!
+(defn delete-all
   "Deletes all nodes, recursively if necessary, under the given directory.
   Options:
 
   :timeout"
   ([client key]
-   (delete-all! client key {}))
+   (delete-all client key {}))
   ([client key opts]
    (doseq [node (->> (select-keys opts [:timeout])
                      (get* client key)
                      :node
                      :nodes)]
-     (delete! client (:key node) {:recursive? (:dir node)
-                                  :timeout    (:timeout opts)}))))
+     (delete client (:key node) {:recursive? (:dir node)
+                                 :timeout    (:timeout opts)}))))
 
-(defn cas!
+(defn cas
   "Compare and set based on the current value. Updates key to be value' iff the
   current value of key is value. Optionally, you may also constrain the
   previous index and/or the existence of the key. Returns false for CAS failure.
@@ -352,7 +357,7 @@
   :prev-index
   :prev-exist?"
   ([client key value value']
-   (cas! client key value value' {}))
+   (cas client key value value' {}))
   ([client key value value' opts]
    (try+
      (->> (assoc opts
@@ -361,9 +366,14 @@
           (remap-keys {:prev-index  :prevIndex
                        :prev-exist? :prevExist})
           (http-opts client)
+          (info (url client RDuri key value value' ))
           (http/put (url client RDuri key value value'))
           parse)
-     (catch [:errorCode 404] _ false))))
+     (catch [:errorCode 404] _ false)
+
+
+
+     )))
 
 ;(defn cas-index!
 ;  "Compare and set based on the current value. Updates key to be value' iff the

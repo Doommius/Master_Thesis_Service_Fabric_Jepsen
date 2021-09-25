@@ -25,19 +25,7 @@
 
             )
   )
-
-
-
-(defn killer
-  "Kills a random node on start, restarts it on stop."
-  []
-  (nemesis/node-start-stopper
-    rand-nth
-    (fn start [test node] (db/stop! node test))
-    (fn stop [test node] (db/start! node test))))
-
 ; Generators
-
 (defn std-gen
   "Takes a client generator and wraps it in a typical schedule and nemesis
   causing failover."

@@ -26,6 +26,7 @@
             [clj-http.client :as httpclient]
             [jepsen.SFJepsen
              [queue :as queue]
+             [dict :as dict]
              [db :as db]
              [nemesis :as nemesis]]
             ))
@@ -36,6 +37,7 @@
 (def workloads
   "A map of test names to test constructors."
   {:reliablequeue queue/workload
+   :reliabledict dict/workload
    :none          (fn [_] tests/noop-test)}
   )
 
@@ -83,7 +85,7 @@
         workload ((workloads workload-name) opts)
         db (cond (:existing-service opts) jdb/noop
                  (:deploy_service opts) (db/just-deploy opts)
-                 true (db/db opts))
+                 true (db/db))
         os (if (:existing-service opts)
              os/noop
              debian/os)
@@ -97,7 +99,7 @@
                    :interval  (:nemesis-interval opts)})]
     (merge tests/noop-test
            opts
-           {:name            (str "stolon " (name workload-name)
+           {:name            (str "SF " (name workload-name)
                                   " " (short-isolation (:isolation opts)) " ("
                                   (short-isolation (:expected-consistency-model opts)) ")"
                                   " " (str/join "," (map name (:nemesis opts))))
@@ -120,30 +122,32 @@
                                     (gen/time-limit (:time-limit opts))))})))
 (def cli-opts
   "Additional CLI options"
-  [[nil "--etcd-version STRING" "What version of etcd should we install?"
-    :default "3.4.3"]
+  [[nil "--service-version STRING" "What version of service should we install?"
+    :default "1.0.0"]
+
 
    ["-i" "--isolation LEVEL" "What level of isolation we should set: serializable, repeatable-read, etc."
-    :default :serializable
+    :default :repeatable-read
     :parse-fn keyword
     :validate [#{:read-uncommitted
                  :read-committed
+                 :linearizable
                  :repeatable-read
                  :serializable}
                "Should be one of read-uncommitted, read-committed, repeatable-read, or serializable"]]
 
-   [nil "--existing-service" "If set, assumes nodes already have a running Postgres instance, skipping any OS and DB setup and teardown. Suitable for debugging issues against a local instance of Postgres (or some sort of pre-built cluster) when you don't want to set up a whole-ass Jepsen environment."
+   [nil "--existing-service" "If set, assumes nodes already have a running service instance, skipping any OS and DB setup and teardown. Suitable for debugging issues against a local instance of the service (or some sort of pre-built cluster) when you don't want to set up a whole-ass Jepsen environment."
     :default true]
 
    [nil "--expected-consistency-model MODEL" "What level of isolation do we *expect* to observe? Defaults to the same as --isolation."
     :default nil
     :parse-fn keyword]
 
-   [nil "--just-deploy" "Don't bother with replication or anything, just set up a plain old single-node postgres install."
+   [nil "--just-deploy" "Don't bother with replication or anything, just set up a plain old single-node deply."
     :default false]
 
    [nil "--key-count NUM" "Number of keys in active rotation."
-    :default 10
+    :default 500
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 
@@ -153,11 +157,11 @@
                "Faults must be pause, kill, partition, clock, or member, or the special faults all or none."]]
 
    [nil "--max-txn-length NUM" "Maximum number of operations in a transaction."
-    :default 4
+    :default 1
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 
-   [nil "--max-writes-per-key NUM" "Maximum number of writes to any given key."
+   [nil "--ops-per-key NUM" "Maximum number of writes to any given key."
     :default 256
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer."]]
@@ -167,15 +171,15 @@
     :parse-fn read-string
     :validate [pos? "Must be a positive number."]]
 
-   [nil "--postgres-password PASS" "What password should we use to connect to postgres?"
-    :default "pw"]
+   [nil "--node-password PASS" "What password should we use to connect to node?"
+    :default "P&g68KTBG9&eHxY347sO2^eHa"]
 
-   [nil "--postgres-port NUMBER" "What port should we connect to when talking to postgres?"
-    :default 5432
+   [nil "--service-port NUMBER" "What port should we connect to when talking to service?"
+    :default 35112
     :parse-fn parse-long]
 
-   [nil "--postgres-user NAME" "What username should we use to connect to postgres? Only use this with --existing-postgres, or you'll probably confuse the Stolon setup."
-    :default "postgres"]
+   [nil "--service_user NAME" "What username should we use to connect to service? Only use this with --existing-service, or you'll probably confuse the Stolon setup."
+    :default "jervelund"]
 
    [nil "--prepare-threshold INT" "Passes a prepareThreshold option to the JDBC spec."
     :parse-fn parse-long]
