@@ -35,7 +35,7 @@
 
 (def api-version "")
 (def RDuri "ReliableDictionary")
-(def Quri "ReliableQueue")
+(def Quri "ReliableConcurrentQueue")
 (def CQuri "ReliableConcurrent")
 
 (def default-timeout "milliseconds" 200)
@@ -69,58 +69,6 @@
   [clientaddress]
   (str "http://" (:endpoint clientaddress) ":35112/api"))
 
-(defn decompose-string
-  "Splits a string on slashes, ignoring any leading slash."
-  [s]
-  (let [s (if (.startsWith s "/") (subs s 1) s)]
-    (str/split s #"/")))
-
-(defn ^String normalise-key-element
-  "String, symbol, and keyword keys map to their names;
-  e.g. \"foo\", :foo, and 'foo are equivalent.
-
-  Numbers map to (str num)."
-  [key]
-  (cond
-    (string? key) (if (re-find #"/" key)
-                    (decompose-string key)
-                    [key])
-    (instance? clojure.lang.Named key) [(name key)]
-    (number? key) [(str key)]
-    :else (throw (IllegalArgumentException.
-                   (str "Don't know how to interpret " (pr-str key)
-                        " as key")))))
-
-(defn normalise-key
-  "Return the key as a sequence of key elements.  A key can be
-  specified as a string, symbol, keyword or sequence thereof.
-  A nil key maps to [\"\"], the root."
-  [key]
-  (cond
-    (nil? key) [""]
-    (sequential? key) (mapcat normalise-key-element key)
-    (string? key) (decompose-string key)
-    :else (normalise-key-element key)))
-
-(defn prefix-key
-  "For a given key, return a key sequence, prefixed with the given key element."
-  [prefix key]
-  ;;(concat [prefix] (normalise-key key))
-
-  (str (normalise-key key)))
-
-
-(defn ^String encode-key-seq
-  "Return a url-encoded key string for a key sequence."
-  [key-seq]
-  (str/join "/" (map http.util/url-encode key-seq)))
-
-;; str(if (<= (count key-seq) 1) "/")
-
-(defn ^String encode-key
-  "Return a url-encoded key string for a key."
-  [k]
-  (encode-key-seq (normalise-key k)))
 
 (defn ^String url
   "The URL for a key under a specified root-key.
@@ -138,29 +86,7 @@
 
    (str (base-url client) "/" uri "/" key "/" value1 "/" value2)))
 
-(defn key-url
-  "The URL for a particular key.
 
-  (key-url client \"foo\") ; => \"http://127.0.0.1:4001/v2/keys/foo"
-  [client key]
-  (url client (prefix-key "keys" key)))
-
-(defn remap-keys
-  "Given a map, transforms its keys using the (f key). If (f key) is nil,
-  preserves the key unchanged.
-
-  (remap-keys inc {1 :a 2 :b})
-  ; => {2 :a 3 :b}
-
-  (remap-keys {:a :a'} {:a 1 :b 2})
-  ; => {:a' 1 :b 2}"
-  [f m]
-  (->> m
-       (r/map (fn [[k v]]
-                [(let [k' (f k)]
-                   (if (nil? k') k k'))
-                 v]))
-       (into {})))
 
 (defn http-opts
   "Given a map of options for a request, constructs a clj-http options map.
@@ -179,8 +105,8 @@
   "Parse an inputstream or string as JSON"
   [response]
 
-
-
+  (debug response)
+  (when (= 202 (response :status)) true)
 
   (when (= 204 (response :status)) (throw+ {:type      :not-found
                                             :errorCode 204
@@ -191,40 +117,13 @@
   (when (= 500 (response :status)) (throw+ {:type      :not_primary
                                             :errorCode 405
                                             }))
-  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type :missing-body}))
+  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type :missing-body
+                                                                         :response response
+                                                                         } ))
 
   ((first (json/parse-string (response :body) true)) :Value)
   )
 
-
-
-
-(declare node->value)
-
-(defn node->pair
-  "Transforms an etcd node representation of a directory into a [key value]
-  pair, recursively. Prefix is the length of the key prefix to drop; etcd
-  represents keys as full key at all levels."
-  [prefix-len node]
-  (MapEntry. (subs (:key node) prefix-len)
-             (node->value node)))
-
-(defn node->value
-  "Transforms an etcd node representation into a value, recursively. Prefix is
-  the length of the key prefix to drop; etcd represents keys as full key at
-  all levels."
-  ([node] (node->value 1 node))
-  ([prefix node]
-   (if (:nodes node)
-     ; Recursive nested map of relative keys to values
-     (let [prefix (if (= "/" (:key node))
-                    1
-                    (inc (.length (:key node))))]
-       (->> node
-            :nodes
-            (r/map (partial node->pair prefix))
-            (into {})))
-     (:value node))))
 
 (defn get*
   ([client key]
@@ -232,13 +131,6 @@
   ([client key opts]
 
    (->> opts
-        (remap-keys {:recursive?  :recursive
-                     :consistent? :consistent
-                     :quorum?     :quorum
-                     :sorted?     :sorted
-                     :wait?       :wait
-                     :wait-index  :waitIndex})
-        (http-opts client)
         (http/get (url client RDuri key))
         parse))
   )
@@ -247,42 +139,14 @@
   "Gets the current value of a key. If the key does not exist, returns nil.
   Single-node queries return the value of the node itself: a string for leaf
   nodes; a sequence of keys for a directory.
-
-  (get client [:cats :mittens])
-  => \"the cat\"
-
-  Directories have nil values unless :recursive? is specified.
-
-  (get client :cats)
-  => {\"mittens\"   \"the cat\"
-      \"more cats\" nil}
-
-  Recursive queries return a nested map of string keys to nested maps or, at
-  the leaves, values.
-
-  (get client :cats {:wait-index 4 :recursive? true})
-  => {\"mittens\"   \"black and white\"
-      \"snowflake\" \"white\"
-      \"favorites\" {\"thomas o'malley\" \"the alley cat\"
-                     \"percival\"        \"the professor\"}}
-
-  Options:
-
-  :recursive?
-  :consistent?
-  :quorum?
-  :sorted?
-  :wait?
-  :wait-index
-  :timeout"
+  Options:"
   ([client key]
    (get* client key {}))
 
   ([client key opts]
    (try+
-     (-> (get* client key opts)
-         :node
-         node->value)
+     (get* client key opts)
+
      (catch [:status 404] _ nil))))
 
 (defn write
@@ -305,7 +169,6 @@
   ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
-
         (http/put (url client RDuri key value))
         parse)))
 
@@ -323,126 +186,48 @@
        :key)))
 
 (defn delete
-  "Deletes the given key. Options:
-
-  :timeout
-  :dir?
-  :recursive?"
+  "Deletes the given key"
   ([client key]
    (delete client key {}))
   ([client key opts]
-   (->> opts
-        (remap-keys {:recursive? :recursive
-                     :dir?       :dir
-                     :prev-value :prevValue
-                     :prev-index :prevIndex})
-        (http-opts client)
-
-        (http/delete (url client RDuri key))
+   (->> (http/delete (url client RDuri key))
         parse)))
 
-(defn delete-all
-  "Deletes all nodes, recursively if necessary, under the given directory.
-  Options:
-
-  :timeout"
-  ([client key]
-   (delete-all client key {}))
-  ([client key opts]
-   (doseq [node (->> (select-keys opts [:timeout])
-                     (get* client key)
-                     :node
-                     :nodes)]
-     (delete client (:key node) {:recursive? (:dir node)
-                                 :timeout    (:timeout opts)}))))
+;(defn delete-all
+;  "Deletes all nodes, recursively if necessary, under the given directory.
+;  Options:
+;
+;  :timeout"
+;  ([client key]
+;   (delete-all client key {}))
+;  ([client key opts]
+;   (doseq [node (->> (select-keys opts [:timeout])
+;                     (get* client key)
+;                     :node
+;                     :nodes)]
+;     (delete client (:key node) {:recursive? (:dir node)
+;                                 :timeout    (:timeout opts)}))))
 
 (defn cas
   "Compare and set based on the current value. Updates key to be value' iff the
   current value of key is value. Optionally, you may also constrain the
-  previous index and/or the existence of the key. Returns false for CAS failure.
-  Options:
-
-  :timeout
-  :ttl
-  :prev-value
-  :prev-index
-  :prev-exist?"
+  previous index and/or the existence of the key. Returns false for CAS failure."
   ([client key value value']
    (cas client key value value' {}))
   ([client key value value' opts]
    (try+
-     (->> (assoc opts
-            :prevValue value
-            :value value')
-          (remap-keys {:prev-index  :prevIndex
-                       :prev-exist? :prevExist})
-          (http-opts client)
-          (http/put (url client RDuri key value value'))
+     (->> (http/put (url client RDuri key value value'))
           parse)
      (catch [:errorCode 404] _ false)
 
      )))
-
-;(defn cas-index!
-;  "Compare and set based on the current value. Updates key to be value' iff the
-;  current index key matches. Optionally, you may also constrain the previous
-;  value and/or the existence of the key. Returns truthy if CAS succeeded; false
-;  otherwise. Options:
-;
-;  :timeout
-;  :ttl
-;  :prev-value
-;  :prev-index
-;  :prev-exist?"
-;  ([client key index value']
-;   (cas-index! client key index value' {}))
-;  ([client key index value' opts]
-;   (try+
-;     (->> (assoc opts
-;            :prevIndex index
-;            :value value')
-;          (remap-keys {:prev-value  :prevValue
-;                       :prev-exist? :prevExist})
-;          (http-opts client)
-;          (http/put (url client RDuri key value value'))
-;          parse)
-;     (catch [:errorCode 101] _ false))))
-;
-;(defn swap!
-;  "Atomically updates the value at the given key to be (f old-value & args).
-;  Randomized backoff based on the client's swap retry delay. Returns the
-;  successfully set value."
-;  [client key f & args]
-;  (loop []
-;    (let [node (:node (get* client key))
-;          index (:modifiedIndex node)
-;          value' (apply f (:value node) args)]
-;      (if (cas-index! client key index value')
-;        value'
-;        (do
-;          (Thread/sleep (:swap-retry-delay client))
-;          (recur))))))
-
-
-;Queue
-
-
 
 (defn enqueue*
   ([client key]
    (enqueue* client key {}))
   ([client key opts]
 
-   (->> opts
-        (remap-keys {:recursive?  :recursive
-                     :consistent? :consistent
-                     :quorum?     :quorum
-                     :sorted?     :sorted
-                     :wait?       :wait
-                     :wait-index  :waitIndex})
-        (http-opts client)
-        (http/put (url client Quri key))
-        parse))
+   (->> (http/put (url client Quri key))))
   )
 
 (defn enqueue
@@ -451,10 +236,9 @@
 
   ([client key opts]
    (try+
-     (-> (enqueue* client key opts)
-         :node
-         node->value)
-     (catch [:status 404] _ nil))))
+     (enqueue* client key opts)
+     (catch [:status 404] _ nil)
+     (catch [:status 200] _ true))))
 
 
 
@@ -464,13 +248,6 @@
   ([client opts]
 
    (->> opts
-        (remap-keys {:recursive?  :recursive
-                     :consistent? :consistent
-                     :quorum?     :quorum
-                     :sorted?     :sorted
-                     :wait?       :wait
-                     :wait-index  :waitIndex})
-        (http-opts client)
         (http/delete (url client Quri))
         parse))
   )
@@ -481,9 +258,7 @@
 
   ([client opts]
    (try+
-     (-> (dequeue* client opts)
-         :node
-         node->value)
+     (dequeue* client opts)
      (catch [:status 404] _ nil))))
 
 
@@ -493,13 +268,6 @@
   ([client opts]
 
    (->> opts
-        (remap-keys {:recursive?  :recursive
-                     :consistent? :consistent
-                     :quorum?     :quorum
-                     :sorted?     :sorted
-                     :wait?       :wait
-                     :wait-index  :waitIndex})
-        (http-opts client)
         (http/get (url client Quri "peek"))
         parse))
   )
@@ -510,9 +278,7 @@
 
   ([client opts]
    (try+
-     (-> (queuepeek* client opts)
-         :node
-         node->value)
+     (queuepeek* client opts)
      (catch [:status 404] _ nil))))
 
 (defn queuecount*
@@ -521,13 +287,6 @@
   ([client opts]
 
    (->> opts
-        (remap-keys {:recursive?  :recursive
-                     :consistent? :consistent
-                     :quorum?     :quorum
-                     :sorted?     :sorted
-                     :wait?       :wait
-                     :wait-index  :waitIndex})
-        (http-opts client)
         (http/get (url client Quri))
         parse))
   )
@@ -538,7 +297,5 @@
 
   ([client opts]
    (try+
-     (-> (queuecount* client opts)
-         :node
-         node->value)
+     (queuecount* client opts)
      (catch [:status 404] _ nil))))

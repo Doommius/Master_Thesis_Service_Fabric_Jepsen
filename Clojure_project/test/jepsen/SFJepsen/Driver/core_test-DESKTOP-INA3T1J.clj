@@ -9,6 +9,34 @@
 ; Delete all data before each test
 ;(use-fixtures :each #(do (sfc/delete-all! c nil) (%)))
 
+(deftest remap-keys-test
+  (is (= (sfc/remap-keys inc {1 2 3 4})
+         {2 2 4 4})))
+
+(deftest key-encoding-test
+  (testing "nil"
+    (is (= "" (sfc/encode-key nil))))
+
+  (testing "simple strings"
+    (is (= "foo" (sfc/encode-key "foo"))))
+
+  (testing "strings with slashes"
+    (is (= "foo/bar" (sfc/encode-key "foo/bar"))))
+
+  (testing "unicode"
+    (is (= "%E2%88%B4/%E2%88%8E" (sfc/encode-key "∴/∎"))))
+
+  (testing "keywords"
+    (is (= "foo" (sfc/encode-key :foo))))
+
+  (testing "symbols"
+    (is (= "foo" (sfc/encode-key 'foo))))
+
+  (testing "sequences"
+    (is (= "foo" (sfc/encode-key [:foo])))
+    (is (= "foo/bar" (sfc/encode-key [:foo :bar])))
+    (is (= "foo/bar" (sfc/encode-key '(:foo :bar))))
+    (is (= "foo/bar/baz" (sfc/encode-key ["foo/bar" "baz"])))))
 
 (deftest write-get-test
   (testing "a simple key"
@@ -50,28 +78,14 @@
 
 
 
-;Queue
+; Queue
 
 
-(deftest queue-cycle-test
-  (testing "Addeding item to queue"
-    (info (sfc/enqueue c 12312312312))
-    )
-
-  (testing "checking queue count."
-    (is (= 1 (sfc/queuecount c)))
-    )
-
-  (testing "Dequeueing"
-    (is (= 12312312312 (sfc/dequeue c)))
-    )
-  )
-
-
-(deftest queue-dequeue-test
-
-  (testing "Dequeueing"
-    (info (sfc/dequeue c)))
-  )
-
-
+;(deftest queue-cycle-test
+;  (testing "Testing the cycle of the queue."
+;    (sfc/enqueue c 12312312312)
+;    ;(is (= 1 (sfc/queuecount c)))
+;    (is (= 12312312312 (sfc/queuepeek c)))
+;    (is (= 12312312312 (sfc/dequeue c)))
+;    )
+;  )

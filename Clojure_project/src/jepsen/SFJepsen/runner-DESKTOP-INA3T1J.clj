@@ -27,7 +27,6 @@
             [jepsen.SFJepsen
              [queue :as queue]
              [dict :as dict]
-             [concurrentqueue :as concurrentqueue]
              [db :as db]
              [nemesis :as nemesis]]
             ))
@@ -39,7 +38,6 @@
   "A map of test names to test constructors."
   {:reliablequeue queue/workload
    :reliabledict dict/workload
-   :concurrentqueue concurrentqueue/workload
    :none          (fn [_] tests/noop-test)}
   )
 

@@ -38,7 +38,7 @@ namespace ReliableCollectionsWebAPI.Controllers
                 
             }
             List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
-            result.Add(new KeyValuePair<string, long>("GetCountAsync", returnvalue));
+            result.Add(new KeyValuePair<string, long>("Value", returnvalue));
             return this.Json(result);
 
         }
@@ -46,11 +46,11 @@ namespace ReliableCollectionsWebAPI.Controllers
 
         // get api/ReliableQueue/ to get Queue Length
         [HttpGet("peek")]
-        public async Task<IActionResult> Get(int request)
+        public async Task<IActionResult> Get(string key)
         {
-            IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
+            IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
 
-            ConditionalValue<String> returnvalue;
+            ConditionalValue<long> returnvalue;
 
 
             using (var txn = this.StateManager.CreateTransaction())
@@ -62,7 +62,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             {
 
                 List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
-                result.Add(new KeyValuePair<string, long>("TryPeekAsync", long.Parse(returnvalue.Value)));
+                result.Add(new KeyValuePair<string, long>("Value", returnvalue.Value));
                 return this.Json(result);
             }
             else
@@ -76,8 +76,8 @@ namespace ReliableCollectionsWebAPI.Controllers
         public async Task<IActionResult> get()
         {
            
-         IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
-            ConditionalValue<String> returnvalue;
+         IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
+            ConditionalValue<long> returnvalue;
             using (var txn = this.StateManager.CreateTransaction())
             {
                 returnvalue  = await queue.TryDequeueAsync(txn);
@@ -89,13 +89,15 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
             if (returnvalue.HasValue)
             {
+
+
                 List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
-                result.Add(new KeyValuePair<string, long>("TryDequeueAsync", long.Parse(returnvalue.Value)));
+                result.Add(new KeyValuePair<string, long>("Value", returnvalue.Value));
                 return this.Json(result);
             }
             else
             {
-                return new AcceptedResult();
+                return new OkResult();
             }
 
 
@@ -103,11 +105,11 @@ namespace ReliableCollectionsWebAPI.Controllers
 
         // put api/ReliableQueue/{item} to get Queue item
         [HttpPut("{value}")]
-        public async Task<IActionResult> put(String value)
+        public async Task<IActionResult> put(int value)
         {
             
 
-            IReliableQueue<String> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<String>>("myReliableQueue");
+            IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
 
             using (var txn = this.StateManager.CreateTransaction())
             {
@@ -117,7 +119,9 @@ namespace ReliableCollectionsWebAPI.Controllers
                 
             }
 
-            return new AcceptedResult();
+            List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
+            result.Add(new KeyValuePair<string, int>("Value", value));
+            return this.Json(result);
 
 
 

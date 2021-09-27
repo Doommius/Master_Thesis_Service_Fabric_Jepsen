@@ -1,4 +1,4 @@
-(ns jepsen.SFJepsen.queue
+(ns jepsen.SFJepsen.concurrentqueue
   (:require [clojure [pprint :refer :all]
              [string :as str]]
             [clojure.tools.logging :refer [debug info warn]]
@@ -58,7 +58,7 @@
           :error :ConnectException))
       (catch [:errorCode 400] e
         (assoc op :type :fail, :error :Connectrefused))
-      (catch [:status 405] e
+      (catch [:status 500] e
         (assoc op :type :fail, :error :internal-server-error))
       (catch [:status 500] e
         (assoc op :type :fail, :error :internal-server-error))
@@ -78,7 +78,6 @@
 
 (defn e [_ _] {:type :invoke, :f :enqueue, :value (rand-int 5)})
 (defn d [_ _] {:type :invoke, :f :dequeue, :value nil})
-(defn p [_ _] {:type :invoke, :f :peek, :value nil})
 (defn c [_ _] {:type :invoke, :f :count, :value nil})
 
 
@@ -88,6 +87,6 @@
   [opts]
   {:client    (Client. nil)
    :model     (model/unordered-queue)
-   :generator (->> (gen/mix [e d p c]))
+   :generator (->> (gen/mix [e d c]))
    :checker   (checker/compose {:queue   checker/total-queue
                                 :latency (checker/latency-graph)})})

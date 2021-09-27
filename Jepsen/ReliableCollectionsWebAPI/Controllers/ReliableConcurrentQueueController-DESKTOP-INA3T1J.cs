@@ -35,10 +35,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             {
                 long returnvalue = queue.Count;
 
-                List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
-                result.Add(new KeyValuePair<string, long>("Queue lenght", returnvalue));
-                return this.Json(result);
-
+                return this.Json((new KeyValuePair<string, long>("Queue Length", returnvalue)));
 
             }
         }
@@ -59,19 +56,21 @@ namespace ReliableCollectionsWebAPI.Controllers
 
                 if (returnvalue.HasValue)
                 {
-                    List<KeyValuePair<string, long>> result = new List<KeyValuePair<string, long>>();
-                    result.Add(new KeyValuePair<string, long>("TryDequeueAsync", long.Parse( returnvalue.Value)));
-                    return this.Json(result);
+                    return this.Json(new KeyValuePair<string, string>("deQueue", returnvalue.Value));
                 }
                 else
                 {
-                    return new AcceptedResult();
+                    return new OkResult();
                 }
             }
+
+
 
         }
 
  
+
+
         // PUT VoteData/name/count
         [HttpPut("{value}")]
         public async Task<IActionResult> put(String value)
@@ -88,7 +87,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
             }
 
-            return new AcceptedResult();
+            return new OkResult();
 
 
 
