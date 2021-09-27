@@ -8,7 +8,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsthm}
-\usepackage[pdftex]{graphicx}
+\usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{listings}
@@ -579,10 +579,18 @@ A diagram of the service looks as the following. \\
 \vspace{5mm}
 \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
 
+This implementation contains 2 main codebases. The c# dotnet web service that acts as a restAPI to the reliable collections using 3 controllers for the 2 default data structures implemented in the framwork, and a Clojure codebase that contains the test suite as well as the API connector that handles parsing, connections and connections faults.
+
+\subsubsection{Infrastructure}
+The infrastructure in centered around v-net containing 6 Virtual machines all running linux, in this case ubuntu 18.04 and 20.04 for the jepsen host, I'll refer to the service fabric nodes from n1-n5 and the jepsen host as jepsenhost from now on.
+The 5 service fabric nodes are mostly self managing, applications can be deployed via either the Azure Service Fabric CLI\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cli} or via visual studio\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-tutorial-deploy-app-to-party-cluster which was the process used doing the development stages of the project.
+
+This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster. 
+
+The setup of the network 
 
 
 
-\subsection{Infrastructure}
 
 \subsection{Node Types}
 
@@ -604,16 +612,6 @@ A diagram of the service looks as the following. \\
 
 \subsection{Considerations}
 
-
-\section{Implementation}
-
-
-Designing the test started with a basic idea of what was needed in terms of services and infrastructure was 2 applications. a Service fabric stateful service that made itself available to the Jepsen service via an API and the jepsen Service itself running on a separate machine in the cluster that would control the cluster nodes via ssh as well as in charge of sending the required requests to the service. These assumptions was where the first code was written to both learn C\# and clojure as well as learning the required frameworks needed as well.
-
-This turned out not to be the case as SF only allows writes to the primary and if you need more primaries you need to add a 2nd layer of services to both forward write requests to the correct portion or to query all partition if data is needed from the whole cluster. Then the issue arouse that a lot of my Clojure code was fairly hard coded which often broke when changes in the cluster occurred, combined with 
-
-
-\subsection{SF Services}
 
 \subsection{Local Dev setup}
 
