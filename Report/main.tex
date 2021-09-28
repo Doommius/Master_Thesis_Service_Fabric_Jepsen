@@ -626,12 +626,11 @@ These each contain client for the test defining what endpoint to reach out to, a
 
 all types are exspecetd to follow the repeatable-read consistentsy model. where the concurrent queue does best effort to meet the fifo order of queued items compared the the normal queue following a fifo ordering.
 
+\subsection{Implementation of the initail design.}
 
 
-\subsubsection{API driver.}
-
-\subsubsection{Jepsen test suite}
-\subsection{Considerations}
+The initial designed first targeted the reliable collection dict datatype. and presented a few issues with the design and implementation details that was not considered. The biggest hurdle here was developing code for the service fabric linux cluster due to a non feature paraty between it and the windows cluster which caused non favable conditions such as no debugging, binary dump files that weren't readable by any tool available, dns service missing which required a lot of endpoints to be hardcoded which meant only one active service per node. eg we can only have 1 service running per node which would greatly reduce veritcal scaling of the partions which would greatly increase the number of partions required to handling greater workloads. this was resolved by designing a 3rd service that simply provides the API directly from the stateful service as the transactions are going to behave the same on a single partion as with 500 partions. this 3rd service was confiured such that replicas were active so they could be queried for read only operations which the primary was in charge of read operations such that all write operations were routed to the leader node. where all reads were spread across the 5 nodes in the cluster. 
+    
 
 
 \subsection{Local Dev setup}
