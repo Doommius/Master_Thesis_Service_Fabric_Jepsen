@@ -583,33 +583,54 @@ This implementation contains 2 main codebases. The c# dotnet web service that ac
 
 \subsubsection{Infrastructure}
 The infrastructure in centered around v-net containing 6 Virtual machines all running linux, in this case ubuntu 18.04 and 20.04 for the jepsen host, I'll refer to the service fabric nodes from n1-n5 and the jepsen host as jepsenhost from now on.
-The 5 service fabric nodes are mostly self managing, applications can be deployed via either the Azure Service Fabric CLI\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cli} or via visual studio\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-tutorial-deploy-app-to-party-cluster which was the process used doing the development stages of the project.
+The 5 service fabric nodes are mostly self managing, applications can be deployed via either the Azure Service Fabric CLI\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cli} or via visual studio\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-tutorial-deploy-app-to-party-cluster which was the process used doing the development stages of the project.}
 
 This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster. 
 
-The setup of the network 
+The topology of the network is so that
+\includegraphics{images/topology.png}
 
+All traffic recides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as exspected.
 
+\paragraph*{Node Sizes}
 
-
-\subsection{Node Types}
-
-\subsubsection{SF node}
-
-\subsection{Jepsen Host name}
+The initial node sizses were 2 cpu cores and 8 gbs of ram alog with 20 gb local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with diskspace and often took a long time to setup and get ready for any given deployment, this was resolved by upgrding the size of the nodes to 4vcpu, 16gb ram and 80gb local storage per node. This configuration resulted in a much more velbehaved cluster. and this node size was kept for the reminder af the test. However the jepsenhost is slightly underdimentioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
 
 \section{Services}
+as mentioned ealier running these tests required multiple components, The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless frontend that provides this data to clients via restapi, a driver that handles the connection to this api and finally the jepsen test suite itself consisting of both test suite and checker of the transactions and fault induser of the end system.
 
 \subsection{SF services}
+Using the 2 services approch as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstacting from the backend and adding a layer of validation, routing, and protection of the backend service. as well as greatly reducing the time that connections are held open to due RR times as all connections to the datastore is kept withi the cluster. 
+\subsubsection{Stateful Reliable collection service}
+
+The stateful sevices provides 3 seperate controllers that each provides one of the built in reliable colllection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transacion issues is returned to the client via http codes. eg node not primary, acccepted, result not found.. etc. 
+
+The forend service simply provides these same apis but with wrappes and rotuign in case of a partioned design. This layer could also be used to built addional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
+
+\subsection{Jepsen test suite}
+The jepsen test suite contains many layers and two main components a connector that conects to the service fabric services, and the test suite itself.
+
+The drive is the simplest service that is based on a raft api that was completely rewritten to interact with the SF API along with a custom fault handler that is able to parse both the result that the reliabl collections api provides along with with the http codes in case something doesn't behave as intended.
+
+The jepsen test component contains 6 classes. a runner, a db class that prepares for the test, a client that interacts with the driver, nemesis that induces faults in the cluster and 3 workloads, queue, cqueue, and dict. testing the 3 seperate types provided by service fabric.
+
+The runner type is the main class that handles defaults, cli input and test selection along with code that handles common behavoir between the test. nemesis, db, along with other features that are mutual for all services that run in serice fabric.
+
+the db class that is in charge for spinning up and tearing down the services along with functions for stating and stopping workers in the cluster.
+
+the nemesis class that contains the functions that kill, partision or otherwise mess and attempt to break the cluster.
+
+the 3 workloads.
+
+These each contain client for the test defining what endpoint to reach out to, a generator generating a seweunce of transactions to preform on te database, and a checker that checks if our datastored bahaved as exspecetd.
+
+all types are exspecetd to follow the repeatable-read consistentsy model. where the concurrent queue does best effort to meet the fifo order of queued items compared the the normal queue following a fifo ordering.
 
 
-\subsection{Reliable collections service}
 
-\subsection{Front end}
+\subsubsection{API driver.}
 
-
-\subsection{Jepsen Service}
-
+\subsubsection{Jepsen test suite}
 \subsection{Considerations}
 
 
