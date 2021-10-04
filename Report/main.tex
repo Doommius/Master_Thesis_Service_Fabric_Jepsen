@@ -97,7 +97,7 @@ First, I Present ACID \& Base, their constraints, what faults occur in database 
 Then, I Present Jepsen, a CLojure framework\cite{jepsonio} developed by K. Kingsbury that allow for testing of distributed systems, This is solved via a direct serialization graph (DSG) and queries to the target system that are carefully chosen that allows for traceability, and recoverability.  \\
 \vspace{5mm}
 
-Then, I present Azure Service Fabric(SF), SF is a distributed container orchestration system made my Microsoft, that allows for hosting of services, or apps. It includes a few different built in functions, but the primary interest here lie within the reliable containers aspect of SF, and what claims Microsoft makes concerning the behaviour of this data.\\
+Then, I present Azure Service Fabric(SF), SF is a distributed container orchestration system made my Microsoft, that allows for hosting of services, or apps. It includes a few different built in functions, but the primary interest here lie within the reliable containers aspect of SF, and what claims Microsoft makes concerning the behavior of this data.\\
 \vspace{5mm}
 Then, I will present what modern database systems promise, what properties of ACID they follow, which they relax, and which they disregard, and well as what they gain, and which tradeoffs they suffer, Here a main focus will be on Service Fabric.\\
 \vspace{5mm}
@@ -164,7 +164,7 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 \begin{itemize}
 \item Consistency and Partition tolerance(CP) \\ A system that deliveries Consistency and Partition tolerance but the trade off here is Availability, If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols, and most distributed databases. an Example of a CP database would be MongoDB and Service Fabrics Reliable collections, These work by having partitions that contain a master and a set of replicates. The replicates simple follow the masters transaction log and apply it to their own data set. If the Primary becomes unavailable the Replicate with the most recent transaction log simply comes the new Master, doing this switch the partition becomes unavailable while the replicates catches up to the new master. this causes the network to remain consistent but limits availability.  \\
 
-\item Availability and Partition tolerance (AP) \\ If our system foregoes Consistency, and deliverers availability and partition tolerance, In the case of a partition between nodes we keep serving from all nodes but in this case we might serve stale data and occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of a AP database would be Cassandra, where the CP have a master/replicate architecture, This would cover DNS, Caching systems and databases such as Cassandra. Cassandra uses a masterless architecture, It does mean that there is multiple points of failure rather then a single one. It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
+\item Availability and Partition tolerance (AP) \\ If our system foregoes Consistency, and deliverers availability and partition tolerance, In the case of a partition between nodes we keep serving from all nodes but in this case we might serve stale data and occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of a AP database would be Cassandra, where the CP have a master/replicate architecture, This would cover DNS, Caching systems and databases such as Cassandra. Cassandra uses a leaderless architecture, It does mean that there is multiple points of failure rather then a single one. It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
 
 \item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. this results in a single node, or single cluster system as any distribution of the system introduces network instability and latency that would break the system. In this case it would cover single node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
 \end{itemize}
@@ -186,13 +186,13 @@ For explaining the the concepts within consistency i will use the a paper by Bal
 
 \subsection{Strict Serializability}
 
-For a system to be Strict Serializatbility, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.\\
+For a system to be Strict Serializability, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.\\
 \vspace{5mm}
 
-Formally Strict Serializatbility is define as as Serviceable system that is compatible with a Time dependent order.
+Formally Strict Serializability is define as as Serviceable system that is compatible with a Time dependent order.
 "A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}\\
 \vspace{5mm}
-Here it should be clarified that the Obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serialzable system with the time constraint from Linearizability.
+Here it should be clarified that the Obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serializable system with the time constraint from Linearizability.
 
 \textcolor{red}{TODO Make Diagram}
 \subsection{Serializable}
@@ -200,7 +200,7 @@ Here it should be clarified that the Obvious way that that if we have transactio
 Serializability is a relaxation of Strict Serializability that foregoes that real time constraint, it defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
 \vspace{5mm}
 
-The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole, this means that in case of a network partition some or all notes will be stuck until the network is healed. Futher as no real time constraint,  we can observe stale reads, This occurs when Process A completes a Write, Then process B begin a read, the read is not guaranteed to observe the Write from process A, 
+The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole, this means that in case of a network partition some or all notes will be stuck until the network is healed. Further as no real time constraint is enforced,  we can observe stale reads, This occurs when Process A completes a Write, Then process B begin a read, the read is not guaranteed to observe the Write from process A, 
 
 \textcolor{red}{TODO Make Diagram}
 
@@ -252,7 +252,7 @@ First the 3 types of behavior is explained as these are used to explain the 4 le
 \item Phantom read
 \end{itemize}
 
-From this knowledge a table can be made that gives us an overview of the isolation levels and what behaviour and the trade off they have.
+From this knowledge a table can be made that gives us an overview of the isolation levels and what behavior and the trade off they have.
 Isolation level	Read phenomena
 Dirty read	Non-repeatable read	Phantom read
 read uncommitted	yes	yes	yes
@@ -290,7 +290,7 @@ Process 1 writes A, then process 1 tried to read A but a doesn't exist in the no
 \
 
 
-\chapter{Database Consistency testing Possily rename to Jepsen}
+\chapter{Database Consistency testing possibly rename to Jepsen}
 
 
 
@@ -305,7 +305,7 @@ Atomicity, and Isolation as we often write the data to a arbitrary node, that ac
 
 \section{Historically}
 
-Historically this was done with using a manually defined hand coded set of patterns to check how a system behaves wrt to the isolation levels above, like if some proven invariants hold, or if an anomaly is present in parallel is present by inserting record x and y in two separate transactions and and in two more transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handles long forks and snapshot isolation, and more importantly if it supports it at all.
+Historically this was done with using a manually defined hand coded set of patterns to check how a system behaves with regards to to the isolation levels above, like if some proven invariant hold, or if an anomaly is present in parallel is present by inserting record x and y in two separate transactions and and in two more transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handles long forks and snapshot isolation, and more importantly if it supports it at all.
 
 these checking are generally quite efficient and run in polynomial time, but they only check for a certain patterns and therefor don't give us the larger picture of where issues are present, and only cover a fairly limited set of configurations and isolation levels, and are defined on a system to system basis and no interchangeability is supporter.
 
@@ -467,7 +467,7 @@ Routing tables work differently depending on the size of the cluster. however it
 \vspace{5mm}
 
 Routing Tokens.
-Each node owns a token that includes a portion of the routing token it is responsible for. The sf-ring protocol ensures two properties, That each token is only owned by one node at any given time, and that eventually every token is owned by 1 node. This is ensure in the way that SF handles nodes joining and leaving the ring. Initially the bootstrap node owns the entire ring. after this inertial bootstrap node any joining node will split the ring segment between them.(TODO I was unable to find information on this precisely is handled however from the wording in the paper the initally split would be 50/50 and a third node would be 50/25/25?  is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done)\\
+Each node owns a token that includes a portion of the routing token it is responsible for. The sf-ring protocol ensures two properties, That each token is only owned by one node at any given time, and that eventually every token is owned by 1 node. This is ensure in the way that SF handles nodes joining and leaving the ring. Initially the bootstrap node owns the entire ring. after this inertial bootstrap node any joining node will split the ring segment between them.(TODO I was unable to find information on this precisely is handled however from the wording in the paper the initially split would be 50/50 and a third node would be 50/25/25?  is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done)\\
 \vspace{5mm}
 
 
@@ -571,66 +571,94 @@ The Design of the services required for preforming the Jepsen test were designed
 
 The initial design of the of the testing suite contained two applications, A stateful service Fabric application and a Clojure application running the Jepsen test.
 
-\subsubsection{Service Fabric Statefull Service}
+\subsubsection{Service Fabric Stateful Service}
 
-The Service Fabric stateful service should contain the desired operation that our jepsen test can interact with, the first designed endpoints were insert/add, Update, Check and set, delete and delete all on a reliable directory class.It would be implemented using C\# as the lack of documentation for java made this this seem easier in the beginning and due to all documentation being in C\#. The service would expose these end point via a web endpoint and kestrel was selected for this as it was a native provided already integrated into SF and was the one most ex samples used and was therefor deemed the safest choice to proceed with.\\
+The Service Fabric stateful service should contain the desired operation that our Jepsen test can interact with, the first designed endpoints were insert/add, Update, Check and set, delete and delete all on a reliable directory class.It would be implemented using C\# as the lack of documentation for java made this this seem easier in the beginning and due to all documentation being in C\#. The service would expose these end point via a web endpoint and kestrel was selected for this as it was a native provided already integrated into SF and was the one most ex samples used and was therefor deemed the safest choice to proceed with.\\
 \vspace{5mm}
 A diagram of the service looks as the following. \\
 \vspace{5mm}
 \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
 
-This implementation contains 2 main codebases. The c# dotnet web service that acts as a restAPI to the reliable collections using 3 controllers for the 2 default data structures implemented in the framwork, and a Clojure codebase that contains the test suite as well as the API connector that handles parsing, connections and connections faults.
+This implementation contains 2 main codebases. The c# .NET web service that acts as a restAPI to the reliable collections using 3 controllers for the 2 default data structures implemented in the framework, and a Clojure codebase that contains the test suite as well as the API connector that handles parsing, connections and connections faults.
 
 \subsubsection{Infrastructure}
-The infrastructure in centered around v-net containing 6 Virtual machines all running linux, in this case ubuntu 18.04 and 20.04 for the jepsen host, I'll refer to the service fabric nodes from n1-n5 and the jepsen host as jepsenhost from now on.
+The infrastructure in centered around v-net containing 6 Virtual machines all running Linux, in this case Ubuntu 18.04 and 20.04 for the Jepsen host, I'll refer to the service fabric nodes from n1-n5 and the Jepsen host as Jepsenhost from now on.
 The 5 service fabric nodes are mostly self managing, applications can be deployed via either the Azure Service Fabric CLI\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cli} or via visual studio\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-tutorial-deploy-app-to-party-cluster which was the process used doing the development stages of the project.}
 
-This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster. 
+This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster. 
 
 The topology of the network is so that
 \includegraphics{images/topology.png}
 
-All traffic recides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as exspected.
+All traffic resides within the cluster and the load Balancer is only there for testing of the application and check if all endpoints work as expected.
 
 \paragraph*{Node Sizes}
 
-The initial node sizses were 2 cpu cores and 8 gbs of ram alog with 20 gb local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with diskspace and often took a long time to setup and get ready for any given deployment, this was resolved by upgrding the size of the nodes to 4vcpu, 16gb ram and 80gb local storage per node. This configuration resulted in a much more velbehaved cluster. and this node size was kept for the reminder af the test. However the jepsenhost is slightly underdimentioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
+The initial node sizes were 2 cpu cores and 8 gbs of ram along with 20 gb local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16gb ram and 80gb local storage per node. This configuration resulted in a much more well-behaved cluster. and this node size was kept for the reminder of the test. However the jepsenhost is slightly underdimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
 
 \section{Services}
-as mentioned ealier running these tests required multiple components, The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless frontend that provides this data to clients via restapi, a driver that handles the connection to this api and finally the jepsen test suite itself consisting of both test suite and checker of the transactions and fault induser of the end system.
+as mentioned earlier running these tests required multiple components, The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless front-end that provides this data to clients via RESTAPI, a driver that handles the connection to this api and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
 
 \subsection{SF services}
-Using the 2 services approch as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstacting from the backend and adding a layer of validation, routing, and protection of the backend service. as well as greatly reducing the time that connections are held open to due RR times as all connections to the datastore is kept withi the cluster. 
+Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the backend and adding a layer of validation, routing, and protection of the backend service. as well as greatly reducing the time that connections are held open to due RR times as all connections to the data store is kept within the cluster. 
 \subsubsection{Stateful Reliable collection service}
 
-The stateful sevices provides 3 seperate controllers that each provides one of the built in reliable colllection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transacion issues is returned to the client via http codes. eg node not primary, acccepted, result not found.. etc. 
+The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{https://en.wikipedia.org/wiki/List_of_HTTP_status_codes}. eg node not primary, accepted, result not found.. etc. 
 
-The forend service simply provides these same apis but with wrappes and rotuign in case of a partioned design. This layer could also be used to built addional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
+The fronted service simply provides these same apis but with wrappers and routing in case of a portioned design. This layer could also be used to built additional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
 
 \subsection{Jepsen test suite}
-The jepsen test suite contains many layers and two main components a connector that conects to the service fabric services, and the test suite itself.
+The Jepsen test suite contains many layers and two main components a connector that connects to the service fabric services, and the test suite itself.
 
-The drive is the simplest service that is based on a raft api that was completely rewritten to interact with the SF API along with a custom fault handler that is able to parse both the result that the reliabl collections api provides along with with the http codes in case something doesn't behave as intended.
+The drive is the simplest service that is based on a raft api that was completely rewritten to interact with the SF API along with a custom fault handler that is able to parse both the result that the reliable collections api provides along with with the http codes in case something doesn't behave as intended.
 
-The jepsen test component contains 6 classes. a runner, a db class that prepares for the test, a client that interacts with the driver, nemesis that induces faults in the cluster and 3 workloads, queue, cqueue, and dict. testing the 3 seperate types provided by service fabric.
+The Jepsen test component contains 6 classes. a runner, a db class that prepares for the test, a client that interacts with the driver, nemesis that induces faults in the cluster and 3 workloads, queue, cqueue, and dict. testing the 3 separate types provided by service fabric.
 
-The runner type is the main class that handles defaults, cli input and test selection along with code that handles common behavoir between the test. nemesis, db, along with other features that are mutual for all services that run in serice fabric.
+The runner type is the main class that handles defaults, cli input and test selection along with code that handles common behavior between the test. nemesis, db, along with other features that are mutual for all services that run in service fabric.
 
 the db class that is in charge for spinning up and tearing down the services along with functions for stating and stopping workers in the cluster.
 
-the nemesis class that contains the functions that kill, partision or otherwise mess and attempt to break the cluster.
+the nemesis class that contains the functions that kill, partition or otherwise mess and attempt to break the cluster.
 
 the 3 workloads.
 
-These each contain client for the test defining what endpoint to reach out to, a generator generating a seweunce of transactions to preform on te database, and a checker that checks if our datastored bahaved as exspecetd.
+These each contain client for the test defining what endpoint to reach out to, a generator generating a sequence of transactions to preform on te database, and a checker that checks if our data stored behaved as expected.
 
-all types are exspecetd to follow the repeatable-read consistentsy model. where the concurrent queue does best effort to meet the fifo order of queued items compared the the normal queue following a fifo ordering.
-
-\subsection{Implementation of the initail design.}
+all types are expected to follow the repeatable-read consistently model. where the concurrent queue does best effort to meet the FIFO order of queued items compared the the normal queue following a FIFO ordering.
 
 
-The initial designed first targeted the reliable collection dict datatype. and presented a few issues with the design and implementation details that was not considered. The biggest hurdle here was developing code for the service fabric linux cluster due to a non feature paraty between it and the windows cluster which caused non favable conditions such as no debugging, binary dump files that weren't readable by any tool available, dns service missing which required a lot of endpoints to be hardcoded which meant only one active service per node. eg we can only have 1 service running per node which would greatly reduce veritcal scaling of the partions which would greatly increase the number of partions required to handling greater workloads. this was resolved by designing a 3rd service that simply provides the API directly from the stateful service as the transactions are going to behave the same on a single partion as with 500 partions. this 3rd service was confiured such that replicas were active so they could be queried for read only operations which the primary was in charge of read operations such that all write operations were routed to the leader node. where all reads were spread across the 5 nodes in the cluster. 
-    
+
+\subsection{Implementation of the initial design.}
+
+The initial designed first targeted the reliable collection dict datatype. and presented a few issues with the design and implementation details that was not considered. 
+
+The biggest hurdle here was developing code for the service fabric Linux cluster due to a non feature parity between it and the windows cluster which caused non favorable conditions such as no debugging, binary dump files that weren't readable by any tool available. 
+
+Here a great amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks. it should be noted that the service fabric framework was kept at the newest release while .NET and similar aspects where rolled back to older releases.
+
+All of these attempts were however frugal, after spending newly 2 months deleting all code, starting from scratch using a different skeleton code. trying the implementations via java, going back to c# getting a working solution on the windows service fabric implementation i reached out to Mikkel from Microsoft. 
+
+The issue turned out to be 2 fold.
+\begin{itemize}
+\item .NET needing to be rolled back to 3.5
+\item the entry point having to be defined via .NET and the name of the DLL file. this was something i attempt prior by using a entry point.sh that did the same while his solution was just replacing where the windows version has .exe with .DLL and as a .NET entry point.
+\end{itemize}
+
+Finally i had a runnable version on Linux, or rather. i had a way to run my application on Linux as the issues didn't stop here. the Feature parity was still there. the dns service was still missing, this required a lot of endpoints to be hard coded, which induced as one active replica of a given service per node. eg we can only have 1 service running per node which would greatly reduce horizontal scaling of the partitions which would greatly increase the number of partitions required to handling greater workloads. running larger partitions on each node is also an option but from a performance, availability, and reliability it's much effect having lots of smaller nodes instead of one large database instance that require a lot of broadcasting to each partition replica.
+
+
+
+This required some changes to the design but was resolved by removing of the layers in the application and accessing the stateful service directly, or rather creating a parallel service in case the other services were required later.
+
+\subsection{2nd iteration of the design.}
+
+This 3rd service should simply provide the API directly from the stateful service, as the transactions are going to behave the same on a single partition as with 500 partitions. this 3rd service was configured such that replicas were active. this implies two things: Routing is no longer an issue, we need to route primary traffic to the primary node from our Clojure connector.
+
+this issue can be solved in two ways. one is rather quick, while the other queries the SF cluster for which node is primary. the quick solution of just defining the primary at launch and from there checking which node allows writes in case the current node start blocking writes. this is a messy solution but as it doesn't induce noise in a data as these transactions are simply rejected/discarded it is therefor not an issue. optimally we should query the SF cluster for primary node, this implementation could be done in case the before mentioned patch isn't resolving the issue.
+
+
+
+The also entails setting of routing for all of our clients. they all read from all 5 nodes but also send write operations to our primary node. 
 
 
 \subsection{Local Dev setup}
@@ -652,7 +680,7 @@ Visual studio remote debugger not working
 
 Configuration issues,
 
-Cluster cecoming unhealty/corrupt and nodes not being configred correctly after a reimage.
+Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a reimage.
 
 
 \subsection{Jepsen Service}
