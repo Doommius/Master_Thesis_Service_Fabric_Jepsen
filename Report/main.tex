@@ -173,6 +173,14 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 \item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. this results in a single node, or single cluster system as any distribution of the system introduces network instability and latency that would break the system. In this case it would cover single node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
 \end{itemize}
 
+\section{Availability}
+
+\begin{itemize}
+\item Sticky Availale
+\item Totally
+
+\end{itemize}
+
 \newpage
 \section{Consistency models}
 
@@ -190,41 +198,132 @@ For explaining the the concepts within consistency i will use the a paper by Bal
 
 \subsection{Strict Serializability}
 
-For a system to be Strict Serializability, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations.\\
+For a system to be Strict Serializability, it is required that the entire system operationally appear to occur in the order, with regards to both the order and the real time of the operations. within the CAP theorem this would be considers a CA system.\\
 \vspace{5mm}
 
 Formally Strict Serializability is define as as Serviceable system that is compatible with a Time dependent order.
 "A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in the obvious way. A history is strictly serializable if the transactions’ order in the sequential history is compatible with their precedence order."\cite{10.1145/78969.78972}\\
 \vspace{5mm}
-Here it should be clarified that the Obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serializable system with the time constraint from Linearizability.
+Here it should be clarified that the obvious way that that if we have transaction A and B, That A proceeds B if A Completes Prior to Transaction B Begins´ or in other worlds a Serializable system with the time constraint from Linearizability.
 
-\textcolor{red}{TODO Make Diagram}
+SS-R cannot be totally or sticky available in the event of a network partition, in this case some or all nodes will be stuck. this is due to the nature of the Strict serializable consistency model, where transaction operates on the system on a whole, as in case of a partition in the distributed system this is impossible. there can be cases where replicate nodes are partitioned from the primary nodes where the primary nodes can continue with some degradation but where the replicas either shutdown or serve stale data. in case of primary nodes partitioning the system would be unable to resume due to not being able to commit a given transaction to the entire system.
+
+
+\begin{table}[h]
+\begin{tabular}{llll}
+T1   & T2   & T3   & T4   \\
+w(1) &      &      &      \\
+r(2) &      &      &      \\
+c    &      &      &      \\
+     & r(1) &      &      \\
+     & r(2) &      &      \\
+     & c    &      &      \\
+     &      & r(3) &      \\
+     &      & w(4) &      \\
+     &      & c    &      \\
+     &      &      & r(1) \\
+     &      &      & c   
+\end{tabular}
+\caption{Transactions are ordered chronological in time, and executed as such.}
+
+\end{table}
+
 \subsection{Serializable}
 
-Serializability is a relaxation of Strict Serializability that foregoes that real time constraint, it defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
+Serializability is a relaxation of Strict Serializability consistency model that foregoes that real time constraint, it defines systems where transactions occur in some total order, It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
 \vspace{5mm}
 
 The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole, this means that in case of a network partition some or all notes will be stuck until the network is healed. Further as no real time constraint is enforced,  we can observe stale reads, This occurs when Process A completes a Write, Then process B begin a read, the read is not guaranteed to observe the Write from process A, 
 
-\textcolor{red}{TODO Make Diagram}
+There is a further limitation of Serializable due to having no real time constraint, SR is allows pathological orderings. This allows a serializable database to discard write and increment operations that are never observed by executing them at the very end of the history, furthermore read operations can always return a empty state by placing the transaction and the beginning of the history. it should however be noted that most implementation does not take advantage of this.
+
+SR follows closely to S-SR with regards to partition tolerance and availability doing partition, and is therefor considered a CA database.
+
+\begin{table}[h]
+\begin{tabular}{llll}
+T1   & T2   & T3   & T4   \\
+w(1) &      &      &      \\
+     & r(1) &      &      \\
+     &      &      & r(1) \\
+     & w(3) &      &      \\
+     &      &      & c    \\
+     &      & r(3) &      \\
+     & c    &      &      \\
+     &      & w(4) &      \\
+r(2) &      &      &      \\
+c    &      &      &      \\
+     &      & c    &      
+\end{tabular}
+\caption{Transactions are ordered chronological in time, and executed such that the operations occur atomically such that they appear to have been executed in order transaction wise. }
+\end{table}
 
 \subsection{Repeatable Read}
 
-Repeatable Read closely resembles a Serializable system, however in RR we allow phantoms, this meaning that objects are stable once read, but that if we preform the same read within the a given transaction that the predicate itself might not be stable. it is formally defined in ANSI SQL 1999 that specifies RR as as read committed but disallowing Non-repeatable read
+Repeatable Read closely resembles the Serializable consistency model, however in RR we allow phantoms. This implies that if T1 read a predicate like "select all from alarms with the newest timestamp", another transaction T2 is able to create, or modify values within the predicate before t1 commits. so if the transaction T1 preforms the read again this predicate might not be stable. 
 
-\textcolor{red}{TODO Make Diagram}
-transaction containing 2 reads of the same data. while a concurrent operation preforms a write to the same data.
+RR contains the above relaxation, however this relaxation implies more than meets the eye. for example repeatable read doesn't guarantee repeatable reads in the sense that we might consider. this is due to RR not requiring any real time constraint, this allow for a situation where process A performs a write, after process A completes process B performs a read, however this read is not guaranteed to obverse the write from process a. Furthermore as no per process ordering of transactions are require process a can write something and then fail to to observe that write in a subsequent transaction. 
+
+It should also be noted that RR allows for the same pathological ordering of operations as a Serializable database.
+
+\begin{table}[h]
+\begin{tabular}{llll}
+T1   & T2   & T3   & T4   \\
+     &      &      & r(y) \\
+     &      &      & c    \\
+w(x) &      &      &      \\
+r(y) &      &      &      \\
+     & r(x) &      &      \\
+     & w(p in y) &      &      \\
+     & c    &      &      \\
+r(y) &      &      &      \\
+w(z) &      &      &      \\
+c    &      &      &      \\
+     &      & r(z) &      \\
+     &      & w(x) &      \\
+     &      & c    &      
+\end{tabular}
+\caption{T1 shows a example of a valid transaction with a phantom. and t4 could be placed at the beginning of the history returning the "empty" result. both valid transactions within RR}
+\end{table}
 
 
-\textcolor{red}{TODO Make Diagram}
 \subsection{Cursor Stability}
-\textcolor{red}{TODO Make Diagram}
+
+
+
+
+
+\begin{table}[h]
+\begin{tabular}{llll}
+T1   & T2   & T3   & T4   \\
+w(1) &      &      &      \\
+r(2) &      &      &      \\
+c    &      &      &      \\
+     & r(1) &      &      \\
+     & r(2) &      &      \\
+     & c    &      &      \\
+     &      & r(3) &      \\
+     &      & w(4) &      \\
+     &      & c    &      \\
+     &      &      & r(1) \\
+     &      &      & c   
+\end{tabular}
+\end{table}
+
+
+
+\subsection{Snapshot isolation}
+
+Snapshot isolation Behaves differently to any of the systesm 
+
+
+
+
+
 \subsection{Read committed}
 \textcolor{red}{TODO Make Diagram}
 \subsection{Read Uncommitted}
 \textcolor{red}{TODO Make Diagram}
-\subsection{Snapshot isolation}
-\textcolor{red}{TODO Make Diagram}
+
 \subsection{Monotonic atomic view}
 \textcolor{red}{TODO Make Diagram}
 \subsection{Linearizable}
@@ -260,6 +359,28 @@ ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
 \item Fuzzy or Non-repeatable Read — Transaction T1 reads x and then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
 \item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1’s <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
 \end{itemize}
+
+
+In \cite{Berensonetal} read and write skew are defined that occur due data item constraint violations. the exact definition is below.
+\textit{(Data Item Constraint Violation). Suppose C() is a
+database constraint between two data items x and y in the
+database. Here are two anomalies arising from constraint
+violation}
+
+\begin{itemize}
+\item 
+\item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If now T1 reads y, it may see an inconsistent state, and therefore produce an inconsistent state as output.
+In terms of histories, we have the anomaly:  }
+A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
+\item \textit{A5B Write Skew Suppose T1 reads x and y, which are
+consistent with C(), and then a T2 reads x and y, writes x,
+and commits. Then T1 writes y. If there were a constraint
+between x and y, it might be violated. In terms of histories:}
+A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
+(Write Skew)
+\end{itemize}
+
+
 
 \begin{table}[h]
 \begin{tabular}{|l|l|l|}
