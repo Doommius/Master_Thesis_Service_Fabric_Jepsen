@@ -270,12 +270,12 @@ It should also be noted that RR allows for the same pathological ordering of ope
 T1   & T2   & T3   & T4   \\
      &      &      & r(y) \\
      &      &      & c    \\
-w(x) &      &      &      \\
-r(y) &      &      &      \\
-     & r(x) &      &      \\
-     & w(p in y) &      &      \\
+w(p_1 to y) &      &      &      \\
+r(p in y) &      &      &      \\
+     &      &      &      \\
+     & w(p_2 to y) &      &      \\
      & c    &      &      \\
-r(y) &      &      &      \\
+r(p in y) &      &      &      \\
 w(z) &      &      &      \\
 c    &      &      &      \\
      &      & r(z) &      \\
@@ -287,33 +287,35 @@ c    &      &      &      \\
 
 
 \subsection{Cursor Stability}
+Cursor stability closely resembles repeatable read. where RR locks the objects until commit, Cursor Stability locks the objects until the cursor moves on or until commit. this allows for different behavoir depending on implementation. but formally defined by which phenomena it allows and which it prohibiteds.
+\cite{Adya99weakconsistency}\\
+\begin{itemize}
+\item G-cursor(x): the directed serialization graph, restricted to a single object x, contains an anti-dependency cycle and at least one write-dependency edge.
+\item g1:
+\begin{enumerate}
+\item G1a (Aborted Reads): A transaction observes an object (perhaps via a predicate) modified by an aborted transaction. Intuitively, transactions have to commit for us to read them.
+\itemG 1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
+\item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cylce consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can’t be affected by T1.
+\end{enumerate}
+\end{itemize}
+Futhermore since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
+\begin{itemize}
+\item P0 (Dirty Write): w1(x) … w2(x)
+\item P1 (Dirty Read): w1(x) … r2(x)
+\end{itemize}
+
+but allows:
+\begin{itemize}
+\item P2 (Fuzzy Read): r1(x) … w2(x)
+\item P3 (Phantom): r1(P) … w2(y in P)
+\end{itemize}
 
 
-
-
-
-\begin{table}[h]
-\begin{tabular}{llll}
-T1   & T2   & T3   & T4   \\
-w(1) &      &      &      \\
-r(2) &      &      &      \\
-c    &      &      &      \\
-     & r(1) &      &      \\
-     & r(2) &      &      \\
-     & c    &      &      \\
-     &      & r(3) &      \\
-     &      & w(4) &      \\
-     &      & c    &      \\
-     &      &      & r(1) \\
-     &      &      & c   
-\end{tabular}
-\end{table}
-
-
-
+\textcolor{red}{TODO Make Diagram}
 \subsection{Snapshot isolation}
 
-Snapshot isolation Behaves differently to any of the systesm 
+Snapshot isolation Behaves differently to any of the systesm, it can be consider more as a try: commit() catch: abort(), we preform our transaction in a independent branch and commit/merge to the database on commit, if there ar any conflicts with a already committed transaction we abort.
+
 
 
 
@@ -794,17 +796,26 @@ This required some changes to the design but was resolved by removing of the lay
 
 This 3rd service should simply provide the API directly from the stateful service, as the transactions are going to behave the same on a single partition as with 500 partitions. this 3rd service was configured such that replicas were active. this implies two things: Routing is no longer an issue, we need to route primary traffic to the primary node from our Clojure connector.
 
-this issue can be solved in two ways. one is rather quick, while the other queries the SF cluster for which node is primary. the quick solution of just defining the primary at launch and from there checking which node allows writes in case the current node start blocking writes. this is a messy solution but as it doesn't induce noise in a data as these transactions are simply rejected/discarded it is therefor not an issue. optimally we should query the SF cluster for primary node, this implementation could be done in case the before mentioned patch isn't resolving the issue.
+this issue can be resolved in two ways. one is rather quick, while the other queries the SF cluster for which node is primary. the quick solution of just defining the primary at launch and from there checking which node allows writes in case the current node start blocking writes. this is a messy solution but as it doesn't induce noise in the data as these transactions are simply rejected/discarded it is therefor not an issue. optimally we should query the SF cluster for primary node, this implementation could chosen but as it takes more time and doesn't yield any further results this is deemed unnessesray.
+
+\subsection{Implementation of this design}
 
 
+The implemnetation of this interated design was supposed to have been been fairly streight forward however the non feature parity again poked it ungly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which chaused some warnings to turn into errors. that exposed my inexperiance of working with the dotnet framework and the service fabric API. this issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as i had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up beging related to some changes in allowed port ranges that were allocatable to services and therefor killed the application as it was using an illigal port. these warnings were however not displayed correctly in the linux distribution.
 
-The also entails setting of routing for all of our clients. they all read from all 5 nodes but also send write operations to our primary node. 
+After this step the services to ready to test, as mentioned earlier in the paper 6 nodes are used to preform the test. 5 cluster member nodes and 1 jepsen test node. 
 
+The steps to deploy and run the tests is as follows.
 
-\subsection{Local Dev setup}
+\begin{enumerate}
+\item Deploy Cluster via a vm scaleset with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to sasilirate connections to the test envoriment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
+\item Deploy the SF applications
+\item connent to the Jepsenhost server and sync test framework.
+\item run test framework with desired perameters
+\item pull test result to local machine to analyse results.
+\end{enumerate}
 
-docker run -i -d -p 19000:19000 -p 19080:19080 -p 80:80 -p 25102:25102 -p 25112:25112 dffdac13e6ad
-
+For the first few rounds of testing everything went alright, however after running a few test exsamples 
 
 
 \subsection{Issues}
