@@ -826,32 +826,86 @@ Linux and windows versions being far from interchangeable and applications and s
 visual studio being unable to load .dmp files to debug crashed applications from the cloud.
 
 Visual studio remote debugger not working
+%
+%\subsubsection{Azure}
+%
+%Configuration issues
+%
+%Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a reimage.
+%
+%
+%\subsection{Jepsen Service}
+%
+%
+%\section{Execution of the test}
+%
+%Steps.
+%
+%1 start Service Fabric cluster in azure.
+%2. Add Jepsen node to Vlan of the cluster.
+%3. Deploy SF application to the cluster. This is currently done via Visual studio but could also be automated from the jepson node.
+%4. Deploy Jepsen code to the Jepsen node.
+%5. Run Jepsen test.
+%6. Retrive Test data from test node.
+%5
+%7. Clean up.
 
-\subsubsection{Azure}
-
-Configuration issues,
-
-Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a reimage.
-
-
-\subsection{Jepsen Service}
-
-
-\section{Execution of the test}
-
-Steps.
-
-1 start Service Fabric cluster in azure.
-2. Add Jepsen node to Vlan of the cluster.
-3. Deploy SF application to the cluster. This is currently done via Visual studio but could also be automated from the jepson node.
-4. Deploy Jepsen code to the Jepsen node.
-5. Run Jepsen test.
-6. Retrive Test data from test node.
-7. Clean up.
-
-
+%
 \section{Results}
 
+\subsection{Introduction}
+
+
+\subsection{Rejected transactions}
+
+
+\subsection{Lost transactions}
+
+
+\subsection{Violations of promised consistensy level}
+
+
+
+
+\section{Discussion}
+
+
+
+\subsection{Deeper issue}
+The topic of understaning transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
+
+....
+
+
+Going from this and other Jepsen tests on database it appears it's the issue is a board mislabling and misclassification of database sysetsms and what they can and can't do.
+...
+Postgres replication and serisable,
+...
+
+Mongo db dropping data
+...
+
+Casandra last-write wins, issues, and a attempt at a solution via Atomic clocks
+...
+
+Elatic search issues.
+...
+
+Some of the implications this can have on real world usecases, 
+
+...
+
+how to resolve these issues that arrise from mislabled and misunder consistency models.
+
+...
+
+Enable better understanding of databases, transaction models, and usecases doing teaching of database courses where behavoir is better explained, This should not in depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have a lot of uninteded behavoir, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
+
+... should maybe be defined as future work.
+
+Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labling and allows user and developers to choose the current system for their usecase and avoid the headaces of phatom behavoir.
+
+this could be done via automated testing and verifycation of a given system in it's different transactional configureations.
 
 
 
@@ -866,7 +920,7 @@ Steps.
 
 
 \section{Future Work}
- Atomic clocks ?    
+   
 
 
 
