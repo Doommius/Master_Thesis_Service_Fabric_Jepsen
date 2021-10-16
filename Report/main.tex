@@ -93,7 +93,7 @@ Databases allow modern society to store, manage and distribute data at a previou
 Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
 \vspace{5mm}
 
-Summarize the findings and try to say why the thesis is worth reading.
+TODO: Summarize the findings and try to say why the thesis is worth reading.
 
 
 
@@ -270,10 +270,10 @@ It should also be noted that RR allows for the same pathological ordering of ope
 T1   & T2   & T3   & T4   \\
      &      &      & r(y) \\
      &      &      & c    \\
-w(p_1 to y) &      &      &      \\
+w(p$_1$ to y) &      &      &      \\
 r(p in y) &      &      &      \\
      &      &      &      \\
-     & w(p_2 to y) &      &      \\
+     & w(p$_2$ to y) &      &      \\
      & c    &      &      \\
 r(p in y) &      &      &      \\
 w(z) &      &      &      \\
@@ -287,18 +287,18 @@ c    &      &      &      \\
 
 
 \subsection{Cursor Stability}
-Cursor stability closely resembles repeatable read. where RR locks the objects until commit, Cursor Stability locks the objects until the cursor moves on or until commit. this allows for different behavoir depending on implementation. but formally defined by which phenomena it allows and which it prohibiteds.
+Cursor stability closely resembles repeatable read. where RR locks the objects until commit, Cursor Stability locks the objects until the cursor moves on or until commit. this allows for different behavior depending on implementation. but formally defined by which phenomena it allows and which it prohibits.
 \cite{Adya99weakconsistency}\\
 \begin{itemize}
 \item G-cursor(x): the directed serialization graph, restricted to a single object x, contains an anti-dependency cycle and at least one write-dependency edge.
 \item g1:
 \begin{enumerate}
 \item G1a (Aborted Reads): A transaction observes an object (perhaps via a predicate) modified by an aborted transaction. Intuitively, transactions have to commit for us to read them.
-\itemG 1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
-\item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cylce consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can’t be affected by T1.
+\item G 1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
+\item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can’t be affected by T1.
 \end{enumerate}
 \end{itemize}
-Futhermore since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
+Furthermore since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
 \begin{itemize}
 \item P0 (Dirty Write): w1(x) … w2(x)
 \item P1 (Dirty Read): w1(x) … r2(x)
@@ -314,7 +314,7 @@ but allows:
 \textcolor{red}{TODO Make Diagram}
 \subsection{Snapshot isolation}
 
-Snapshot isolation Behaves differently to any of the systesm, it can be consider more as a try: commit() catch: abort(), we preform our transaction in a independent branch and commit/merge to the database on commit, if there ar any conflicts with a already committed transaction we abort.
+Snapshot isolation Behaves differently to any of the systems, it can be consider more as a try: commit() catch: abort(), we preform our transaction in a independent branch and commit/merge to the database on commit, if there are any conflicts with a already committed transaction we abort.
 
 
 
@@ -729,14 +729,14 @@ The 5 service fabric nodes are mostly self managing, applications can be deploye
 
 This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster. 
 
-The topology of the network is so that
-\includegraphics{images/topology.png}
+The topology of the network is so that \\
+\includegraphics[scale=0.3]{images/topology.png}
 
 All traffic resides within the cluster and the load Balancer is only there for testing of the application and check if all endpoints work as expected.
 
 \paragraph*{Node Sizes}
 
-The initial node sizes were 2 cpu cores and 8 gbs of ram along with 20 gb local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16gb ram and 80gb local storage per node. This configuration resulted in a much more well-behaved cluster. and this node size was kept for the reminder of the test. However the jepsenhost is slightly underdimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
+The initial node sizes were 2 cpu cores and 8 GBs of ram along with 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a much more well-behaved cluster. and this node size was kept for the reminder of the test. However the jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
 
 \section{Services}
 as mentioned earlier running these tests required multiple components, The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless front-end that provides this data to clients via RESTAPI, a driver that handles the connection to this api and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
