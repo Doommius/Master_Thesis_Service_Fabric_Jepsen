@@ -87,10 +87,10 @@
 
 \section*{Abstract}
 
-Databases allow modern society to store, manage and distribute data at a previously unprecedentedly scale, having data is a normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require much high performance, storage, latency and  availability then current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
+Databases allow modern society to store, manage and distribute data at a previously unprecedented scale. Having data is normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require more high performance, storage, latency and  availability than current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
 \vspace{5mm}
 
-Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
+Within the framework of the thesis i present methods of verifying the ACID properties; How these properties were solved in the past; How it can and is solved today; what trade offs some systems have made; and an analysis of modern database use cases and whether they require the ACID properties to solve issues.\\
 \vspace{5mm}
 
 TODO: Summarize the findings and try to say why the thesis is worth reading.
@@ -99,9 +99,10 @@ TODO: Summarize the findings and try to say why the thesis is worth reading.
 
 \chapter{Introduction}
 
-Highly Distributed systems are becoming more and more common as the world grows evermore interconnected, faster paced, increasing data driven with higher expectations of services and product. where the end user expects reliability, availability combined with low- latency and cost, How do we guarantee this is a distributed system that spans the planet. Is it even possible to get both, and is it even needed in most use cases?\\
+
+Highly Distributed systems are becoming \textcolor{red}{ more and more common as the world grows evermore interconnected, faster paced, increasing data driven with higher expectations of services and product. where the end user expects reliability, availability combined with low- latency and cost, How do we guarantee this is a distributed system that spans the planet.} Is it even possible to get both, and is it even needed in most use cases?\\
 \vspace{5mm}
-Most people are familiar with how YouTube, Facebook, Google and Reddit behave. What quirks they sometimes present, Most people remember the YouTube video counter that got stuck around 300, and didn't update for a while, The reason it got stuck was induced, however the number it got stuck on was not, The system was designed to stop at 301, but often went higher. This is an example of the system not being entirely consistent, most nodes where in the correct state of stopping counting when the number got larger then 300, however as some nodes around the globe weren't in an consistent state these still counted the views onto the displayed counter when they were supposed to have been sent to a different table that verified the views before considering them legitimate. This number is still not consistent around the world however for human use cases the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about. a lot of user facing services aren't required to be ACID compliant, however there are use cases where this can have an impact is when dealing with data that is produced and consumed in real time, if this is finance, automated or autonomous systems, or other areas where having consistent, atomic and isolated transactions are of the utmost importance. these cases are where it doesn't matter what server we are querying the information from it has to be the most recent sample, and if we at any point are able to query stale data we end up being at the risk of either making an illegal transaction or an autonomous system making a wrong decision, This can a trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users account. or autonomous vehicle that might making decisions with stale data that can lead to fatal accidents. \\
+Most people are familiar with how YouTube, Facebook, Google and Reddit behave and the quirks they sometimes present. For example they remember the YouTube video counter that got stuck at around 300 views, and didn't update for a while. The reason it got stuck was induced by YouTube, however the number it got stuck on was not; the system was designed to stop after the counter reached 300, but would often go higher. This is an example of the system not being entirely consistent, most nodes were in the correct state of stopping counting when the number got larger then 300, however as some nodes around the globe weren't in a consistent state they still counted the views onto the displayed counter even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. This number is still not consistent around the world however for human use cases the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about. a lot of user facing services aren't required to be ACID compliant, however there are use cases where this can have an impact is when dealing with data that is produced and consumed in real time, if this is finance, automated or autonomous systems, or other areas where having consistent, atomic and isolated transactions are of the utmost importance. these cases are where it doesn't matter what server we are querying the information from it has to be the most recent sample, and if we at any point are able to query stale data we end up being at the risk of either making an illegal transaction or an autonomous system making a wrong decision, This can a trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users account. or autonomous vehicle that might making decisions with stale data that can lead to fatal accidents. \\
 \vspace{5mm}
 How do we test and verify that the systems that handle tasks that require compliance with ACID also do so. To understand this we first need to understand the basis for and expected behavior of ACID and the different levels of each of the properties of ACID.
 \\
@@ -314,7 +315,35 @@ but allows:
 \textcolor{red}{TODO Make Diagram}
 \subsection{Snapshot isolation}
 
-Snapshot isolation Behaves differently to any of the systems, it can be consider more as a try: commit() catch: abort(), we preform our transaction in a independent branch and commit/merge to the database on commit, if there are any conflicts with a already committed transaction we abort.
+Snapshot isolation Behaves differently to any of the systems, it can be consider more as a try: commit() catch: abort(), we preform our transaction in a independent branch and commit/merge to the database on commit, if there are any conflicts with a already committed transaction the transaction is simply aborted. 
+
+snapshot isolation like readable read operate on a object level therefor allows for the same behavior. items are stable once read however the predicate again isn't, we can fail to observe a previous committed transaction and place operations arbitrary places in the transaction due to no linearizebility constraint. it also allows sub-operations to interleave, this can result in write skews, which allow transactions to read overlapping state, modify disjoint sets of objects, then commit; and a read-only transaction anomaly, involving partially disjoint write sets.
+
+
+I should also be noted that there exist multiple versions of snapshot isolation, namely prefix-consistent snapshot isolation that enforce process level transaction ordering, which prevents a given process from failing to observe and previously transaction. and parallel snapshot isolation that allows for total availability but this allows for other 
+
+
+\begin{table}[h]
+\begin{tabular}{llll}
+T1   & T2   & T3   & T4   \\
+     &      &      & r(y) \\
+     &      &      & c    \\
+w(y) &      &      &      \\
+r(y) &      &      &      \\
+     &      &      &      \\
+     & w(y) &      &      \\
+     &      &      &      \\
+r(y) &      &      &      \\
+w(z) &      &      &      \\
+c    &      &      &      \\
+     & a    & r(z) &      \\
+     &      & w(x) &      \\
+     &      & c    &      
+\end{tabular}
+\caption{T1 and T2 contains a conflict that courses t2 to abort as t1 commits prior to t2}
+\end{table}
+
+
 
 
 
@@ -421,6 +450,8 @@ The Third and last type is phantom read which is a special case of non-repeatabl
 \subsection{Long Fork}
 
 \subsection{Split Brain}
+
+\subsection{long-fork anomalies}
 
 The Network is split into 2 or more parts where they each believe different truths,
 
