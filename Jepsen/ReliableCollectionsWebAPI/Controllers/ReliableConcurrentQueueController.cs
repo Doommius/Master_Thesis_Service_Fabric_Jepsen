@@ -16,7 +16,7 @@ namespace ReliableCollectionsWebAPI.Controllers
     using System.Fabric;
 
     [Route("api/[controller]")]
-    public class ReliableConcurrentQueueController : Controller
+    public class ReliableConcurrentQueueController:Controller
     {
         private readonly IReliableStateManager StateManager;
 

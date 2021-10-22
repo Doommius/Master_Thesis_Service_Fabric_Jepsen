@@ -1,7 +1,7 @@
 (defproject jepsen.SFJepsen "0.1.0-SNAPSHOT"
             :description "Jepsen test for SF relaible Queues"
             :url "https://github.com/aphyr/jepsen"
-            :jvm-opts ["-Djava.awt.headless=true"]
+            :jvm-opts ["-Djava.awt.headless=true","-Dlog4j.debug=false"]
             :license {:name "Eclipse Public License"
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
             :dependencies [[org.clojure/clojure "1.10.3"]

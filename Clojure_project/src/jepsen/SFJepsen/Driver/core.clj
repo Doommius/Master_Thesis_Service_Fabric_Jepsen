@@ -67,7 +67,18 @@
 
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   [clientaddress]
-  (str "http://" (:endpoint clientaddress) ":35112/api"))
+  (str "http://" (:endpoint clientaddress) ":35112/api")
+  ;(str "http://10.0.0.7:35112/api")
+  )
+
+
+(defn primarybase-url
+  "Constructs the base URL for all etcd requests. Example:
+
+  (base-url client) ; => \"http://127.0.0.1:4001/v2\""
+  []
+  ;(str "http://" (:endpoint clientaddress) ":35112/api")
+  (str "http://10.0.0.7:35112/api"))
 
 
 (defn ^String url
@@ -86,7 +97,21 @@
 
    (str (base-url client) "/" uri "/" key "/" value1 "/" value2)))
 
+(defn ^String primaryurl
+  "The URL for a key under a specified root-key.
+  (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
+  ([client uri]
 
+   (str (primarybase-url) "/" uri))
+  ([client uri key-seq]
+
+   (str (primarybase-url) "/" uri "/" key-seq))
+  ([client uri key value]
+
+   (str (primarybase-url) "/" uri "/" key "/" value))
+  ([client uri key value1 value2]
+
+   (str (primarybase-url) "/" uri "/" key "/" value1 "/" value2)))
 
 (defn http-opts
   "Given a map of options for a request, constructs a clj-http options map.
@@ -105,21 +130,16 @@
   "Parse an inputstream or string as JSON"
   [response]
 
-  (debug response)
-  (when (= 202 (response :status)) true)
+  ;(info response)
 
-  (when (= 204 (response :status)) (throw+ {:type      :not-found
-                                            :errorCode 204
+  (when (= 204 (response :status)) (throw+ {:stutus   204
+                                            :type     :missing-value
+                                            :response response
                                             }))
-  (when (= 405 (response :status)) (throw+ {:type      :Error
-                                            :errorCode 405
-                                            }))
-  (when (= 500 (response :status)) (throw+ {:type      :not_primary
-                                            :errorCode 405
-                                            }))
-  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type :missing-body
+
+  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type     :missing-body
                                                                          :response response
-                                                                         } ))
+                                                                         }))
 
   ((first (json/parse-string (response :body) true)) :Value)
   )
@@ -141,13 +161,13 @@
   nodes; a sequence of keys for a directory.
   Options:"
   ([client key]
-   (get* client key {}))
+   (get client key {}))
 
   ([client key opts]
-   (try+
-     (get* client key opts)
 
-     (catch [:status 404] _ nil))))
+   (get* client key opts)
+   ))
+
 
 (defn write
   "Resets the current value of a given key to `value`. Options:
@@ -159,9 +179,11 @@
   ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
-
-        (http/put (url client RDuri key value))
-        parse)))
+        ;(info (url client RDuri key value))
+        (http/put (primaryurl client RDuri key value))
+        parse)
+   ;(catch [:status 500] _ :type :not_primary :errorCode 405)
+   ))
 
 (defn create!*
   ([client key value]
@@ -169,7 +191,7 @@
   ([client key value opts]
    (->> (assoc opts :value value)
         (http-opts client)
-        (http/put (url client RDuri key value))
+        (http/put (primaryurl client RDuri key value))
         parse)))
 
 (defn create
@@ -190,23 +212,8 @@
   ([client key]
    (delete client key {}))
   ([client key opts]
-   (->> (http/delete (url client RDuri key))
+   (->> (http/delete (primaryurl client RDuri key))
         parse)))
-
-;(defn delete-all
-;  "Deletes all nodes, recursively if necessary, under the given directory.
-;  Options:
-;
-;  :timeout"
-;  ([client key]
-;   (delete-all client key {}))
-;  ([client key opts]
-;   (doseq [node (->> (select-keys opts [:timeout])
-;                     (get* client key)
-;                     :node
-;                     :nodes)]
-;     (delete client (:key node) {:recursive? (:dir node)
-;                                 :timeout    (:timeout opts)}))))
 
 (defn cas
   "Compare and set based on the current value. Updates key to be value' iff the
@@ -215,19 +222,17 @@
   ([client key value value']
    (cas client key value value' {}))
   ([client key value value' opts]
-   (try+
-     (->> (http/put (url client RDuri key value value'))
-          parse)
-     (catch [:errorCode 404] _ false)
 
-     )))
+   (->> (http/put (primaryurl client RDuri key value value'))
+        parse)
+   ))
 
 (defn enqueue*
   ([client key]
    (enqueue* client key {}))
   ([client key opts]
 
-   (->> (http/put (url client Quri key))))
+   (->> (http/put (primaryurl client Quri key))))
   )
 
 (defn enqueue
@@ -235,10 +240,9 @@
    (enqueue* client key {}))
 
   ([client key opts]
-   (try+
-     (enqueue* client key opts)
-     (catch [:status 404] _ nil)
-     (catch [:status 200] _ true))))
+
+   (enqueue* client key opts)
+   ))
 
 
 
@@ -248,7 +252,7 @@
   ([client opts]
 
    (->> opts
-        (http/delete (url client Quri))
+        (http/delete (primaryurl client Quri))
         parse))
   )
 
@@ -257,9 +261,9 @@
    (dequeue* client {}))
 
   ([client opts]
-   (try+
-     (dequeue* client opts)
-     (catch [:status 404] _ nil))))
+
+   (dequeue* client opts)
+   ))
 
 
 (defn queuepeek*
@@ -268,7 +272,7 @@
   ([client opts]
 
    (->> opts
-        (http/get (url client Quri "peek"))
+        (http/get (primaryurl client Quri "peek"))
         parse))
   )
 
@@ -277,9 +281,9 @@
    (queuepeek* client {}))
 
   ([client opts]
-   (try+
-     (queuepeek* client opts)
-     (catch [:status 404] _ nil))))
+
+   (queuepeek* client opts)
+   ))
 
 (defn queuecount*
   ([client]
@@ -287,7 +291,7 @@
   ([client opts]
 
    (->> opts
-        (http/get (url client Quri))
+        (http/get (primaryurl client Quri))
         parse))
   )
 
@@ -296,6 +300,6 @@
    (queuecount* client {}))
 
   ([client opts]
-   (try+
-     (queuecount* client opts)
-     (catch [:status 404] _ nil))))
+
+   (queuecount* client opts)
+   ))

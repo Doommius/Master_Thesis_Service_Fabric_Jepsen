@@ -58,8 +58,6 @@ namespace ReliableCollectionsWebAPI.Controllers
         {
 
         
-            CancellationToken ct = new CancellationToken();
-
             IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
             List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
 

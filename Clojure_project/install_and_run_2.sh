@@ -26,8 +26,12 @@ else
   echo "Setup: End"
 fi
 
-echo "Jepsen Test: Start"
+rm -rf target
+lein clean
+lein install
+echo "Jepsen Test: Start reliabledict"
 
-lein run test --workload "concurrentqueue" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 100 --time-limit 30 -r 100 --ops-per-key 500
+
+lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 120 -r 500 --ops-per-key 500 --test-count 10
 
 echo "Jepsen Test: END"

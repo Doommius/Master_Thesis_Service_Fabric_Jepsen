@@ -1,1 +1,1 @@
-{"jepsen.SFJepsen.Driver.core_test" ["queue-dequeue-test"]}
+{"jepsen.SFJepsen.Driver.core_test" ["cas-test" "cas-test" "cas-test" "cas-test" "cas-test" "write-get-test" "puthttp" "puthttp" "queue-cycle-test" "queue-cycle-test"]}

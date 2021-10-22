@@ -37,9 +37,10 @@
 
 (def workloads
   "A map of test names to test constructors."
-  {:reliablequeue queue/workload
+  {
+  ; :reliablequeue queue/workload
    :reliabledict dict/workload
-   :concurrentqueue concurrentqueue/workload
+   ;:concurrentqueue concurrentqueue/workload
    :none          (fn [_] tests/noop-test)}
   )
 
@@ -187,7 +188,7 @@
     :parse-fn parse-long]
 
    ["-r" "--rate HZ" "Approximate request rate, in hz"
-    :default 25
+    :default 100
     :parse-fn read-string
     :validate [pos? "Must be a positive number."]]
 

@@ -87,22 +87,21 @@
 
 \section*{Abstract}
 
-Databases allow modern society to store, manage and distribute data at a previously unprecedented scale. Having data is normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require more high performance, storage, latency and  availability than current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
+Databases allow modern society to store, manage and distribute data at a previously unprecedentedly scale, having data is a normal practice for most businesses, but it is often done monotonically on a single node, where modern needs require much high performance, storage, latency and  availability then current systems allow. Distributing a data store in a manner that scales performance, storage, availability and desire properties is no easy feat. In this Thesis i present methods of verifying these properties and investigate how different frameworks solve this issue, or often workaround the issue in a way that aligns with the requirements of the systems. \\
 \vspace{5mm}
 
-Within the framework of the thesis i present methods of verifying the ACID properties; How these properties were solved in the past; How it can and is solved today; what trade offs some systems have made; and an analysis of modern database use cases and whether they require the ACID properties to solve issues.\\
+Within the framework of the thesis i present methods of verifying the ACID properties, How these properties were solved in the past, How it can and is solved today, what trade offs some systems have made, and a analysis of modern database uses cases and whether they require the ACID properties to solve issues.\\
 \vspace{5mm}
 
-TODO: Summarize the findings and try to say why the thesis is worth reading.
+Summarize the findings and try to say why the thesis is worth reading.
 
 
 
 \chapter{Introduction}
 
-
-Highly Distributed systems are becoming \textcolor{red}{ more and more common as the world grows evermore interconnected, faster paced, increasing data driven with higher expectations of services and product. where the end user expects reliability, availability combined with low- latency and cost, How do we guarantee this is a distributed system that spans the planet.} Is it even possible to get both, and is it even needed in most use cases?\\
+Highly Distributed systems are becoming more and more common as the world grows evermore interconnected, faster paced, increasing data driven with higher expectations of services and product. where the end user expects reliability, availability combined with low- latency and cost, How do we guarantee this is a distributed system that spans the planet. Is it even possible to get both, and is it even needed in most use cases?\\
 \vspace{5mm}
-Most people are familiar with how YouTube, Facebook, Google and Reddit behave and the quirks they sometimes present. For example they remember the YouTube video counter that got stuck at around 300 views, and didn't update for a while. The reason it got stuck was induced by YouTube, however the number it got stuck on was not; the system was designed to stop after the counter reached 300, but would often go higher. This is an example of the system not being entirely consistent, most nodes were in the correct state of stopping counting when the number got larger then 300, however as some nodes around the globe weren't in a consistent state they still counted the views onto the displayed counter even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. This number is still not consistent around the world however for human use cases the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about. a lot of user facing services aren't required to be ACID compliant, however there are use cases where this can have an impact is when dealing with data that is produced and consumed in real time, if this is finance, automated or autonomous systems, or other areas where having consistent, atomic and isolated transactions are of the utmost importance. these cases are where it doesn't matter what server we are querying the information from it has to be the most recent sample, and if we at any point are able to query stale data we end up being at the risk of either making an illegal transaction or an autonomous system making a wrong decision, This can a trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users account. or autonomous vehicle that might making decisions with stale data that can lead to fatal accidents. \\
+Most people are familiar with how YouTube, Facebook, Google and Reddit behave. What quirks they sometimes present, Most people remember the YouTube video counter that got stuck around 300, and didn't update for a while, The reason it got stuck was induced, however the number it got stuck on was not, The system was designed to stop at 301, but often went higher. This is an example of the system not being entirely consistent, most nodes where in the correct state of stopping counting when the number got larger then 300, however as some nodes around the globe weren't in an consistent state these still counted the views onto the displayed counter when they were supposed to have been sent to a different table that verified the views before considering them legitimate. This number is still not consistent around the world however for human use cases the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about. a lot of user facing services aren't required to be ACID compliant, however there are use cases where this can have an impact is when dealing with data that is produced and consumed in real time, if this is finance, automated or autonomous systems, or other areas where having consistent, atomic and isolated transactions are of the utmost importance. these cases are where it doesn't matter what server we are querying the information from it has to be the most recent sample, and if we at any point are able to query stale data we end up being at the risk of either making an illegal transaction or an autonomous system making a wrong decision, This can a trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users account. or autonomous vehicle that might making decisions with stale data that can lead to fatal accidents. \\
 \vspace{5mm}
 How do we test and verify that the systems that handle tasks that require compliance with ACID also do so. To understand this we first need to understand the basis for and expected behavior of ACID and the different levels of each of the properties of ACID.
 \\
@@ -271,12 +270,12 @@ It should also be noted that RR allows for the same pathological ordering of ope
 T1   & T2   & T3   & T4   \\
      &      &      & r(y) \\
      &      &      & c    \\
-w(p$_1$ to y) &      &      &      \\
-r(p in y) &      &      &      \\
-     &      &      &      \\
-     & w(p$_2$ to y) &      &      \\
+w(x) &      &      &      \\
+r(y) &      &      &      \\
+     & r(x) &      &      \\
+     & w(p in y) &      &      \\
      & c    &      &      \\
-r(p in y) &      &      &      \\
+r(y) &      &      &      \\
 w(z) &      &      &      \\
 c    &      &      &      \\
      &      & r(z) &      \\
@@ -288,75 +287,36 @@ c    &      &      &      \\
 
 
 \subsection{Cursor Stability}
-Cursor stability closely resembles repeatable read. where RR locks the objects until commit, Cursor Stability locks the objects until the cursor moves on or until commit. this allows for different behavior depending on implementation. but formally defined by which phenomena it allows and which it prohibits.
-\cite{Adya99weakconsistency}\\
-\begin{itemize}
-\item G-cursor(x): the directed serialization graph, restricted to a single object x, contains an anti-dependency cycle and at least one write-dependency edge.
-\item g1:
-\begin{enumerate}
-\item G1a (Aborted Reads): A transaction observes an object (perhaps via a predicate) modified by an aborted transaction. Intuitively, transactions have to commit for us to read them.
-\item G 1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
-\item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can’t be affected by T1.
-\end{enumerate}
-\end{itemize}
-Furthermore since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
-\begin{itemize}
-\item P0 (Dirty Write): w1(x) … w2(x)
-\item P1 (Dirty Read): w1(x) … r2(x)
-\end{itemize}
-
-but allows:
-\begin{itemize}
-\item P2 (Fuzzy Read): r1(x) … w2(x)
-\item P3 (Phantom): r1(P) … w2(y in P)
-\end{itemize}
 
 
-\textcolor{red}{TODO Make Diagram}
-\subsection{Snapshot isolation}
 
-Snapshot isolation Behaves differently to any of the systems, it can be consider more as a try: commit() catch: abort(), we preform our transaction in a independent branch and commit/merge to the database on commit, if there are any conflicts with a already committed transaction the transaction is simply aborted. 
-
-snapshot isolation like readable read operate on a object level therefor allows for the same behavior. items are stable once read however the predicate again isn't, we can fail to observe a previous committed transaction and place operations arbitrary places in the transaction due to no linearizebility constraint. it also allows sub-operations to interleave, this can result in write skews, which allow transactions to read overlapping state, modify disjoint sets of objects, then commit; and a read-only transaction anomaly, involving partially disjoint write sets.
-
-
-I should also be noted that there exist multiple versions of snapshot isolation, namely prefix-consistent snapshot isolation that enforce process level transaction ordering, which prevents a given process from failing to observe and previously transaction. and parallel snapshot isolation that allows for total availability but this allows for long fork anomalies, as each node has a it's own transaction ordering.
-
-Formally snapshot isolation is defined by \cite{Berensonetal}
-
-\textit{… each transaction reads reads data from a snapshot of the (committed) data as of the time the transaction started, called its Start-Timestamp. This time may be any time before the transaction’s first Read. A transaction running in Snapshot Isolation is never blocked attempting a read as long as the snapshot data from its Start-Timestamp can be maintained. The transaction’s writes (updates, inserts, and deletes) will also be reflected in this snapshot, to be read again if the transaction accesses (i.e., reads or updates) the data a second time. Updates by other transactions active after the transaction Start-Timestamp are invisible to the transaction.
-\\
-When the transaction T1 is ready to commit, it gets a Commit-Timestamp, which is larger than any existing Start-Timestamp or Commit-Timestamp. The transaction successfully commits only if no other transaction T2 with a Commit-Timestamp in T1’s execution interval [StartTimestamp, Commit-Timestamp] wrote data that T1 also wrote. Otherwise, T1 will abort. This feature, called First-committer-wins prevents lost updates (phenomenon P4). When T1 commits, its changes become visible to all transactions whose Start-Timestamps are larger than T1‘s Commit-Timestamp.}
-
-There also exist multiple other defininitions from \cite{CeroneBernardiGotsman} and \cite{CrooksPuAlvisiClement}
 
 
 \begin{table}[h]
 \begin{tabular}{llll}
 T1   & T2   & T3   & T4   \\
-     &      &      & r(y) \\
-     &      &      & c    \\
-w(y) &      &      &      \\
-r(y) &      &      &      \\
-     &      &      &      \\
-     & w(y) &      &      \\
-     &      &      &      \\
-r(y) &      &      &      \\
-w(z) &      &      &      \\
+w(1) &      &      &      \\
+r(2) &      &      &      \\
 c    &      &      &      \\
-     & a    & r(z) &      \\
-     &      & w(x) &      \\
-     &      & c    &      
+     & r(1) &      &      \\
+     & r(2) &      &      \\
+     & c    &      &      \\
+     &      & r(3) &      \\
+     &      & w(4) &      \\
+     &      & c    &      \\
+     &      &      & r(1) \\
+     &      &      & c   
 \end{tabular}
-\caption{T1 and T2 contains a conflict that courses t2 to abort as t1 commits prior to t2}
 \end{table}
 
-\subsection{Monotonic atomic view}
-The papers concerning concerning MAV were a bit mixed with information 
+
+
+\subsection{Snapshot isolation}
+
+Snapshot isolation Behaves differently to any of the systesm 
 
 
 
-\textcolor{red}{TODO Make Diagram
 
 
 \subsection{Read committed}
@@ -364,7 +324,8 @@ The papers concerning concerning MAV were a bit mixed with information
 \subsection{Read Uncommitted}
 \textcolor{red}{TODO Make Diagram}
 
-}
+\subsection{Monotonic atomic view}
+\textcolor{red}{TODO Make Diagram}
 \subsection{Linearizable}
 \textcolor{red}{TODO Make Diagram}
 \subsection{Sequential}
@@ -458,8 +419,6 @@ The Third and last type is phantom read which is a special case of non-repeatabl
 \subsection{Long Fork}
 
 \subsection{Split Brain}
-
-\subsection{long-fork anomalies}
 
 The Network is split into 2 or more parts where they each believe different truths,
 
@@ -768,14 +727,14 @@ The 5 service fabric nodes are mostly self managing, applications can be deploye
 
 This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster. 
 
-The topology of the network is so that \\
-\includegraphics[scale=0.3]{images/topology.png}
+The topology of the network is so that
+\includegraphics{images/topology.png}
 
 All traffic resides within the cluster and the load Balancer is only there for testing of the application and check if all endpoints work as expected.
 
 \paragraph*{Node Sizes}
 
-The initial node sizes were 2 cpu cores and 8 GBs of ram along with 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a much more well-behaved cluster. and this node size was kept for the reminder of the test. However the jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
+The initial node sizes were 2 cpu cores and 8 gbs of ram along with 20 gb local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16gb ram and 80gb local storage per node. This configuration resulted in a much more well-behaved cluster. and this node size was kept for the reminder of the test. However the jepsenhost is slightly underdimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
 
 \section{Services}
 as mentioned earlier running these tests required multiple components, The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless front-end that provides this data to clients via RESTAPI, a driver that handles the connection to this api and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
@@ -835,26 +794,17 @@ This required some changes to the design but was resolved by removing of the lay
 
 This 3rd service should simply provide the API directly from the stateful service, as the transactions are going to behave the same on a single partition as with 500 partitions. this 3rd service was configured such that replicas were active. this implies two things: Routing is no longer an issue, we need to route primary traffic to the primary node from our Clojure connector.
 
-this issue can be resolved in two ways. one is rather quick, while the other queries the SF cluster for which node is primary. the quick solution of just defining the primary at launch and from there checking which node allows writes in case the current node start blocking writes. this is a messy solution but as it doesn't induce noise in the data as these transactions are simply rejected/discarded it is therefor not an issue. optimally we should query the SF cluster for primary node, this implementation could chosen but as it takes more time and doesn't yield any further results this is deemed unnessesray.
-
-\subsection{Implementation of this design}
+this issue can be solved in two ways. one is rather quick, while the other queries the SF cluster for which node is primary. the quick solution of just defining the primary at launch and from there checking which node allows writes in case the current node start blocking writes. this is a messy solution but as it doesn't induce noise in a data as these transactions are simply rejected/discarded it is therefor not an issue. optimally we should query the SF cluster for primary node, this implementation could be done in case the before mentioned patch isn't resolving the issue.
 
 
-The implemnetation of this interated design was supposed to have been been fairly streight forward however the non feature parity again poked it ungly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which chaused some warnings to turn into errors. that exposed my inexperiance of working with the dotnet framework and the service fabric API. this issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as i had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up beging related to some changes in allowed port ranges that were allocatable to services and therefor killed the application as it was using an illigal port. these warnings were however not displayed correctly in the linux distribution.
 
-After this step the services to ready to test, as mentioned earlier in the paper 6 nodes are used to preform the test. 5 cluster member nodes and 1 jepsen test node. 
+The also entails setting of routing for all of our clients. they all read from all 5 nodes but also send write operations to our primary node. 
 
-The steps to deploy and run the tests is as follows.
 
-\begin{enumerate}
-\item Deploy Cluster via a vm scaleset with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to sasilirate connections to the test envoriment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
-\item Deploy the SF applications
-\item connent to the Jepsenhost server and sync test framework.
-\item run test framework with desired perameters
-\item pull test result to local machine to analyse results.
-\end{enumerate}
+\subsection{Local Dev setup}
 
-For the first few rounds of testing everything went alright, however after running a few test exsamples 
+docker run -i -d -p 19000:19000 -p 19080:19080 -p 80:80 -p 25102:25102 -p 25112:25112 dffdac13e6ad
+
 
 
 \subsection{Issues}
@@ -865,86 +815,32 @@ Linux and windows versions being far from interchangeable and applications and s
 visual studio being unable to load .dmp files to debug crashed applications from the cloud.
 
 Visual studio remote debugger not working
-%
-%\subsubsection{Azure}
-%
-%Configuration issues
-%
-%Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a reimage.
-%
-%
-%\subsection{Jepsen Service}
-%
-%
-%\section{Execution of the test}
-%
-%Steps.
-%
-%1 start Service Fabric cluster in azure.
-%2. Add Jepsen node to Vlan of the cluster.
-%3. Deploy SF application to the cluster. This is currently done via Visual studio but could also be automated from the jepson node.
-%4. Deploy Jepsen code to the Jepsen node.
-%5. Run Jepsen test.
-%6. Retrive Test data from test node.
-%5
-%7. Clean up.
 
-%
+\subsubsection{Azure}
+
+Configuration issues,
+
+Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a reimage.
+
+
+\subsection{Jepsen Service}
+
+
+\section{Execution of the test}
+
+Steps.
+
+1 start Service Fabric cluster in azure.
+2. Add Jepsen node to Vlan of the cluster.
+3. Deploy SF application to the cluster. This is currently done via Visual studio but could also be automated from the jepson node.
+4. Deploy Jepsen code to the Jepsen node.
+5. Run Jepsen test.
+6. Retrive Test data from test node.
+7. Clean up.
+
+
 \section{Results}
 
-\subsection{Introduction}
-
-
-\subsection{Rejected transactions}
-
-
-\subsection{Lost transactions}
-
-
-\subsection{Violations of promised consistensy level}
-
-
-
-
-\section{Discussion}
-
-
-
-\subsection{Deeper issue}
-The topic of understaning transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
-
-....
-
-
-Going from this and other Jepsen tests on database it appears it's the issue is a board mislabling and misclassification of database sysetsms and what they can and can't do.
-...
-Postgres replication and serisable,
-...
-
-Mongo db dropping data
-...
-
-Casandra last-write wins, issues, and a attempt at a solution via Atomic clocks
-...
-
-Elatic search issues.
-...
-
-Some of the implications this can have on real world usecases, 
-
-...
-
-how to resolve these issues that arrise from mislabled and misunder consistency models.
-
-...
-
-Enable better understanding of databases, transaction models, and usecases doing teaching of database courses where behavoir is better explained, This should not in depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have a lot of uninteded behavoir, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
-
-... should maybe be defined as future work.
-
-Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labling and allows user and developers to choose the current system for their usecase and avoid the headaces of phatom behavoir.
-
-this could be done via automated testing and verifycation of a given system in it's different transactional configureations.
 
 
 
@@ -959,7 +855,7 @@ this could be done via automated testing and verifycation of a given system in i
 
 
 \section{Future Work}
-   
+ Atomic clocks ?    
 
 
 
