@@ -87,7 +87,7 @@
 
 \section*{Abstract}
 
-Databases allow modern society to store, manage and distribute data at a previously unprecedented scale. Having data is normal practice for most businesses. Still, it is often done monotonically on a single node, where modern needs require more high performance, storage, latency, and availability than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I present methods of verifying these properties and investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
+Databases allow modern society to store, manage and distribute data at a previously unprecedented scale. Having data is normal practice for most businesses. Still, it is often done monotonically on a single node, where modern needs require more  storage, latency, availability, and a higher performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of verifying these properties and I will investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
 \vspace{5mm}
 
 Within the thesis framework, I will present methods of verifying the ACID properties, how they were solved in the past compared to how they are solved today, and what trade-offs some systems have made. I will also analyze modern database use cases and whether they require the ACID properties to solve issues.\\
@@ -193,9 +193,13 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 
 \section{Availability}
 
+Use this as a sourve https://amplab.cs.berkeley.edu/wp-content/uploads/2013/10/hat-vldb2014.pdf
+
 \begin{itemize}
 \item Sticky Availale
-\item Totally
+\item Totally available
+\item high availability
+
 
 \end{itemize}
 
@@ -375,13 +379,46 @@ The papers concerning concerning MAV were a bit mixed with information
 
 \textcolor{red}{TODO Make Diagram
 
+\subsection{Monotonic Atomic View}
+The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation, it requires that effects by transactions are fully visible once read by other transactions, such that t1 may preform w(1), w(2), w(2), c. These 3 sub operations effects should all either be fully visible or not at all, so partial transactions aren't allowed. Formally this is defined by \cite{HighlyAvailableTransactionsVirtuesandLimitations}
+\textit{Under MAV, once some of the effects of a transaction Ti are observed by another transaction Tj, thereafter, all effects of Ti are observed by Tj. That is, if a transaction Tj reads a version of an object that transaction Ti wrote, then a later read by Tj cannot return a value whose later version is installed by Ti.}
+
+and by \cite{Adya99weakconsistency:} as prohibiting:
+\begin{itemize}
+    \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
+\end{itemize}
+
+Further size MAV is strictly stronger than Read committed it also disallows the ANSI phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
 
 \subsection{Read committed}
-\textcolor{red}{TODO Make Diagram}
-\subsection{Read Uncommitted}
+The read committed transaction model is the first non atomic transaction model where partial visibility of committed transactions are permitted. This however might lead to foreign key constraint issues, among other problems where required data joins are preformed due to not yet visible values.
+
+
+formally it is defined in \cite{ansisql1999} by disallowing P1
+\textit{P1 (“Dirty read”): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.}. However in the Microsoft paper \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations. one of which allows non-serilizable histories. Here \cite{Adya99weakconsistency:} is commonly used at it provides a concrete specification based on the unconcise ANSI specification. 
+
+
 \textcolor{red}{TODO Make Diagram}
 
+
+
+\subsection{Read Uncommitted}
+Read uncommitted as defined by ANSI allows all behavior, However this has been challenged by \cite{Berensonetal} where they argue that read uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per \cite{Adya99weakconsistency:} which again provides are better definition based on what can be interpreted from the loose definition in \cite{ansisql1999}. it should be noted that due to the loose specification in ANSI multiple mainstream interpretation exists.\\
+
+by the Aday's specification Read uncommitted disallows
+\begin{itemize}
+    \item Dirty Write(P0)
+\end{itemize}
+But allows
+\begin{itemize}
+    \item Dirty read(P1)
+    \item Fuzzy Read (P2)
+    \item Phantom (P3)
+\end{itemize}
+
 }
+
+
 \subsection{Linearizable}
 \textcolor{red}{TODO Make Diagram}
 \subsection{Sequential}
