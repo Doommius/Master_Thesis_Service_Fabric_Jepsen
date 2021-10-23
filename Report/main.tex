@@ -193,12 +193,14 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 
 \section{Availability}
 
-Use this as a source https://amplab.cs.berkeley.edu/wp-content/uploads/2013/10/hat-vldb2014.pdf
+Availability refers to the gurantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
 \begin{itemize}
-    \item Sticky Available
-    \item Totally Available
-    \item High Availability
+    \item high availability: if every userthat can contact a correct (non-failing) server eventually receives aresponse from that server, even in the presence of arbitrary, indefinitely long network partitions between servers\cite{CAP}.
+    \item transactional availability:
+    \item Unavailable: \textit{Not available during some types of network failures. Some or all nodes must pause operations in order to ensure safety.}  
+    \item Sticky Available: \textit{Available on every non-faulty node, so long as clients only talk to the same servers, instead of switching to new ones.}
+    \item Totally Available: \textit{Available on every non-faulty node, even when the network is completely down.}
 
 
 \end{itemize}
@@ -422,8 +424,8 @@ But allows
 
 
 
-\subsection{BASE transaction models}
-The catatfory of lineariza transaction models
+\subsection{non transaction based models !? base maybe?}
+The catagory of BASE transaction models aren't considering the order of transactions but rather the ordering of operations. 
 \subsubsection{Linearizable}
 Linearizablilty is the strongest single object consistency model, that requires operations to occur in a order consistent with real time, and the operations themselves should occur atomically. It should also be noted that linearzability is not tollerant to network partitions and should be considred a CA model acording to the CAP therom.
 
@@ -440,7 +442,16 @@ Formally it is defined in \cite{Linearizability} and later formilized in \cite{C
 
 
 \subsubsection{Sequential Consistency}
+Sequential Consistency(SC) is a relaxation of linearizability, unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However since a Total order is requied the model is unable to tolerate partions and some or all nodes will be unable to make progress. \\
 
+One of the phenomena SC allows is stale reads, all processes have to follow the same total order but as there isn't a steight constrant about states a process may return a arbitrarily stale state. however once a given node observess some operations from a seperate node, it may never observe a state prior to B.
+
+Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formallized it into 3 requirements:
+begin{itemize}
+\item SingleOrder (there exists some total order of operations)
+\item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).)
+\item RVal (the order must be consistent with the semantics of the datatype)
+\end{itemize}
 
 \textcolor{red}{TODO Make Diagram}
 \subsubsection{Casual}

@@ -16,6 +16,18 @@
 }
 
 
+@inbook{Lamport1979how,
+author = {Lamport, Leslie},
+year = {1979},
+month = {10},
+pages = {},
+title = {How to make a multiprocessor computer that correctly executes multiprocess programs},
+isbn = {9781450372701},
+doi = {10.1145/3335772.3335935}
+}
+
+
+
 @article{Linearizability,
 author = {Herlihy, Maurice and Wing, Jeannette},
 year = {1990},
@@ -69,17 +81,7 @@ title = {A Framework for Transactional Consistency Models with Atomic Visibility
 
 
 
-@article{HighlyAvailableTransactionsVirtuesandLimitations,
-author = {Bailis, Peter and Davidson, Aaron and Fekete, Alan and Ghodsi, Ali and Hellerstein, Joseph and Stoica, Ion},
-year = {2013},
-month = {02},
-pages = {},
-title = {Highly Available Transactions: Virtues and Limitations (Extended Version)},
-volume = {7},
-journal = {Proceedings of the VLDB Endowment}
-}
-
-@inproceedings{10.1145/223784.223785,
+@inproceedings{Berensonetal,
 author = {Berenson, Hal and Bernstein, Phil and Gray, Jim and Melton, Jim and O'Neil, Elizabeth and O'Neil, Patrick},
 title = {A Critique of ANSI SQL Isolation Levels},
 year = {1995},
@@ -101,33 +103,6 @@ numpages = {10},
 location = {San Jose, California, USA},
 series = {SIGMOD '95}
 }
-
-@article{Berensonetal,
-author = {Berenson, Hal and Bernstein, Phil and Gray, Jim and Melton, Jim and O'Neil, Elizabeth and O'Neil, Patrick},
-title = {A Critique of ANSI SQL Isolation Levels},
-year = {1995},
-issue_date = {May 1995},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-volume = {24},
-number = {2},
-issn = {0163-5808},
-url = {https://doi.org/10.1145/568271.223785},
-doi = {10.1145/568271.223785},
-abstract = {ANSI SQL-92 [MS, ANSI] defines Isolation Levels in terms of phenomena: Dirty Reads,
-Non-Repeatable Reads, and Phantoms. This paper shows that these phenomena and the
-ANSI SQL definitions fail to properly characterize several popular isolation levels,
-including the standard locking implementations of the levels covered. Ambiguity in
-the statement of the phenomena is investigated and a more formal statement is arrived
-at; in addition new phenomena that better characterize isolation types are introduced.
-Finally, an important multiversion isolation type, called Snapshot Isolation, is defined.},
-journal = {SIGMOD Rec.},
-month = may,
-pages = {1–10},
-numpages = {10}
-}
-
-
 
 
 @book{DBMSbook,
@@ -164,7 +139,7 @@ edition = {2nd}
   }
 
 
-@article{10.14778/2732232.2732237,
+@article{HighlyAvailableTransactionsVirtuesandLimitations,
 author = {Bailis, Peter and Davidson, Aaron and Fekete, Alan and Ghodsi, Ali and Hellerstein, Joseph M. and Stoica, Ion},
 title = {Highly Available Transactions: Virtues and Limitations},
 year = {2013},
@@ -188,13 +163,13 @@ We analytically and experimentally quantify the availability and performance ben
 of HATs---often two to three orders of magnitude over wide-area networks---and discuss
 their necessary semantic compromises.},
 journal = {Proc. VLDB Endow.},
-month = nov,
+month = {10},
 pages = {181–192},
 numpages = {12}
 }
 
 
-@article{10.1145/78969.78972,
+@article{Herlihy1990Linearizability,
 author = {Herlihy, Maurice P. and Wing, Jeannette M.},
 title = {Linearizability: A Correctness Condition for Concurrent Objects},
 year = {1990},
