@@ -870,7 +870,7 @@
 
     \subsubsection{Infrastructure}
     The infrastructure in centered around v-net containing 6 Virtual machines all running linux, in this case ubuntu 18.04 and 20.04 for the jepsen host, I'll refer to the service fabric nodes from n1-n5 and the jepsen host as jepsenhost from now on.
-    The 5 service fabric nodes are mostly self managing, applications can be deployed via either the Azure Service Fabric CLI\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-cli} or via visual studio\cite{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-tutorial-deploy-app-to-party-cluster} which was the process used doing the development stages of the project.
+    The 5 service fabric nodes are mostly self managing, applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via visual studio\cite{servicefabricguide} which was the process used doing the development stages of the project.
 
     This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bashcript instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being move back and Fourth from the deployment machine and the test cluster.
 
@@ -892,7 +892,7 @@
 
     \subsubsection{Stateful Reliable collection service}
 
-    The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{https://en.wikipedia.org/wiki/List_of_HTTP_status_codes}. eg node not primary, accepted, result not found.. etc.
+    The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{wikihttpstatuscodes}. eg node not primary, accepted, result not found.. etc.
 
     The fronted service simply provides these same apis but with wrappers and routing in case of a portioned design. This layer could also be used to built additional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
 
