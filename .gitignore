@@ -355,3 +355,11 @@ ASALocalRun/
 /old/Service-Fabric_application_charp/VotingWeb/bin/
 /old/Service-Fabric_application_charp/VotingWeb/obj/
 clojuresdk/
+report/main.aux
+report/main.bbl
+report/main.bcf
+report/main.blg
+report/main.pdf
+report/main.run.xml
+report/main.synctex.gz
+report/main.toc
