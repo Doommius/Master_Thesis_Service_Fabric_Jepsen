@@ -29,9 +29,9 @@
 \usepackage{multirow}
 \usepackage{mathtools} % Bonus
 \usepackage[
-    backend=biber,
-    style=numeric,
-    sorting=ynt
+backend=biber,
+style=numeric,
+sorting=ynt
 ]{biblatex}
 
 \newtheorem{theorem}{Theorem}
@@ -60,23 +60,23 @@
 \begin{document}
 \begin{titlepage}
 \centering
-    \vspace*{9\baselineskip}
-    \huge
-    \bfseries
-    Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks \\
-    \normalfont
-    Mark Jervelund \\
-    Mark@jervelund.com \\
-    \vspace*{9\baselineskip}
-    \normalfont
-	\includegraphics[scale=1]{logos/SDU_BLACK.png}
-    \vfill\
-    \vspace{5mm}
-    Institute Of Mathematics and Computer Science, SDU \\
+\vspace*{9\baselineskip}
+\huge
+\bfseries
+Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks \\
+\normalfont
+Mark Jervelund \\
+Mark@jervelund.com \\
+\vspace*{9\baselineskip}
+\normalfont
+\includegraphics[scale=1]{logos/SDU_BLACK.png}
+\vfill\
+\vspace{5mm}
+Institute Of Mathematics and Computer Science, SDU \\
 
 	%Date
     \textbf{\datedate} \\[2\baselineskip]
-\end{titlepage}
+    \end{titlepage}
 
 \renewcommand{\thepage}{\roman{page}}% Roman numerals for page counter
 \tableofcontents
@@ -146,15 +146,15 @@ The ACID acronym is defined as follows in the DBMS book\cite{DBMSbook}.
 \begin{itemize}
     \item "A" stands for "atomicity," the all-or-nothing execution of transactions.
     \item "C," stands for "consistency." That is, all databases
-have consistency constraints, or expectations about relationships among
-data elements (e.g., account balances may not be negative after a transaction is finished). Transactions are expected to preserve the consistency of
-the database.
-\item "I" stands for "isolation," the fact that each transaction must appear
-to be executed as if no other transaction is executed at the same
-time.
-\item "D" stands for "durability," the condition that the effect on the
-database of a transaction must never be lost, once the transaction
-has been completed.
+    have consistency constraints, or expectations about relationships among
+    data elements (e.g., account balances may not be negative after a transaction is finished). Transactions are expected to preserve the consistency of
+    the database.
+    \item "I" stands for "isolation," the fact that each transaction must appear
+    to be executed as if no other transaction is executed at the same
+    time.
+    \item "D" stands for "durability," the condition that the effect on the
+    database of a transaction must never be lost, once the transaction
+    has been completed.
 \end{itemize}
 
 ACID, therefore, offers strong consistency with rigorous handling of transaction isolation that prevents inaccurate data. This allows for the designing of a system, where we can prevent operations on stale data, data loss, or "illegal" transactions. These faults will be presented further down in the paper.
@@ -184,11 +184,11 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 
 
 \begin{itemize}
-\item Consistency and Partition tolerance(CP) \\ A system that delivers Consistency and Partition tolerance but the trade-off here is Availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the Primary becomes unavailable then the Replicate with the most recent transaction log simply becomes the new Master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.  \\
+    \item Consistency and Partition tolerance(CP) \\ A system that delivers Consistency and Partition tolerance but the trade-off here is Availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the Primary becomes unavailable then the Replicate with the most recent transaction log simply becomes the new Master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.  \\
 
-\item Availability and Partition tolerance (AP) \\ If our system foregoes Consistency and delivers Availability and Partition tolerance. In the case of a partition between nodes, we keep serving from all nodes but in this case, we might serve stale data. An occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems, and databases such as Cassandra. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one.  //TODO It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
+    \item Availability and Partition tolerance (AP) \\ If our system foregoes Consistency and delivers Availability and Partition tolerance. In the case of a partition between nodes, we keep serving from all nodes but in this case, we might serve stale data. An occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems, and databases such as Cassandra. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one.  //TODO It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
 
-\item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it would cover single-node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
+    \item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it would cover single-node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
 \end{itemize}
 
 \section{Availability}
@@ -196,9 +196,9 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 Use this as a source https://amplab.cs.berkeley.edu/wp-content/uploads/2013/10/hat-vldb2014.pdf
 
 \begin{itemize}
-\item Sticky Available
-\item Totally Available
-\item High Availability
+    \item Sticky Available
+    \item Totally Available
+    \item High Availability
 
 
 \end{itemize}
@@ -208,10 +208,10 @@ Use this as a source https://amplab.cs.berkeley.edu/wp-content/uploads/2013/10/h
 
 
 \begin{wrapfigure}{r}{0.5\linewidth}
-    \centering
-       \includegraphics[scale=0.4]{images/consistency models.PNG}
-     \caption{Picture from jepsen.io/consistency}
-     \label{fig:jepsenioconsistency}
+\centering
+\includegraphics[scale=0.4]{images/consistency models.PNG}
+\caption{Picture from jepsen.io/consistency}
+\label{fig:jepsenioconsistency}
 \end{wrapfigure}
 
 
@@ -237,14 +237,14 @@ T1   & T2   & T3   & T4   \\
 w(1) &      &      &      \\
 r(2) &      &      &      \\
 c    &      &      &      \\
-     & r(1) &      &      \\
-     & r(2) &      &      \\
-     & c    &      &      \\
-     &      & r(3) &      \\
-     &      & w(4) &      \\
-     &      & c    &      \\
-     &      &      & r(1) \\
-     &      &      & c   
+& r(1) &      &      \\
+& r(2) &      &      \\
+& c    &      &      \\
+&      & r(3) &      \\
+&      & w(4) &      \\
+&      & c    &      \\
+&      &      & r(1) \\
+&      &      & c   
 \end{tabular}
 \caption{Transactions are ordered chronological in time, and executed as such.}
 
@@ -267,16 +267,16 @@ SR follows closely to S-SR with regards to partition tolerance and availability 
 \begin{tabular}{l|l|l|l}
 T1   & T2   & T3   & T4   \\
 w(1) &      &      &      \\
-     & r(1) &      &      \\
-     &      &      & r(1) \\
-     & w(3) &      &      \\
-     &      &      & c    \\
-     &      & r(3) &      \\
-     & c    &      &      \\
-     &      & w(4) &      \\
+& r(1) &      &      \\
+&      &      & r(1) \\
+& w(3) &      &      \\
+&      &      & c    \\
+&      & r(3) &      \\
+& c    &      &      \\
+&      & w(4) &      \\
 r(2) &      &      &      \\
 c    &      &      &      \\
-     &      & c    &      
+&      & c    &      
 \end{tabular}
 \caption{Transactions are ordered chronological in time and executed in a way that makes it possible for the operations to occur atomically such that they appear to have been executed in order transaction-wise. }
 \end{table}
@@ -292,19 +292,19 @@ It should also be noted that RR allows for the same pathological ordering of ope
 \begin{table}[h]
 \begin{tabular}{l|l|l|l}
 T1   & T2   & T3   & T4   \\
-     &      &      & r(y) \\
-     &      &      & c    \\
+&      &      & r(y) \\
+&      &      & c    \\
 w(p$_1$ to y) &      &      &      \\
 r(p in y) &      &      &      \\
-     &      &      &      \\
-     & w(p$_2$ to y) &      &      \\
-     & c    &      &      \\
+&      &      &      \\
+& w(p$_2$ to y) &      &      \\
+& c    &      &      \\
 r(p in y) &      &      &      \\
 w(z) &      &      &      \\
 c    &      &      &      \\
-     &      & r(z) &      \\
-     &      & w(x) &      \\
-     &      & c    &      
+&      & r(z) &      \\
+&      & w(x) &      \\
+&      & c    &      
 \end{tabular}
 \caption{T1 shows an example of a valid transaction with a phantom, and T4 could be placed at the beginning of the history returning the "empty" result. Both are valid transactions within RR}.
 \end{table}
@@ -315,24 +315,24 @@ Cursor Stability closely resembles repeatable read where RR locks the objects un
 
 \cite{Adya99weakconsistency}\\
 \begin{itemize}
-\item G-cursor(x): the directed serialization graph, restricted to a single object x, contains an anti-dependency cycle and at least one write-dependency edge.
-\item g1:
-\begin{enumerate}
-\item G1a (Aborted Reads): A transaction observes an object (perhaps via a predicate) modified by an aborted transaction. Intuitively, transactions have to commit for us to read them.
-\item G 1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction that was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
-\item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can't be affected by T1.
-\end{enumerate}
+    \item G-cursor(x): the directed serialization graph, restricted to a single object x, contains an anti-dependency cycle and at least one write-dependency edge.
+    \item g1:
+    \begin{enumerate}
+        \item G1a (Aborted Reads): A transaction observes an object (perhaps via a predicate) modified by an aborted transaction. Intuitively, transactions have to commit for us to read them.
+        \item G 1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction that was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
+        \item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can't be affected by T1.
+    \end{enumerate}
 \end{itemize}
 Furthermore, since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
 \begin{itemize}
-\item P0 (Dirty Write): w1(x) … w2(x)
-\item P1 (Dirty Read): w1(x) … r2(x)
+    \item P0 (Dirty Write): w1(x) … w2(x)
+    \item P1 (Dirty Read): w1(x) … r2(x)
 \end{itemize}
 
 but allows:
 \begin{itemize}
-\item P2 (Fuzzy Read): r1(x) … w2(x)
-\item P3 (Phantom): r1(P) … w2(y in P)
+    \item P2 (Fuzzy Read): r1(x) … w2(x)
+    \item P3 (Phantom): r1(P) … w2(y in P)
 \end{itemize}
 
 
@@ -360,19 +360,19 @@ There also exist multiple other definitions from \cite{CeroneBernardiGotsman} an
 \begin{table}[h]
 \begin{tabular}{l|l|l|l}
 T1   & T2   & T3   & T4   \\
-     &      &      & r(y) \\
-     &      &      & c    \\
+&      &      & r(y) \\
+&      &      & c    \\
 w(y) &      &      &      \\
 r(y) &      &      &      \\
-     &      &      &      \\
-     & w(y) &      &      \\
-     &      &      &      \\
+&      &      &      \\
+& w(y) &      &      \\
+&      &      &      \\
 r(y) &      &      &      \\
 w(z) &      &      &      \\
 c    &      &      &      \\
-     & a    & r(z) &      \\
-     &      & w(x) &      \\
-     &      & c    &      
+& a    & r(z) &      \\
+&      & w(x) &      \\
+&      & c    &      
 \end{tabular}
 \caption{T1 and T2 contains a conflict that courses T2 to abort as T1 commits prior to T2}
 \end{table}
@@ -389,7 +389,7 @@ The papers concerning MAV were a bit mixed with information
 The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation, it requires that effects by transactions are fully visible once read by other transactions, such that t1 may preform w(1), w(2), w(2), c. These 3 sub operations effects should all either be fully visible or not at all, so partial transactions aren't allowed. Formally this is defined by \cite{HighlyAvailableTransactionsVirtuesandLimitations}
 \textit{Under MAV, once some of the effects of a transaction Ti are observed by another transaction Tj, thereafter, all effects of Ti are observed by Tj. That is, if a transaction Tj reads a version of an object that transaction Ti wrote, then a later read by Tj cannot return a value whose later version is installed by Ti.}
 
-and by \cite{Adya99weakconsistency:} as prohibiting:
+and by Adya et al\cite{Adya99weakconsistency:} as prohibiting:
 \begin{itemize}
     \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
 \end{itemize}
@@ -400,16 +400,14 @@ Further size MAV is strictly stronger than Read committed it also disallows the 
 The read committed transaction model is the first non-atomic transaction model where partial visibility of committed transactions is permitted. This however might lead to foreign key constraint issues, among other problems where required data joins are performed due to not yet visible values.
 
 
-Formally it is defined \cite{ansisql1999} by disallowing P1
-\textit{P1 (“Dirty read”): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification. 
+Formally it is defined ANSISQL1999\cite{ansisql1999} by disallowing P1
+\textit{P1 (“Dirty read”): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper,Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al\cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification. 
 
 
 \textcolor{red}{TODO Make Diagram}
 
-
-
 \subsection{Read Uncommitted}
-Read uncommitted as defined by ANSI allows all behavior. However, this has been challenged by???????????????????????????? \cite{Berensonetal} where they argue that read uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per \cite{Adya99weakconsistency:} which again provides are better definition based on what can be interpreted from the loose definition in \cite{ansisql1999}. it should be noted that due to the loose specification in ANSI multiple mainstream interpretations exists.\\
+Read uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al\cite{Berensonetal} where they argue that read uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al \cite{Adya99weakconsistency:} which again provides are better definition based on what can be interpreted from the loose definition in ANSISQL1999\cite{ansisql1999}. it should be noted that due to the loose specification in ANSI multiple mainstream interpretations exists.\\
 
 by the Aday's specification Read uncommitted disallows
 \begin{itemize}
@@ -432,12 +430,18 @@ Linearizablilty is the strongest single object consistency model, that requires 
 Formally it is defined in \cite{Linearizability} and later formilized in \cite{ConsistencyinNonTransactionalDistributedStorageSystems} where it's defined by 3 requirements
 
 \begin{itemize}
-    PRAM is satisfied if the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operatio
-\end{itemize}   
-
+    \item SingleOrder (there exists some total order of operations)
+    \item RealTime (consistent with the real time bound)
+    \item RVal (obeying the single-threaded laws of the associated object’s datatype)
+\end{itemize}  
 
 \textcolor{red}{TODO Make Diagram}
-\subsubsection{Sequential}
+
+
+
+\subsubsection{Sequential Consistency}
+
+
 \textcolor{red}{TODO Make Diagram}
 \subsubsection{Casual}
 \textcolor{red}{TODO Make Diagram}
@@ -463,10 +467,10 @@ Two of the consistency models were already mentioned in the previous section nam
 ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
 \begin{itemize}
 
-\item Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
+    \item Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
 
-\item Fuzzy or Non-repeatable Read — Transaction T1 reads x and then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
-\item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
+    \item Fuzzy or Non-repeatable Read — Transaction T1 reads x and then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
+    \item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
 \end{itemize}
 
 
@@ -477,16 +481,16 @@ database. Here are two anomalies arising from constraint
 violation}
 
 \begin{itemize}
-\item 
-\item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If now T1 reads y, it may see an inconsistent state, and therefore produce an inconsistent state as output.
-In terms of histories, we have the anomaly:  }
-A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
-\item \textit{A5B Write Skew Suppose T1 reads x and y, which are
-consistent with C(), and then a T2 reads x and y, writes x,
-and commits. Then T1 writes y. If there were a constraint
-between x and y, it might be violated. In terms of histories:}
-A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
-(Write Skew)
+    \item 
+    \item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If now T1 reads y, it may see an inconsistent state, and therefore produce an inconsistent state as output.
+    In terms of histories, we have the anomaly:  }
+    A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
+    \item \textit{A5B Write Skew Suppose T1 reads x and y, which are
+    consistent with C(), and then a T2 reads x and y, writes x,
+    and commits. Then T1 writes y. If there were a constraint
+    between x and y, it might be violated. In terms of histories:}
+    A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
+    (Write Skew)
 \end{itemize}
 
 
@@ -518,7 +522,7 @@ The second case of 'Non-repeatable read' is when S1 reads data that is changed b
 
 Phantom read
 The Third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
- \textcolor{red}{Make example diagram}
+\textcolor{red}{Make example diagram}
 
 
 \subsection{dirty read}
@@ -538,7 +542,7 @@ The Network is split into 2 or more parts where they each believe different trut
 
 Process 1 writes A, then process 1 tried to read A but a doesn't exist in the node, and later process a is able to read A
 
-\
+
 
 
 \chapter{Database Consistency testing possibly rename to Jepsen}
@@ -732,8 +736,8 @@ The Failover Manager is running as stateful service, that has a instance running
 \vspace{5mm}
 
 \begin{itemize}
-\item \textbf{Create a replica} Create a new replica when instructed by the PLB
-\item \textbf{Move a replica} migrate a replica when instructed by the PLB to a different node.
+    \item \textbf{Create a replica} Create a new replica when instructed by the PLB
+    \item \textbf{Move a replica} migrate a replica when instructed by the PLB to a different node.
     \item \textbf{Reconfiguration} If a primary replica becomes unavailable to promotes a secondary as the new primary, in case the old primary comes back only it is demoted to secondary. 
 \end{itemize}
 
@@ -774,15 +778,15 @@ SF reliable collections promise two Select-able consistency models that the user
 \vspace{5mm}
 
 \begin{table}[h]
-    \centering
-    \begin{tabular}{l|l|l}
-     & \multicolumn{2}{c@{}}{\text{Role}}\\
-    \text{Operation} & Primary & Secondary \\
-        Single Entity Read & Repeatable Read & Snapshot\\
-        Enumeration, Count & Snapshot & Snapshot
-    \end{tabular}
-    \caption{isolation level defaults for Reliable Dictionary and Queue operations.}
-    \cite{SF_RC_Transactions}
+\centering
+\begin{tabular}{l|l|l}
+& \multicolumn{2}{c@{}}{\text{Role}}\\
+\text{Operation} & Primary & Secondary \\
+Single Entity Read & Repeatable Read & Snapshot\\
+Enumeration, Count & Snapshot & Snapshot
+\end{tabular}
+\caption{isolation level defaults for Reliable Dictionary and Queue operations.}
+\cite{SF_RC_Transactions}
 \end{table}
 
 \section{Programming for Service Fabric}
@@ -891,8 +895,8 @@ All of these attempts were however frugal, after spending newly 2 months deletin
 
 The issue turned out to be 2 fold.
 \begin{itemize}
-\item .NET needing to be rolled back to 3.5
-\item the entry point having to be defined via .NET and the name of the DLL file. this was something i attempt prior by using a entry point.sh that did the same while his solution was just replacing where the windows version has .exe with .DLL and as a .NET entry point.
+    \item .NET needing to be rolled back to 3.5
+    \item the entry point having to be defined via .NET and the name of the DLL file. this was something i attempt prior by using a entry point.sh that did the same while his solution was just replacing where the windows version has .exe with .DLL and as a .NET entry point.
 \end{itemize}
 
 Finally i had a runnable version on Linux, or rather. i had a way to run my application on Linux as the issues didn't stop here. the Feature parity was still there. the dns service was still missing, this required a lot of endpoints to be hard coded, which induced as one active replica of a given service per node. eg we can only have 1 service running per node which would greatly reduce horizontal scaling of the partitions which would greatly increase the number of partitions required to handling greater workloads. running larger partitions on each node is also an option but from a performance, availability, and reliability it's much effect having lots of smaller nodes instead of one large database instance that require a lot of broadcasting to each partition replica.
@@ -917,11 +921,11 @@ After this step the services to ready to test, as mentioned earlier in the paper
 The steps to deploy and run the tests is as follows.
 
 \begin{enumerate}
-\item Deploy Cluster via a vm scaleset with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to sasilirate connections to the test envoriment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
-\item Deploy the SF applications
-\item connent to the Jepsenhost server and sync test framework.
-\item run test framework with desired perameters
-\item pull test result to local machine to analyse results.
+    \item Deploy Cluster via a vm scaleset with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to sasilirate connections to the test envoriment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
+    \item Deploy the SF applications
+    \item connent to the Jepsenhost server and sync test framework.
+    \item run test framework with desired perameters
+    \item pull test result to local machine to analyse results.
 \end{enumerate}
 
 For the first few rounds of testing everything went alright, however after running a few test exsamples 
@@ -1029,7 +1033,7 @@ this could be done via automated testing and verifycation of a given system in i
 
 
 \section{Future Work}
-   
+
 
 
 
@@ -1052,41 +1056,41 @@ this could be done via automated testing and verifycation of a given system in i
 
 \begin{tabular}{clll}
 \multicolumn{2}{l}{Mark Jervelund thesis plan} &                                           &                  \\
-                                & Week 45      &                                             &                                                                                                                            \\
-                                & Week 46      &                                             & \multirow{-2}{*}{\text{Study Jensen test}}                                                                                        \\
-                                & Week 47      &                                             &                                                                                                                            \\
+& Week 45      &                                             &                                                                                                                            \\
+& Week 46      &                                             & \multirow{-2}{*}{\text{Study Jensen test}}                                                                                        \\
+& Week 47      &                                             &                                                                                                                            \\
 \multirow{-4}{*}{November}      & Week 48      &                                             & \multirow{-2}{*}{\text{Finish study on Jepsen test}}                                                                              \\
-                                & Week 49      &                                             &                                                                                                                            \\
-                                & Week 50      &                                             & \multirow{-2}{*}{\text{Study Service Fabric} }                                                                                    \\
-                                & Week 51      &                                             &                                                                            \\
-                                & Week 52      &                                             & \multirow{-2}{*}{\text{Christmas break}}                                            \\
+& Week 49      &                                             &                                                                                                                            \\
+& Week 50      &                                             & \multirow{-2}{*}{\text{Study Service Fabric} }                                                                                    \\
+& Week 51      &                                             &                                                                            \\
+& Week 52      &                                             & \multirow{-2}{*}{\text{Christmas break}}                                            \\
 \multirow{-5}{*}{December}      & Week 53      &                                             &                                                                                                                            \\
-                                & week 01      &  \multirow{-10}{*}{\text{Structured study 8 weeks}} & \multirow{-2}{*}{\text{Finish Study Service Fabric} }                                                                             \\
-                                & Week 02      &                                             &                                                                                                                            \\
-                                & Week 03      &                                             & \multirow{-2}{*}{\text{designing the experiment}}                                                                                 \\
+& week 01      &  \multirow{-10}{*}{\text{Structured study 8 weeks}} & \multirow{-2}{*}{\text{Finish Study Service Fabric} }                                                                             \\
+& Week 02      &                                             &                                                                                                                            \\
+& Week 03      &                                             & \multirow{-2}{*}{\text{designing the experiment}}                                                                                 \\
 \multirow{-4}{*}{January}       & Week 04      &                                             &                                                                                                                            \\
-                                & Week 05      &                                             & \multirow{-2}{*}{\text{designing the experiment} }                                                                                \\
-                                & Week 06      &                                             &                                                                                                                            \\
-                                & Week 07      &                                             & \multirow{-2}{*}{\text{Execute the experiment}  }                                                                                 \\
+& Week 05      &                                             & \multirow{-2}{*}{\text{designing the experiment} }                                                                                \\
+& Week 06      &                                             &                                                                                                                            \\
+& Week 07      &                                             & \multirow{-2}{*}{\text{Execute the experiment}  }                                                                                 \\
 \multirow{-4}{*}{February}      & Week 08      &                                             &                                                                                                                            \\
-                                & Week 09      &                                             & \multirow{-2}{*}{\text{Analyse the experiment}}                                                                                   \\
-                                & Week 10      &                                             &                                                                                                                            \\
-                                & Week 11      &  \multirow{-10}{*}{\text{Experiment 10 weeks}}     & \multirow{-2}{*}{\text{discover what the findings from the experiment is}}                                                         \\
-                                & Week 12      &                                             &                                                                                                                            \\
+& Week 09      &                                             & \multirow{-2}{*}{\text{Analyse the experiment}}                                                                                   \\
+& Week 10      &                                             &                                                                                                                            \\
+& Week 11      &  \multirow{-10}{*}{\text{Experiment 10 weeks}}     & \multirow{-2}{*}{\text{discover what the findings from the experiment is}}                                                         \\
+& Week 12      &                                             &                                                                                                                            \\
 \multirow{-5}{*}{March}         & Week 13      &                                             & \multirow{-2}{*}{\text{Running additional experiments if needed  Full on write mode}} \\
-                                & Week 14      &                                             &                                                                                                                            \\
-                                & Week 15      &                                             & \multirow{-2}{*}{\text{Full on write mode} }                                                                                      \\
-                                & Week 16      &                                             &                                                                                                                            \\
+& Week 14      &                                             &                                                                                                                            \\
+& Week 15      &                                             & \multirow{-2}{*}{\text{Full on write mode} }                                                                                      \\
+& Week 16      &                                             &                                                                                                                            \\
 \multirow{-4}{*}{April}         & Week 17      &                                             & \multirow{-2}{*}{\text{Full on write mode} }                                                                                      \\
-                                & Week 18      &                                             &                                                                                                                            \\
-                                & Week 19      &                                             & \multirow{-2}{*}{\text{Full on write mode    Send out thesis for feedback}}             \\
-                                & Week 20      &                                             &                                                                                                                            \\
-                                & Week 21      & \multirow{-10}{*}{\text{Thesis writing  10 weeks}} & \multirow{-2}{*}{\text{Correction} }                                                                                              \\
+& Week 18      &                                             &                                                                                                                            \\
+& Week 19      &                                             & \multirow{-2}{*}{\text{Full on write mode    Send out thesis for feedback}}             \\
+& Week 20      &                                             &                                                                                                                            \\
+& Week 21      & \multirow{-10}{*}{\text{Thesis writing  10 weeks}} & \multirow{-2}{*}{\text{Correction} }                                                                                              \\
 \multirow{-5}{*}{May}           & Week 22      &                                             &                                                                                                                            \\
-                                & Week 23      & \multirow{-2}{*}{\text{goal}}                      & \multirow{-2}{*}{\text{Hand in}}                                                                                                  \\
-                                & Week 24      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
-                                & Week 25      &  \multicolumn{1}{l}{}                       & \multicolumn{1}{l}{}                                                                                                       \\
-                                & Week 26      &  \multicolumn{1}{l}{}                       & \multicolumn{1}{l}{}                                                                                                       \\
+& Week 23      & \multirow{-2}{*}{\text{goal}}                      & \multirow{-2}{*}{\text{Hand in}}                                                                                                  \\
+& Week 24      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
+& Week 25      &  \multicolumn{1}{l}{}                       & \multicolumn{1}{l}{}                                                                                                       \\
+& Week 26      &  \multicolumn{1}{l}{}                       & \multicolumn{1}{l}{}                                                                                                       \\
 \multirow{-5}{*}{June}          & Week 27      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
 \multicolumn{1}{l}{}            & Week 28      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
 \multicolumn{1}{l}{}            & Week 29      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}                                                                                                       \\
