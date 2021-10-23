@@ -185,14 +185,16 @@
     Availability refers to the gurantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
     \begin{itemize}
-        \item high availability:
-%TODO Copy write all the below.
-        \textit{
-            Informally, highly available algorithms ensure “always on” operation and, as a side effect, guarantee low latency. If users of a highly available system are able to contact a (set of) server(s) in a system, they are guaranteed a response; this means servers will not need to synchronously communicate with others. If servers are partitioned from one another, they do not need to stall in order to provide clients a “safe” response to operations. This lack of fastpath coordination also means that a highly available system also provides low latency ; in a wide-area setting, clients of a highly available system need not wait for cross-datacenter communication. To properly describe whether a transactional system is highly available, we need to describe what servers a client must contact as well as what kinds of responses a server can provide, especially given the possibility of aborts. Traditionally, a system provides high availability if every user that can contact a correct (non-failing) server eventually receives a response from that server, even in the presence of arbitrary, indefinitely long network partitions between servers \cite{CAP}. As in a standard distributed database, designated servers might perform operations for different data items. A server that can handle an operation for a given data item is called a replica for that item.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
-        \item Sticky Available: \textit{In addition to high availability, which allows operations on any replica, distributed algorithms often assume a model in which clients always contact the same logical replica(s) across subsequent operations, whereby each of the client’s prior operations (but not necessarily other clients’ operations) are reflected in the database state that they observe. As we will discuss in Section 5, clients can ensure continuity between operations (e.g., reading their prior updates to a data item) by maintaining affinity or “stickiness” with a server or set of servers . In a fully replicated system, where all servers are replicas for all data items, stickiness is simple: a client can maintain stickiness by contacting the same server for each of its requests. However, to stay “sticky” in a partially-replicated system,    where servers are replicas for subsets of the set of data items (which we consider in this paper), a client must maintain stickiness with a single logical copy of the database, which may consist of multiple physical servers. We say that a system provides sticky availability if, whenever a client’s transactions is executed against a copy of database state that reflects all of the client’s prior operations, it eventually receives a response, even in the presence of indefinitely long partitions (where “reflects” is dependent on semantics). A client may choose to become sticky available by acting as a server itself; for example, a client might cache its reads and writes. Any guarantee achievable in a highly available system is achievable in a sticky high availability system but not vice-versa.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
-        \item transactional availability: \textit{Until now, we have considered single-object, single-operation availability. This is standard in the distributed systems literature    (e.g., distributed register models such as linearizability all concern single objects [41]), yet the database literature largely focuses on transactions: groups of multiple operations over multiple objects. Accordingly, by itself, traditional definitions of high availability are insufficient to describe availability guarantees for transactions. Additionally, given the choice of commit and abort responses— which signal transaction success or failure to a client—we must take care in defining transactional availability. We say that a transaction has replica availability if it can contact at least one replica for every item it attempts to access; this may result in “lower availability” than a non-transactional availability requirement (e.g., single-item availability). Additionally, given the possibility of system-initiated aborts, we need to ensure useful forward progress: a system can trivially guarantee clients a response by always aborting all transactions. However, this is an unsatisfactory system because nothing good (transaction commit) ever happens; we should require a liveness property .
-        \vspace*{4mm}\\
-        A system cannot guarantee that every transaction will commit—transactions may choose to abort themselves—but we need to make sure that the system will not indefinitely abort transactions on its own volition. We call a transaction abort due to a transaction’s own choosing (e.g., as an operation of the transaction itself or due to a would-be violation of a declared integrity constraint) an internal abort and an abort due to system implementation or operation an external abort. We say that a system provides transactional availability if, given replica availability for every data item in a transaction, the transaction eventually commits (possibly after multiple client retries) or internally aborts [9]. A system provides sticky transactional availability if, given sticky availability, a transaction eventually commits or internally aborts}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+
+    \begin{itemize}
+    \item high availability: 
+    %TODO Copy write all the below.
+    \textit{
+    Informally, highly available algorithms ensure "always on" operation and, as a side effect, guarantee low latency. If users of a    highly available system are able to contact a (set of) server(s) in    a system, they are guaranteed a response; this means servers will    not need to synchronously communicate with others. If servers are    partitioned from one another, they do not need to stall in order to    provide clients a "safe" response to operations. This lack of fastpath coordination also means that a highly available system also    provides low latency ; in a wide-area setting, clients of a highly    available system need not wait for cross-datacenter communication. To properly describe whether a transactional system is highly    available, we need to describe what servers a client must contact    as well as what kinds of responses a server can provide, especially    given the possibility of aborts.    Traditionally, a system provides high availability if every user    that can contact a correct (non-failing) server eventually receives a    response from that server, even in the presence of arbitrary, indefinitely long network partitions between servers \cite{CAP}. As in a standard distributed database, designated servers might perform operations for different data items. A server that can handle an operation    for a given data item is called a replica for that item.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+    \item Sticky Available: \textit{In addition to high availability, which allows operations on any    replica, distributed algorithms often assume a model in which clients    always contact the same logical replica(s) across subsequent operations, whereby each of the client's prior operations (but not necessarily other clients' operations) are reflected in the database state    that they observe. As we will discuss in Section 5, clients can ensure continuity between operations (e.g., reading their prior updates    to a data item) by maintaining affinity or "stickiness" with a server    or set of servers . In a fully replicated system, where all servers    are replicas for all data items, stickiness is simple: a client can    maintain stickiness by contacting the same server for each of its requests. However, to stay "sticky" in a partially-replicated system,    where servers are replicas for subsets of the set of data items (which    we consider in this paper), a client must maintain stickiness with a    single logical copy of the database, which may consist of multiple    physical servers. We say that a system provides sticky availability if, whenever a client's transactions is executed against a copy    of database state that reflects all of the client's prior operations, it    eventually receives a response, even in the presence of indefinitely    long partitions (where "reflects" is dependent on semantics). A    client may choose to become sticky available by acting as a server    itself; for example, a client might cache its reads and writes. Any guarantee achievable in a highly available system is    achievable in a sticky high availability system but not vice-versa.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+    \item transactional availability: \textit{Until now, we have considered single-object, single-operation    availability. This is standard in the distributed systems literature    (e.g., distributed register models such as linearizability all concern    single objects [41]), yet the database literature largely focuses on    transactions: groups of multiple operations over multiple objects.    Accordingly, by itself, traditional definitions of high availability    are insufficient to describe availability guarantees for transactions.    Additionally, given the choice of commit and abort responses—    which signal transaction success or failure to a client—we must    take care in defining transactional availability.    We say that a transaction has replica availability if it can contact    at least one replica for every item it attempts to access; this may result in "lower availability" than a non-transactional availability    requirement (e.g., single-item availability). Additionally, given the    possibility of system-initiated aborts, we need to ensure useful forward progress: a system can trivially guarantee clients a response    by always aborting all transactions. However, this is an unsatisfactory system because nothing good (transaction commit) ever happens; we should require a liveness property .    
+     \vspace*{4mm}\\
+    A system cannot guarantee that every transaction will commit—transactions may choose to abort themselves—but we need to make    sure that the system will not indefinitely abort transactions on its    own volition. We call a transaction abort due to a transaction's own    choosing (e.g., as an operation of the transaction itself or due to    a would-be violation of a declared integrity constraint) an internal    abort and an abort due to system implementation or operation an    external abort. We say that a system provides transactional availability if, given replica availability for every data item in a transaction, the transaction eventually commits (possibly after multiple    client retries) or internally aborts [9]. A system provides sticky    transactional availability if, given sticky availability, a transaction eventually commits or internally aborts}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
 %TODO write on on Unavailable within availability the consistency models
         \item Unavailable: \textit{Not available during some types of network failures. Some or all nodes must pause operations in order to ensure safety.}
@@ -211,27 +213,32 @@
     ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
     \begin{itemize}
         \item Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
-        \item Fuzzy or Non-repeatable Read — Transaction T1 reads x, and T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
-        \item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that meet T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
-    \end{itemize}
+        \item Fuzzy or Non-repeatable Read — Transaction T1 reads x  then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
+    \item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
+\end{itemize}
+
+
 
     %TODO Write Section about what Berensonetal defineds.
     In \cite{Berensonetal} read and write skew are defined that occur due data item constraint violations. The exact definition is below: \\
 
     \textit{(Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation}
 
-    \begin{itemize}
-        \item
-        \item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If T1 reads y now, it may see an inconsistent state and therefore produce an inconsistent state as output.
-        In terms of histories, we have the anomaly:  }
-        A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
-        \item \textit{A5B Write Skew Suppose T1 reads x and y, which are
-        consistent with C(), and then a T2 reads x and y, writes x,
-            and commits. Then T1 writes y. If there were a constraint
-            between x and y, it might be violated. In terms of histories:}
-        A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
-        (Write Skew)
-    \end{itemize}
+\begin{itemize}
+\item 
+\item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If T1 reads y now, it may see an inconsistent state and produce an inconsistent state as output.
+In terms of histories, we have the anomaly:  }
+A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
+\item \textit{A5B Write Skew Suppose T1 reads x and y, which are
+consistent with C(), and then a T2 reads x and y, writes x,
+and commits. Then T1 writes y. If there were a constraint
+between x and y, it might be violated. In terms of histories:}
+A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
+(Write Skew)
+\end{itemize}
+
+
+
 
 
     \begin{table}[h]
@@ -246,26 +253,23 @@
     \end{table}
 
 
-    From this knowledge a table can be made that gives us an overview of the isolation levels and what behavior and the trade-off they have.
-    Isolation level Read phenomena
-    Dirty read Non-repeatable read Phantom read
-    read uncommitted yes yes yes
-    read committed no yes yes
-    repeatable read no no y
-    serializable no no no
+From this knowledge, a table can be made that gives us an overview of the isolation levels and their behavior and trade-off.
+Isolation level	Read Phenomena
+Dirty read	Non-repeatable read	Phantom read
+read uncommitted	yes	yes	yes
+read committed	no	yes	yes
+repeatable read	no	no	y
+serializable	no	no	no
 
 
-    'Dirty read' is when a S1 can read data that S2 has written but not yet committed, It is considered dirty as S2 can rollback the transaction where S1 read data that must be considered non existent.
+"Dirty read" is when an S1 can read data that S2 has written but not yet committed. It is considered dirty as S2 can roll back the transaction where S1 read data that must be considered non-existent. \textcolor{red}{Make example diagram}
+\\
+The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. So if S1 rereads the same data, it will have changed. This results in two equal, select statements returning different results.  \textcolor{red}{Make example diagram}
 
-    %TODO {Make example diagram}
-
-    The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. so if S1 read the some data again they will have changed. this results in two equal select statements returning different results.
-
-   %TODO {Make example diagram}
-
-    Phantom read
-    The Third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
-    %TODO {Make example diagram}
+Phantom Read
+The third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a  where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
+\textcolor{red}{Make example diagram}
+%TODO {Make example diagram}
 
     \subsubsection{dirty read}
 
@@ -484,7 +488,7 @@
 
 
     Formally it is defined ANSISQL1999\cite{ansisql1999} by disallowing P1
-    \textit{P1 (“Dirty read”): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper,Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al\cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
+\textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper,Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al\cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification. 
 
 
     %TODO {Read committed  Make Diagram}
@@ -511,11 +515,12 @@
 
     Formally it is defined in \cite{Linearizability} and later formilized in \cite{ConsistencyinNonTransactionalDistributedStorageSystems} where it's defined by 3 requirements
 
+
     \begin{itemize}
-        \item SingleOrder (there exists some total order of operations)
-        \item RealTime (consistent with the real time bound)
-        \item RVal (obeying the single-threaded laws of the associated object’s datatype)
-    \end{itemize}
+    \item SingleOrder (there exists some total order of operations)
+    \item RealTime (consistent with the real time bound)
+    \item RVal (obeying the single-threaded laws of the associated object's datatype)
+\end{itemize} 
 
     %TODO Make Diagram Linearizable
 
@@ -886,9 +891,8 @@
     as mentioned earlier running these tests required multiple components, The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless front-end that provides this data to clients via RESTAPI, a driver that handles the connection to this api and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
 
     \subsection{SF services}
-    Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the backend and adding a layer of validation, routing, and protection of the backend service. as well as greatly reducing the time that connections are held open to due RR times as all connections to the data store is kept within the cluster.
-
-    \subsubsection{Stateful Reliable collection service}
+    Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. as well as greatly reducing the time that connections are held open to due RR times as all connections to the data store is kept within the cluster. 
+\subsubsection{Stateful Reliable collection service}
 
     The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{https://en.wikipedia.org/wiki/List_of_HTTP_status_codes}. eg node not primary, accepted, result not found.. etc.
 
@@ -949,7 +953,7 @@
     \subsection{Implementation of this design}
 
 
-    The implementation of this interated design was supposed to have been been fairly streight forward however the non feature parity again poked it ungly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which chaused some warnings to turn into errors. that exposed my inexperiance of working with the dotnet framework and the service fabric API. this issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as i had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up beging related to some changes in allowed port ranges that were allocatable to services and therefor killed the application as it was using an illigal port. these warnings were however not displayed correctly in the linux distribution.
+    The implementation of this initial design was supposed to have been been fairly straight forward however the non feature parity again poked it ugly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which caused some warnings to turn into errors. that exposed my inexperience of working with the dotnet framework and the service fabric API. this issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as i had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up being related to some changes in allowed port ranges that were usable by services and therefor killed the application as it was using an illegal port. these warnings were however not displayed correctly in the Linux distribution.
 
     \subsubsection{Implementation details SF}
 %TODO write section on Implementation details SF 2
@@ -963,15 +967,15 @@
 
     The steps to deploy and run the tests is as follows.
 
-    \begin{enumerate}
-        \item Deploy Cluster via a vm scaleset with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to sasilirate connections to the test envoriment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
-        \item Deploy the SF applications
-        \item connent to the Jepsenhost server and sync test framework.
-        \item run test framework with desired perameters
-        \item pull test result to local machine to analyse results.
-    \end{enumerate}
+\begin{enumerate}
+    \item Deploy Cluster via a vm scale set with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to scaleset connections to the test environment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
+    \item Deploy the SF applications
+    \item connect to the Jepsenhost server and sync test framework.
+    \item run test framework with desired parameters
+    \item pull test result to local machine to analyse results.
+\end{enumerate}
 
-    For the first few rounds of testing everything went alright, however after running a few test exsamples
+For the first few rounds of testing everything went alright, however after running a few test examples 
 
     \subsection{Issues}
 %TODO write section on Issues
@@ -1033,7 +1037,7 @@
     ...
 
 
-    Proformance benefit.
+    Performance benefit.
 
     \subsection{Lost transactions}
 %TODO Write Lost transactions
@@ -1044,16 +1048,25 @@
 
 
     \section{Discussion}
+\subsection{Violations of promised consistency level}
+
+    Initially violation but was maybe due to network queue or other network issues?
 
     %TODO write introduction
 
     \subsection{Deeper issue}
+\subsection{Deeper issue}
+The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
 
     %TODO Write Discussion Deeper issue
     The topic of understaning transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
 
     ....
 
+    Going from this and other Jepsen tests on database it appears it's the issue is a board mislabeling and mis-classification of database systems and what they can and can't do.
+    ...
+    Postgressql replication and serializable,
+    ...
 
     Going from this and other Jepsen tests on database it appears it's the issue is a board mislabling and misclassification of database sysetsms and what they can and can't do.
     ...
@@ -1073,11 +1086,11 @@
 
     ...
 
-    how to resolve these issues that arrise from mislabled and misunder consistency models.
+    how to resolve these issues that aeries from mislabeled and misunderstood consistency models.
 
     ...
 
-    Enable better understanding of databases, transaction models, and usecases doing teaching of database courses where behavoir is better explained, This should not in depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have a lot of uninteded behavoir, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
+    Enable better understanding of databases, transaction models, and use cases doing teaching of database courses where behavior is better explained, This should not in depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have a lot of unintended behavior, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
 
     ... should maybe be defined as future work.
 
@@ -1089,6 +1102,9 @@
     \chapter{Conclusion and Outlook}
     \section*{Conclusion}
  %TODO write Conclusion
+Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labelling and allows user and developers to choose the current system for their use-case and avoid the headaches of phantom behavior.
+
+this could be done via automated testing and verification of a given system in it's different transactional configurations.
 
     \section*{Outlook}
 %TODO write Outlook
@@ -1167,8 +1183,3 @@
     \end{tabular}
 
 \end{document}
-
-
-
-
-
