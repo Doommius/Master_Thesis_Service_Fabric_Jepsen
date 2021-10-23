@@ -96,8 +96,6 @@ Within the thesis framework, I will present methods of verifying the ACID proper
 \textcolor{red}{TODO: Summarize the findings and try to say why the thesis is worth reading.}
 
 
-
-
 \chapter{Introduction}
 Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects reliability, availability combined with low- latency and cost. How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it even needed in most use cases?\\
 \vspace{5mm}
@@ -135,8 +133,6 @@ Finally, I will present the way ACID properties compare to modern use cases of d
 Database and data store models can be categorized into two main groups, ACID and BASE,  consistent or available. 
 
 The underlying reason for consistency limitations is caused by the latency between nodes in the system resulting from the speed of light, in turn, systems are unable to distribute data between nodes instantly. The availability limitation of a system is due to the compute performance of a given system where the solution is to either build faster servers or to use more servers. Which again, both solutions have their limitations. Both models of designing the systems have their own trade-offs which will be presented in this chapter.
-
-
 
 \section{ACID}
 The ACID Model of handling database transactions is considered monolithic by some, however, it still serves a vital and critical function for handling critical systems that require atomicity, consistency across the entire database, as well as reliability, and durability during hardware failure.\\
@@ -182,7 +178,6 @@ It should be noted that the definitions of the terms differ from the definitions
 CAP states we can only have 2 of the 3 properties in any given data-share system. The three different options will be explained below.
 
 
-
 \begin{itemize}
     \item Consistency and Partition tolerance(CP) \\ A system that delivers Consistency and Partition tolerance but the trade-off here is Availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the Primary becomes unavailable then the Replicate with the most recent transaction log simply becomes the new Master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.  \\
 
@@ -200,10 +195,18 @@ CAP states we can only have 2 of the 3 properties in any given data-share system
 Availability refers to the gurantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
 \begin{itemize}
-    \item high availability: if every userthat can contact a correct (non-failing) server eventually receives aresponse from that server, even in the presence of arbitrary, indefinitely long network partitions between servers\cite{CAP}.
-    \item transactional availability:
+    \item high availability: 
+    %TODO Copy write all the below.
+    \textit{
+    Informally, highly available algorithms ensure “always on” operation and, as a side effect, guarantee low latency. If users of a    highly available system are able to contact a (set of) server(s) in    a system, they are guaranteed a response; this means servers will    not need to synchronously communicate with others. If servers are    partitioned from one another, they do not need to stall in order to    provide clients a “safe” response to operations. This lack of fastpath coordination also means that a highly available system also    provides low latency ; in a wide-area setting, clients of a highly    available system need not wait for cross-datacenter communication. To properly describe whether a transactional system is highly    available, we need to describe what servers a client must contact    as well as what kinds of responses a server can provide, especially    given the possibility of aborts.    Traditionally, a system provides high availability if every user    that can contact a correct (non-failing) server eventually receives a    response from that server, even in the presence of arbitrary, indefinitely long network partitions between servers \cite{CAP}. As in a standard distributed database, designated servers might perform operations for different data items. A server that can handle an operation    for a given data item is called a replica for that item.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+    \item Sticky Available: \textit{In addition to high availability, which allows operations on any    replica, distributed algorithms often assume a model in which clients    always contact the same logical replica(s) across subsequent operations, whereby each of the client’s prior operations (but not necessarily other clients’ operations) are reflected in the database state    that they observe. As we will discuss in Section 5, clients can ensure continuity between operations (e.g., reading their prior updates    to a data item) by maintaining affinity or “stickiness” with a server    or set of servers . In a fully replicated system, where all servers    are replicas for all data items, stickiness is simple: a client can    maintain stickiness by contacting the same server for each of its requests. However, to stay “sticky” in a partially-replicated system,    where servers are replicas for subsets of the set of data items (which    we consider in this paper), a client must maintain stickiness with a    single logical copy of the database, which may consist of multiple    physical servers. We say that a system provides sticky availability if, whenever a client’s transactions is executed against a copy    of database state that reflects all of the client’s prior operations, it    eventually receives a response, even in the presence of indefinitely    long partitions (where “reflects” is dependent on semantics). A    client may choose to become sticky available by acting as a server    itself; for example, a client might cache its reads and writes. Any guarantee achievable in a highly available system is    achievable in a sticky high availability system but not vice-versa.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+    \item transactional availability: \textit{Until now, we have considered single-object, single-operation    availability. This is standard in the distributed systems literature    (e.g., distributed register models such as linearizability all concern    single objects [41]), yet the database literature largely focuses on    transactions: groups of multiple operations over multiple objects.    Accordingly, by itself, traditional definitions of high availability    are insufficient to describe availability guarantees for transactions.    Additionally, given the choice of commit and abort responses—    which signal transaction success or failure to a client—we must    take care in defining transactional availability.    We say that a transaction has replica availability if it can contact    at least one replica for every item it attempts to access; this may result in “lower availability” than a non-transactional availability    requirement (e.g., single-item availability). Additionally, given the    possibility of system-initiated aborts, we need to ensure useful forward progress: a system can trivially guarantee clients a response    by always aborting all transactions. However, this is an unsatisfactory system because nothing good (transaction commit) ever happens; we should require a liveness property .    
+     \vspace*{4mm}\\
+    A system cannot guarantee that every transaction will commit—transactions may choose to abort themselves—but we need to make    sure that the system will not indefinitely abort transactions on its    own volition. We call a transaction abort due to a transaction’s own    choosing (e.g., as an operation of the transaction itself or due to    a would-be violation of a declared integrity constraint) an internal    abort and an abort due to system implementation or operation an    external abort. We say that a system provides transactional availability if, given replica availability for every data item in a transaction, the transaction eventually commits (possibly after multiple    client retries) or internally aborts [9]. A system provides sticky    transactional availability if, given sticky availability, a transaction eventually commits or internally aborts}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+
+    %TODO Write more to this.
     \item Unavailable: \textit{Not available during some types of network failures. Some or all nodes must pause operations in order to ensure safety.}  
-    \item Sticky Available: \textit{Available on every non-faulty node, so long as clients only talk to the same servers, instead of switching to new ones.}
+    %TODO Write more to this.
     \item Totally Available: \textit{Available on every non-faulty node, even when the network is completely down.}
 
 
@@ -211,37 +214,30 @@ Availability refers to the gurantee a system promises doing the presence of netw
 
 
 \subsection{phenomena}
-
+%TODO Fix this entire section.
 
 ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
 \begin{itemize}
 
-\item Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
+    \item Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
 
-\item Fuzzy or Non-repeatable Read — Transaction T1 reads x and then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
-\item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
+    \item Fuzzy or Non-repeatable Read — Transaction T1 reads x and then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
+    \item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
 \end{itemize}
 
 
 In \cite{Berensonetal} read and write skew are defined that occur due data item constraint violations. the exact definition is below.
-\textit{(Data Item Constraint Violation). Suppose C() is a
-database constraint between two data items x and y in the
-database. Here are two anomalies arising from constraint
-violation}
-
 \begin{itemize}
-\item 
-\item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If now T1 reads y, it may see an inconsistent state, and therefore produce an inconsistent state as output.
-In terms of histories, we have the anomaly:  }
-A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
-\item \textit{A5B Write Skew Suppose T1 reads x and y, which are
-consistent with C(), and then a T2 reads x and y, writes x,
-and commits. Then T1 writes y. If there were a constraint
-between x and y, it might be violated. In terms of histories:}
-A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
-(Write Skew)
+    \item \textit{(Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation}
+    \item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If now T1 reads y, it may see an inconsistent state, and therefore produce an inconsistent state as output.
+    In terms of histories, we have the anomaly:  }
+    A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
+    \item \textit{A5B Write Skew Suppose T1 reads x and y, which are
+    consistent with C(), and then a T2 reads x and y, writes x,
+    and commits. Then T1 writes y. If there were a constraint
+    between x and y, it might be violated. In terms of histories:}
+    A5B: r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
 \end{itemize}
-
 
 
 \begin{table}[h]
@@ -271,7 +267,7 @@ The second case of 'Non-repeatable read' is when S1 reads data that is changed b
 
 Phantom read
 The Third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
- \textcolor{red}{Make example diagram}
+\textcolor{red}{Make example diagram}
 
 
 \subsubsection{dirty read}
@@ -535,13 +531,13 @@ Formally it is defined in \cite{Linearizability} and later formilized in \cite{C
 \subsubsection{Sequential Consistency}
 Sequential Consistency(SC) is a relaxation of linearizability, unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However since a Total order is requied the model is unable to tolerate partions and some or all nodes will be unable to make progress. \\
 
-One of the phenomena SC allows is stale reads, all processes have to follow the same total order but as there isn't a steight constrant about states a process may return a arbitrarily stale state. however once a given node observess some operations from a seperate node, it may never observe a state prior to B.
+One of the phenomena SC allows is stale reads, all processes have to follow the same total order but as there isn't a steight constrant about states a process may return a arbitrarily stale state. however once a given node A observess some operations from a seperate node B, A may never observe a state prior to B.
 
 Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formallized it into 3 requirements:
-begin{itemize}
-\item SingleOrder (there exists some total order of operations)
-\item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).)
-\item RVal (the order must be consistent with the semantics of the datatype)
+\begin{itemize}
+    \item SingleOrder (there exists some total order of operations)
+    \item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).)
+    \item RVal (the order must be consistent with the semantics of the datatype)
 \end{itemize}
 
 \textcolor{red}{TODO Make Diagram}
@@ -564,7 +560,7 @@ Two of the consistency models were already mentioned in the previous section nam
 
 \newpage
 \section{Faults, manifestation, and causes}
-
+%TODO Fix this entire section.
 
 ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
 \begin{itemize}
@@ -648,7 +644,7 @@ Process 1 writes A, then process 1 tried to read A but a doesn't exist in the no
 
 
 \chapter{Database Consistency testing possibly rename to Jepsen}
-
+%TODO Fix this entire chapter.
 
 
 \section{Introduction}
@@ -892,18 +888,18 @@ Enumeration, Count & Snapshot & Snapshot
 \end{table}
 
 \section{Programming for Service Fabric}
-
+%TODO Fix this entire section.
 
 \section{Comparison}
-
+%TODO Fix this entire section.
 In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Redis Therefor comparisons will be made to these as they are compared in a lot of aspect, the investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
 
 \subsection{Cassadra}
-
+%TODO Fix this entire section.
 \subsection{Redis}
-
+%TODO Fix this entire section.
 \subsection{Dynamo}
-
+%TODO Fix this entire section.
 
 \chapter{Jepsen Test on Service Fabric Reliable collections}
 
@@ -1007,6 +1003,13 @@ Finally i had a runnable version on Linux, or rather. i had a way to run my appl
 
 This required some changes to the design but was resolved by removing of the layers in the application and accessing the stateful service directly, or rather creating a parallel service in case the other services were required later.
 
+\subsubsection{Implementation details SF}
+%TODO Fix this entire section.
+
+\subsubsection{Implementation details Clojure}
+%TODO Fix this entire section.
+
+
 \subsection{2nd iteration of the design.}
 
 This 3rd service should simply provide the API directly from the stateful service, as the transactions are going to behave the same on a single partition as with 500 partitions. this 3rd service was configured such that replicas were active. this implies two things: Routing is no longer an issue, we need to route primary traffic to the primary node from our Clojure connector.
@@ -1017,6 +1020,15 @@ this issue can be resolved in two ways. one is rather quick, while the other que
 
 
 The implementation of this interated design was supposed to have been been fairly streight forward however the non feature parity again poked it ungly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which chaused some warnings to turn into errors. that exposed my inexperiance of working with the dotnet framework and the service fabric API. this issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as i had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up beging related to some changes in allowed port ranges that were allocatable to services and therefor killed the application as it was using an illigal port. these warnings were however not displayed correctly in the linux distribution.
+
+
+\subsubsection{Implementation details SF}
+%TODO Fix this entire section.
+
+\subsubsection{Implementation details Clojure}
+%TODO Fix this entire section.
+
+
 
 After this step the services to ready to test, as mentioned earlier in the paper 6 nodes are used to preform the test. 5 cluster member nodes and 1 jepsen test node. 
 
@@ -1034,6 +1046,10 @@ For the first few rounds of testing everything went alright, however after runni
 
 
 \subsection{Issues}
+
+    Proximity group.
+
+%TODO Fix this entire section.
 
 
 Linux and windows versions being far from interchangeable and applications and services that function on windows/local machines fail crash on deployed cluster
@@ -1067,24 +1083,37 @@ Visual studio remote debugger not working
 
 %
 \section{Results}
-
+%TODO this entire Section.
 \subsection{Introduction}
+    What we results we have.
 
 
 \subsection{Rejected transactions}
+    We initially had a rejection rate of x
+    ...
 
+    Due to these reasons
+
+    ...
+
+    A revised setup was implemented to try and resolve this.
+
+    ...
+
+    Proximity group
+    ...
+
+
+    Proformance benefit.
 
 \subsection{Lost transactions}
 
 
 \subsection{Violations of promised consistensy level}
 
-
-
+    Intially violation but was maybe due to network queue or other network issues?
 
 \section{Discussion}
-
-
 
 \subsection{Deeper issue}
 The topic of understaning transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
@@ -1122,19 +1151,13 @@ Whats next, Defining a standard for testing and certifying database systems towa
 
 this could be done via automated testing and verifycation of a given system in it's different transactional configureations.
 
-
-
-%\blinddocument
-
-\chapter{Related Work}
-
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
 
 \section*{Outlook}
 
-
 \section{Future Work}
+    Future work could include implementing a deeper testing suite that checks for more types of invariants and issues that might occur in the system.
 
 
 
@@ -1200,12 +1223,7 @@ this could be done via automated testing and verifycation of a given system in i
 \multicolumn{1}{l}{}            & Week 31      & \multicolumn{1}{l}{}                        & \multicolumn{1}{l}{}
 \end{tabular}
 
-
-
-
-%\input{latexhints-english}
-
-
+\end{document}
 
 
 \chapter{REMOVE THIS BEFORE HANDIN !!!!}
@@ -1217,4 +1235,4 @@ https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
 https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections
 
 
-\end{document}
+
