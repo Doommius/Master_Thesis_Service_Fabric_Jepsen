@@ -182,11 +182,11 @@
 
     \subsection{Availability}
 
-    Availability refers to the gurantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+    Availability refers to the guarantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
     \begin{itemize}
     \item high availability: 
-    %TODO Copy write all the below.
+    %TODO should i keep the long definition from the paper or rewire upvote 1 downvote 0.
     \textit{
     Informally, highly available algorithms ensure "always on" operation and, as a side effect, guarantee low latency. If users of a    highly available system are able to contact a (set of) server(s) in    a system, they are guaranteed a response; this means servers will    not need to synchronously communicate with others. If servers are    partitioned from one another, they do not need to stall in order to    provide clients a "safe" response to operations. This lack of fastpath coordination also means that a highly available system also    provides low latency ; in a wide-area setting, clients of a highly    available system need not wait for cross-datacenter communication. To properly describe whether a transactional system is highly    available, we need to describe what servers a client must contact    as well as what kinds of responses a server can provide, especially    given the possibility of aborts.    Traditionally, a system provides high availability if every user    that can contact a correct (non-failing) server eventually receives a    response from that server, even in the presence of arbitrary, indefinitely long network partitions between servers \cite{CAP}. As in a standard distributed database, designated servers might perform operations for different data items. A server that can handle an operation    for a given data item is called a replica for that item.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
     \item Sticky Available: \textit{In addition to high availability, which allows operations on any    replica, distributed algorithms often assume a model in which clients    always contact the same logical replica(s) across subsequent operations, whereby each of the client's prior operations (but not necessarily other clients' operations) are reflected in the database state    that they observe. As we will discuss in Section 5, clients can ensure continuity between operations (e.g., reading their prior updates    to a data item) by maintaining affinity or "stickiness" with a server    or set of servers . In a fully replicated system, where all servers    are replicas for all data items, stickiness is simple: a client can    maintain stickiness by contacting the same server for each of its requests. However, to stay "sticky" in a partially-replicated system,    where servers are replicas for subsets of the set of data items (which    we consider in this paper), a client must maintain stickiness with a    single logical copy of the database, which may consist of multiple    physical servers. We say that a system provides sticky availability if, whenever a client's transactions is executed against a copy    of database state that reflects all of the client's prior operations, it    eventually receives a response, even in the presence of indefinitely    long partitions (where "reflects" is dependent on semantics). A    client may choose to become sticky available by acting as a server    itself; for example, a client might cache its reads and writes. Any guarantee achievable in a highly available system is    achievable in a sticky high availability system but not vice-versa.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
@@ -204,9 +204,9 @@
 
     \subsection{Phenomena}
     %TODO Write introduction to Phenomena
-    Most consistency models are defined by what Phenomena they allow or prohibit. However due to poor or loose definitions there often exist multiple different definitions on each consistency model as well as on many of the Phenomena, or simply the lack of a definitiion on some properties.
+    Most consistency models are defined by what Phenomena they allow or prohibit. However due to poor or loose definitions there often exist multiple different definitions on each consistency model as well as on many of the Phenomena, or simply the lack of a definition on some properties.
 
-    %TODO Write Section about what ANSI defineds.
+    %TODO Write Section about what ANSI defines.
 
     ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
     \begin{itemize}
@@ -217,7 +217,7 @@
 
 
 
-    %TODO Write Section about what Berensonetal defineds.
+    %TODO Write Section about what Berenson et al defines.
     In \cite{Berensonetal} read and write skew are defined that occur due data item constraint violations. The exact definition is below: \\
 
     \textit{(Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation}
@@ -510,7 +510,7 @@ The third and last type is phantom read which is a special case of non-repeatabl
     The catagory of BASE transaction models aren't considering the order of transactions but rather the ordering of operations.
 
     \subsubsection{Linearizable}
-    Linearizablilty is the strongest single object consistency model, that requires operations to occur in a order consistent with real time, and the operations themselves should occur atomically. It should also be noted that linearzability is not tollerant to network partitions and should be considred a CA model acording to the CAP therom.
+    Linearizablilty is the strongest single object consistency model, that requires operations to occur in a order consistent with real time, and the operations themselves should occur atomically. It should also be noted that linearzability is not tolerant to network partitions and should be considered a CA model according to the CAP theorem.
 
     Formally it is defined in \cite{Linearizability} and later formilized in \cite{ConsistencyinNonTransactionalDistributedStorageSystems} where it's defined by 3 requirements
 
@@ -524,11 +524,11 @@ The third and last type is phantom read which is a special case of non-repeatabl
     %TODO Make Diagram Linearizable
 
     \subsubsection{Sequential Consistency}
-    Sequential Consistency(SC) is a relaxation of linearizability, unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However since a Total order is requied the model is unable to tolerate partions and some or all nodes will be unable to make progress. \\
+    Sequential Consistency(SC) is a relaxation of linearizability, unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However since a Total order is required the model is unable to tolerate partitions and some or all nodes will be unable to make progress. \\
 
-    One of the phenomena SC allows is stale reads, all processes have to follow the same total order but as there isn't a steight constrant about states a process may return a arbitrarily stale state. however once a given node A observess some operations from a seperate node B, A may never observe a state prior to B.
+    One of the phenomena SC allows is stale reads, all processes have to follow the same total order but as there isn't a strong constraint concerning how far a process be behind or ahead and it may return a arbitrarily stale state. however once a given node A observes some operations from a separate node B, A may never observe a state prior to B.
 
-    Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formallized it into 3 requirements:
+    Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formalized it into 3 requirements:
     \begin{itemize}
         \item SingleOrder (there exists some total order of operations)
         \item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).)
@@ -725,13 +725,13 @@ The third and last type is phantom read which is a special case of non-repeatabl
     \begin{enumerate}
         \item X detects Y as failed and sends fail(Y) to the arbitrator
         \item The arbitrator Ads Y to a recently failed list and sends ack(fail(y)) containing a timeout for Y to X, if The arbitrator already marked X as having failed and ignores the request,
-        \item If X receives this request it waits for the TO to claim Ys area of the ring. and if re receives no response within the timeout it leaves itself.
+        \item If X receives this request it waits for the TO to claim Y's area of the ring. and if re receives no response within the timeout it leaves itself.
     \end{enumerate}
 
     If a node is already in the recently failed list it returns the same response as the the first reporter except it calculates in time since first detection so the portion of the ring is claimed by the neighbors at the same time. This also means that the routing can continue after to with a laxity added. as all routing request for a node are added to a queued if a node is marked a failed. and the queue is released after TO+laxity that allows a neighboring node to claim that part of the ring and allows to these routing request to be preform when by it's successors.\\
     \vspace{5mm}
 
-    If the case of two nodes report each other as failed the conflict is resolved either by majority, eg the node that was reported first to the most Arbitrators leave or an alternate variant that heals the membership if both nodes are healthy and allows both to stay. in cases of network congestion or partitions that result in multiple nodes detection each other as failed, in traditional distributed hash tables this can result in inconsistencies in the membership lists or ring. \\
+    If the case of two nodes report each other as failed the conflict is resolved either by majority, such that node that was reported first to the most Arbitrators leave or an alternate variant that heals the membership if both nodes are healthy and allows both to stay. in cases of network congestion or partitions that result in multiple nodes detection each other as failed, in traditional distributed hash tables this can result in inconsistencies in the membership lists or ring. \\
     \vspace{5mm}
 
     The implementation in SF is presented as being failure tolerant towards cascade failures as the decision isn't made by the detectors themselves but by arbitrators. an example is used that if a given node is only dependent by it neighbors and ½ of them fails to renew it's lease it will leave itself. No mention here is written about how the node handles being fragmented into two partitions and rejoined later, but mentions that this approach scales to entire data centers, no mentioned about how it scales across regions or outside of data centers.\\
@@ -796,7 +796,7 @@ The third and last type is phantom read which is a special case of non-repeatabl
     Writes are relayed from the primary replica to secondary replicas via passive replication and are considered complete when the majority of secondaries acknowledges it. the relaxations allow an application to achieve weaker consistency by relaxing where a read can go, eg always read from primary to read from secondary. \\
     \vspace{5mm}
 
-    SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable,available, self-*, and upgradable because the lower layers assure consistency"\cite{SFpaper} \\
+    SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable,available, self-*, and upgradeble because the lower layers assure consistency"\cite{SFpaper} \\
     \vspace{5mm}
 
     \paragraph{Consistency models/isolation levels}
@@ -967,7 +967,7 @@ The third and last type is phantom read which is a special case of non-repeatabl
     The steps to deploy and run the tests is as follows.
 
 \begin{enumerate}
-    \item Deploy Cluster via a vm scale set with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to scaleset connections to the test environment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
+    \item Deploy Cluster via a vm scale set with a SF image, the jepsen host, a proximity group to prevent network issues, setup vlan and add the 6 servers, add a public IP to scale set connections to the test environment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
     \item Deploy the SF applications
     \item connect to the Jepsenhost server and sync test framework.
     \item run test framework with desired parameters
@@ -1041,9 +1041,9 @@ For the first few rounds of testing everything went alright, however after runni
     \subsection{Lost transactions}
 %TODO Write Lost transactions
 
-    \subsection{Violations of promised consistensy level}
-%TODO Write Violations of promised consistensy level
-    Intially violation but was maybe due to network queue or other network issues?
+    \subsection{Violations of promised consistency level}
+%TODO Write Violations of promised consistency level
+    Initially violation but was maybe due to network queue or other network issues?
 
 
     \section{Discussion}
@@ -1058,30 +1058,30 @@ For the first few rounds of testing everything went alright, however after runni
 The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
 
     %TODO Write Discussion Deeper issue
-    The topic of understaning transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
+    The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
 
     ....
 
     Going from this and other Jepsen tests on database it appears it's the issue is a board mislabeling and mis-classification of database systems and what they can and can't do.
     ...
-    Postgressql replication and serializable,
+    PostgresSQL replication and serializable,
     ...
 
-    Going from this and other Jepsen tests on database it appears it's the issue is a board mislabling and misclassification of database sysetsms and what they can and can't do.
+    Going from this and other Jepsen tests on database it appears it's the issue is a board mislabeling and misclassification of database systems and what they can and can't do.
     ...
-    Postgres replication and serisable,
+    PostgresSQL replication and serializable,
     ...
 
-    Mongo db dropping data
+    MongoDB dropping data
     ...
 
     Casandra last-write wins, issues, and a attempt at a solution via Atomic clocks
     ...
 
-    Elatic search issues.
+    Elastic search issues.
     ...
 
-    Some of the implications this can have on real world usecases,
+    Some of the implications this can have on real world use cases,
 
     ...
 
@@ -1093,9 +1093,9 @@ The topic of understanding transactional models possibly stems for the teaching 
 
     ... should maybe be defined as future work.
 
-    Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labling and allows user and developers to choose the current system for their usecase and avoid the headaces of phatom behavoir.
+    Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labelling and allows user and developers to choose the current system for their use case and avoid the headaches of phantom behavior.
 
-    this could be done via automated testing and verifycation of a given system in it's different transactional configureations.
+    this could be done via automated testing and verification of a given system in it's different transactional configurations.
 
 
     \chapter{Conclusion and Outlook}
@@ -1130,55 +1130,55 @@ this could be done via automated testing and verification of a given system in i
     \input{Proposal}
 
 
-    \section{Schedule}
+    % \section{Schedule}
 
 % Please add the following required packages to your document preamble:
 % \usepackage{multirow}
 % \usepackage[table,xcdraw]{xcolor}
 % If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
 
-    \begin{tabular}{clll}
-        \multicolumn{2}{l}{Mark Jervelund thesis plan} & & \\
-        & Week 45 &                                                    &                                                                                      \\
-        & Week 46 &                                                    & \multirow{-2}{*}{\text{Study Jensen test}}                                           \\
-        & Week 47 &                                                    &                                                                                      \\
-        \multirow{-4}{*}{November} & Week 48 &                                                    & \multirow{-2}{*}{\text{Finish study on Jepsen test}}                                 \\
-        & Week 49 &                                                    &                                                                                      \\
-        & Week 50 &                                                    & \multirow{-2}{*}{\text{Study Service Fabric} }                                       \\
-        & Week 51 &                                                    &                                                                                      \\
-        & Week 52 &                                                    & \multirow{-2}{*}{\text{Christmas break}}                                             \\
-        \multirow{-5}{*}{December} & Week 53 &                                                    &                                                                                      \\
-        & week 01 & \multirow{-10}{*}{\text{Structured study 8 weeks}} & \multirow{-2}{*}{\text{Finish Study Service Fabric} }                                \\
-        & Week 02 &                                                    &                                                                                      \\
-        & Week 03 &                                                    & \multirow{-2}{*}{\text{designing the experiment}}                                    \\
-        \multirow{-4}{*}{January}  & Week 04 &                                                    &                                                                                      \\
-        & Week 05 &                                                    & \multirow{-2}{*}{\text{designing the experiment} }                                   \\
-        & Week 06 &                                                    &                                                                                      \\
-        & Week 07 &                                                    & \multirow{-2}{*}{\text{Execute the experiment}  }                                      \\
-        \multirow{-4}{*}{February} & Week 08 &                                                    &                                                                                      \\
-        & Week 09 &                                                    & \multirow{-2}{*}{\text{Analyse the experiment}}                                      \\
-        & Week 10 &                                                    &                                                                                      \\
-        & Week 11 & \multirow{-10}{*}{\text{Experiment 10 weeks}}      & \multirow{-2}{*}{\text{discover what the findings from the experiment is}}           \\
-        & Week 12 &                                                    &                                                                                      \\
-        \multirow{-5}{*}{March}    & Week 13 &                                                    & \multirow{-2}{*}{\text{Running additional experiments if needed Full on write mode}} \\
-        & Week 14 &                                                    &                                                                                      \\
-        & Week 15 &                                                    & \multirow{-2}{*}{\text{Full on write mode} }                                         \\
-        & Week 16 &                                                    &                                                                                      \\
-        \multirow{-4}{*}{April}    & Week 17 &                                                    & \multirow{-2}{*}{\text{Full on write mode} }                                         \\
-        & Week 18 &                                                    &                                                                                      \\
-        & Week 19 &                                                    & \multirow{-2}{*}{\text{Full on write mode Send out thesis for feedback}}             \\
-        & Week 20 &                                                    &                                                                                      \\
-        & Week 21 & \multirow{-10}{*}{\text{Thesis writing 10 weeks}}  & \multirow{-2}{*}{\text{Correction} }                                                 \\
-        \multirow{-5}{*}{May}      & Week 22 &                                                    &                                                                                      \\
-        & Week 23 & \multirow{-2}{*}{\text{goal}}                      & \multirow{-2}{*}{\text{Hand in}}                                                     \\
-        & Week 24 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        & Week 25 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        & Week 26 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        \multirow{-5}{*}{June}     & Week 27 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        \multicolumn{1}{l}{}       & Week 28 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        \multicolumn{1}{l}{}       & Week 29 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        \multicolumn{1}{l}{}       & Week 30 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-        \multicolumn{1}{l}{}       & Week 31 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}
-    \end{tabular}
+    % \begin{tabular}{clll}
+    %     \multicolumn{2}{l}{Mark Jervelund thesis plan} & & \\
+    %     & Week 45 &                                                    &                                                                                      \\
+    %     & Week 46 &                                                    & \multirow{-2}{*}{\text{Study Jensen test}}                                           \\
+    %     & Week 47 &                                                    &                                                                                      \\
+    %     \multirow{-4}{*}{November} & Week 48 &                                                    & \multirow{-2}{*}{\text{Finish study on Jepsen test}}                                 \\
+    %     & Week 49 &                                                    &                                                                                      \\
+    %     & Week 50 &                                                    & \multirow{-2}{*}{\text{Study Service Fabric} }                                       \\
+    %     & Week 51 &                                                    &                                                                                      \\
+    %     & Week 52 &                                                    & \multirow{-2}{*}{\text{Christmas break}}                                             \\
+    %     \multirow{-5}{*}{December} & Week 53 &                                                    &                                                                                      \\
+    %     & week 01 & \multirow{-10}{*}{\text{Structured study 8 weeks}} & \multirow{-2}{*}{\text{Finish Study Service Fabric} }                                \\
+    %     & Week 02 &                                                    &                                                                                      \\
+    %     & Week 03 &                                                    & \multirow{-2}{*}{\text{designing the experiment}}                                    \\
+    %     \multirow{-4}{*}{January}  & Week 04 &                                                    &                                                                                      \\
+    %     & Week 05 &                                                    & \multirow{-2}{*}{\text{designing the experiment} }                                   \\
+    %     & Week 06 &                                                    &                                                                                      \\
+    %     & Week 07 &                                                    & \multirow{-2}{*}{\text{Execute the experiment}  }                                      \\
+    %     \multirow{-4}{*}{February} & Week 08 &                                                    &                                                                                      \\
+    %     & Week 09 &                                                    & \multirow{-2}{*}{\text{Analyse the experiment}}                                      \\
+    %     & Week 10 &                                                    &                                                                                      \\
+    %     & Week 11 & \multirow{-10}{*}{\text{Experiment 10 weeks}}      & \multirow{-2}{*}{\text{discover what the findings from the experiment is}}           \\
+    %     & Week 12 &                                                    &                                                                                      \\
+    %     \multirow{-5}{*}{March}    & Week 13 &                                                    & \multirow{-2}{*}{\text{Running additional experiments if needed Full on write mode}} \\
+    %     & Week 14 &                                                    &                                                                                      \\
+    %     & Week 15 &                                                    & \multirow{-2}{*}{\text{Full on write mode} }                                         \\
+    %     & Week 16 &                                                    &                                                                                      \\
+    %     \multirow{-4}{*}{April}    & Week 17 &                                                    & \multirow{-2}{*}{\text{Full on write mode} }                                         \\
+    %     & Week 18 &                                                    &                                                                                      \\
+    %     & Week 19 &                                                    & \multirow{-2}{*}{\text{Full on write mode Send out thesis for feedback}}             \\
+    %     & Week 20 &                                                    &                                                                                      \\
+    %     & Week 21 & \multirow{-10}{*}{\text{Thesis writing 10 weeks}}  & \multirow{-2}{*}{\text{Correction} }                                                 \\
+    %     \multirow{-5}{*}{May}      & Week 22 &                                                    &                                                                                      \\
+    %     & Week 23 & \multirow{-2}{*}{\text{goal}}                      & \multirow{-2}{*}{\text{Hand in}}                                                     \\
+    %     & Week 24 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     & Week 25 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     & Week 26 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     \multirow{-5}{*}{June}     & Week 27 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     \multicolumn{1}{l}{}       & Week 28 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     \multicolumn{1}{l}{}       & Week 29 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     \multicolumn{1}{l}{}       & Week 30 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
+    %     \multicolumn{1}{l}{}       & Week 31 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}
+    % \end{tabular}
 
 \end{document}
