@@ -87,7 +87,7 @@
 
 \section*{Abstract}
 
-Databases allow modern society to store, manage and distribute data at a previously unprecedented scale. Having data is normal practice for most businesses. Still, it is often done monotonically on a single node, where modern needs require more  storage, latency, availability, and higher performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of verifying these properties and I will investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
+Databases allow modern society to store, manage and distribute data at a previously unprecedented scale. Having data is standard practice for most businesses. Still, it is often done monotonically on a single node, where modern needs require more  storage, latency, availability, and higher performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of verifying these properties, and I will investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
 \vspace{5mm}
 
 Within the thesis framework, I will present methods of verifying the ACID properties, how they were solved in the past compared to how they are solved today, and what trade-offs some systems have made. I will also analyze modern database use cases and whether they require the ACID properties to solve issues.\\
@@ -99,33 +99,33 @@ Within the thesis framework, I will present methods of verifying the ACID proper
 
 
 \chapter{Introduction}
-Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects reliability, availability combined with low- latency and cost. How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it even needed in most use cases?\\
+Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects reliability, availability combined with low- latency and cost. How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
 \vspace{5mm}
 
 
 Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present. Some users remember the YouTube video counter that got stuck at around 300 views and didn't update for a while. YouTube induced the reason it got stuck; however, it did not induce the number it got stuck on; the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views onto the displayed counter even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about. 
 
-Many user-facing services aren't required to be ACID compliant; however, there are use cases where not being compliant can have a severe impact. Dealing with data produced and consumed in real-time, such as financial data, automated or autonomous systems, and other areas where having strong ACID transactions is of utmost importance. 
+Many user-facing services aren't required to be ACID compliant; however, there are use cases where not being compliant can have a severe impact. Strong ACID transactions are of utmost importance when dealing with data produced and consumed in real-time, such as financial data, automated or autonomous systems, and other areas. 
 
-These mentioned use cases are where a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we at any point receive stale data, we end up being at risk of either making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
+These mentioned use cases are where a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we are at risk of making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
 
 \vspace{5mm}
-How do we test and verify a given system's ACID compliance level? To understand this we need to first be familiar with the basis of the consistency levels as well as the intended behavior and anomalies they exhibit.\\
+How do we test and verify a given system's ACID compliance level? To understand this, we need to first be familiar with the basis of the consistency levels and the intended behavior and anomalies they exhibit.\\
 
 
-First, I will present ACID \& Base, their constraints, what faults occur in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. Base will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
+First, I will present ACID \& Base, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. Base will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
 \vspace{5mm}
 
-Then, I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for the testing of distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
+Then, I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
 \vspace{5mm}
 
 Next, I will introduce Azure Service Fabric(SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
 \vspace{5mm}
 
-Afterward, I will present what modern database systems promise, the ACID properties they follow, and the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
+Afterward, I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
 \vspace{5mm}
 
-Subsequently,  I will demonstrate  the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to the claims Microsoft has made.\\
+Subsequently,  I will demonstrate  the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
 \vspace{5mm}
 
 Finally, I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
@@ -134,61 +134,61 @@ Finally, I will present the way ACID properties compare to modern use cases of d
 
 Database and data store models can be categorized into two main groups, ACID and BASE,  consistent or available. 
 
-The underlying reason for consistency limitations is caused by the latency between nodes in the system resulting from the speed of light, in turn, systems are unable to distribute data between nodes instantly. The availability limitation of a system is due to the compute performance of a given system where the solution is to either build faster servers or to use more servers. Which again, both solutions have their limitations. Both models of designing the systems have their own trade-offs which will be presented in this chapter.
+The underlying reason for consistency limitations is caused by the latency between nodes in the system resulting from the speed of light; in turn, systems cannot instantly distribute data between nodes. A system's availability limitation is due to the compute performance of a given system, where the solution is to either build faster servers or use more servers. Which again, both solutions have their limitations. Both models of designing the systems have their trade-offs which will be presented in this chapter.
 
 
 
 \section{ACID}
-The ACID Model of handling database transactions is considered monolithic by some, however, it still serves a vital and critical function for handling critical systems that require atomicity, consistency across the entire database, as well as reliability, and durability during hardware failure.\\
+The ACID Model of handling database transactions is considered monolithic by some. However, it still serves a vital and critical function for handling critical systems that require atomicity, consistency across the entire database, as well as reliability, and durability during hardware failure.\\
 \vspace{5mm}
 The ACID acronym is defined as follows in the DBMS book\cite{DBMSbook}.
 
 \begin{itemize}
     \item "A" stands for "atomicity," the all-or-nothing execution of transactions.
-    \item "C," stands for "consistency." That is, all databases
-have consistency constraints, or expectations about relationships among
+    \item "C" stands for "consistency." All databases
+have consistency constraints or expectations about relationships among
 data elements (e.g., account balances may not be negative after a transaction is finished). Transactions are expected to preserve the consistency of
 the database.
 \item "I" stands for "isolation," the fact that each transaction must appear
-to be executed as if no other transaction is executed at the same
+to be executed as if no other transaction is conducted at the same
 time.
 \item "D" stands for "durability," the condition that the effect on the
-database of a transaction must never be lost, once the transaction
+database of a transaction must never be lost once the transaction
 has been completed.
 \end{itemize}
 
-ACID, therefore, offers strong consistency with rigorous handling of transaction isolation that prevents inaccurate data. This allows for the designing of a system, where we can prevent operations on stale data, data loss, or "illegal" transactions. These faults will be presented further down in the paper.
+ACID, therefore, offers strong consistency with rigorous handling of transaction isolation that prevents inaccurate data. This allows for designing a system where we can avoid operations on stale data, data loss, or "illegal" transactions. These faults will be presented further down in the paper.
 
 
 \section{BASE}
-The BASE model allows the designing of a system where we value availability, throughput, and scale-ability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. This can benefit some applications where overwriting old data isn't an issue or where the newest version of data might not be required as long as it'll come eventually. The use of these databases is hugely beneficial for social media, logging, and other hyper-scale systems where consistency isn't required.\\
+The BASE model allows the designing of a system where we value availability, throughput, and scale-ability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. This can benefit some applications where overwriting old data isn't an issue, or the newest data version might not be required as long as it eventually comes. These databases are hugely beneficial for social media, logging, and other hyper-scale systems where consistency isn't needed.\\
 \vspace{5mm}
 The Base Acronym was defined by Eric Brewer\cite{brewer2000towards} as follows:
 
 \begin{itemize}
-    \item Basically Available – Rather than enforcing immediate consistency, BASE-modelled NoSQL databases will ensure the availability of data by spreading and replicating it across the nodes of the database cluster.
-    \item Soft State – Due to the lack of immediate consistency, data values may change over time. The BASE model breaks off with the concept of a database that enforces its own consistency, delegating that responsibility to developers.
+    \item Basically Available – Rather than enforcing immediate consistency, BASE-modelled NoSQL databases will ensure data availability by spreading and replicating it across the database cluster nodes.
+    \item Soft State – Due to the lack of immediate consistency, data values may change over time. The BASE model breaks off with the concept of a database that enforces its consistency, delegating that responsibility to developers.
     \item Eventually Consistent – The fact that BASE does not enforce immediate consistency does not mean that it never achieves it. However, until it does, data reads are still possible (even though they might not reflect the reality).
 \end{itemize}
 
-The BASE model of databases often has a weak consistency where stale data is considered "OK" so to say while offering a best-effort approach with approximate answers. but gains availability, performance, and it can be considered a relaxed way of handling the database side of things where the system database system is simpler and easier to modify the schema.
+The BASE model of databases often has a weak consistency where stale data is considered "OK" while offering a best-effort approach with approximate answers. It gains availability, performance, and it can be viewed as a relaxed way of handling the database side of things where the system database system is simpler and easier to modify the schema.
 
 \section{CAP theorem}
 
-The CAP Theorem was defined by Eric Brewer\cite{CAP} where it states that it is impossible for a distributed database system to provide Consistency, Availability, and Partition Tolerance in a single system, and that only two of these guarantees can be met.\\
+Eric Brewer defined the CAP Theorem\cite{CAP}. It states that a distributed database system can't provide Consistency, Availability, and Partition Tolerance in a single system. Only two of these guarantees can be met.\\
 \vspace{5mm}
-It should be noted that the definitions of the terms differ from the definitions in ACID. They are all important when it comes to distributed systems and their behaviors. Firstly, consistency in ACID is defined as constraints on the data. By the CAP consistency concept, ACID would follow sequential consistency as defined by Lamport\cite{lamport1993how}: "the program behaves as if the memory accesses of all processes were interleaved and then executed sequentially". While the consistency model in CAP is defined as Atomic Consistency (also called linearizability) it is sequential plus a real-time constraint: "Unlike sequential consistency, linearizability implicitly assumes the notion of an observable global time across all processes. Operations are modeled by an interval which consists of the period of time between the invocation and response for the operation and each operation is assumed to take effect instantaneously at some point within this interval". \cite{CSL-TR-95-685}
+It should be noted that the definitions of the terms differ from the definitions in ACID. They are all critical when it comes to distributed systems and their behaviors. Firstly, consistency in ACID is defined as constraints on the data. By the CAP consistency concept, ACID would follow sequential consistency as defined by Lamport\cite{lamport1993how}: "the program behaves as if the memory accesses of all processes were interleaved and then executed sequentially." TODO (rewrite the next sentence  wtf) While the consistency model in CAP is defined as Atomic Consistency (also called linearizability), it is sequential plus a real-time constraint: "Unlike sequential consistency, linearizability implicitly assumes the notion of an observable global time across all processes. Operations are modeled by an interval consisting of the period of time between the invocation and response for the operation. Each operation is assumed to take effect instantaneously at some point within this interval". \cite{CSL-TR-95-685}
 \vspace{5mm}
-CAP states we can only have 2 of the 3 properties in any given data-share system. The three different options will be explained below.
+CAP states we can only have two of the three properties in any given data-share system. The three different options will be explained below.
 
 
 
 \begin{itemize}
-\item Consistency and Partition tolerance(CP) \\ A system that delivers Consistency and Partition tolerance but the trade-off here is Availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the Primary becomes unavailable then the Replicate with the most recent transaction log simply becomes the new Master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.  \\
+\item Consistency and Partition tolerance(CP) \\ A system that delivers Consistency and Partition tolerance but the trade-off here is Availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the primary becomes unavailable, the Replicate with the most recent transaction log becomes the new master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.  \\
 
-\item Availability and Partition tolerance (AP) \\ If our system foregoes Consistency and delivers Availability and Partition tolerance. In the case of a partition between nodes, we keep serving from all nodes but in this case, we might serve stale data. An occurrence might also occur where the same row contains different values due to multiple different write operations on the different nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems, and databases such as Cassandra. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one.  //TODO It is able to be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
+\item Availability and Partition tolerance (AP). If our system foregoes Consistency and delivers Availability and Partition tolerance TODO (then what? why did you start with an if?). In the case of a partition between nodes, we keep serving from all nodes, but we might serve stale data in this case. An occurrence might also occur where the same row contains different values due to multiple write operations on the different nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems, and databases such as Cassandra. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one.  //TODO ( rewrite this next sentence) It can be available and partition tolerant but consistency isn't guaranteed as nodes are always available and in case of partitioning the nodes will diverge when partitions and will then heal once they are connected back to the network.   \\
 
-\item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it would cover single-node/site databases and cluster databases as well as file systems as we in practice wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node Database. PostgresSQL could be an example here, however, PostgresSQL dues support replication but then it becomes a CP database, which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
+\item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it would cover single-node/site databases and cluster databases as well as file systems as we, in practice, wouldn't have a distributed system that doesn't allow for partitioning as it would be unusable. But an example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication but then it becomes a CP database, TODO (what do you mean asterisk? is it rethorical? if yes then you don't have to say that)which some asterisks\cite{aphyrpostgres} as it doesn't quite behave as expected in that case either. \\
 \end{itemize}
 
 
@@ -208,7 +208,7 @@ Use this as a source https://amplab.cs.berkeley.edu/wp-content/uploads/2013/10/h
 \end{itemize}
 
 
-\subsection{phenomena}
+\subsection{Phenomena}
 
 
 ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
@@ -216,12 +216,12 @@ ANSI/ISO SQL-92 [ANS92] defines the phenomena in English as follows:
 
 \item Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
 
-\item Fuzzy or Non-repeatable Read — Transaction T1 reads x and then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
-\item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
+\item Fuzzy or Non-repeatable Read — Transaction T1 reads x, and T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
+\item Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that meet T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
 \end{itemize}
 
-
-In \cite{Berensonetal} read and write skew are defined that occur due data item constraint violations. the exact definition is below.
+TODO (are read and write supposed to be capitalized?)
+In \cite{Berensonetal} read and write skew are defined that occur due data item constraint violations. The exact definition is below:
 \textit{(Data Item Constraint Violation). Suppose C() is a
 database constraint between two data items x and y in the
 database. Here are two anomalies arising from constraint
@@ -229,7 +229,7 @@ violation}
 
 \begin{itemize}
 \item 
-\item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If now T1 reads y, it may see an inconsistent state, and therefore produce an inconsistent state as output.
+\item \textit{Read skew Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If T1 reads y now, it may see an inconsistent state and therefore produce an inconsistent state as output.
 In terms of histories, we have the anomaly:  }
 A5A: r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
 \item \textit{A5B Write Skew Suppose T1 reads x and y, which are
@@ -274,7 +274,7 @@ The Third and last type is phantom read which is a special case of non-repeatabl
 
 \subsubsection{dirty read}
 
-\textit{P1 (“Dirty read”): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification. 
+\textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification. 
 
 
 \subsubsection{Non-repeatable read and}
@@ -289,7 +289,7 @@ The Third and last type is phantom read which is a special case of non-repeatabl
 
 \subsubsection{long-fork anomalies}
 
-The Network is split into 2 or more parts where they each believe different truths,
+The network is split into 2 or more parts where they each believe different truths,
 
 
 \subsubsection{Transient Anomalies}
@@ -308,7 +308,7 @@ Process 1 writes A, then process 1 tried to read A but a doesn't exist in the no
 \end{wrapfigure}
 
 
-For explaining the concepts within consistency I will use a paper by Ballis et al on "Highly available transactions "\cite{10.14778/2732232.2732237} that displays a good model for presenting the different consistency models and their relation to other consistency models.\\
+For explaining the concepts within consistency I will use a paper by Ballis et al on "Highly available transactions"\cite{10.14778/2732232.2732237} that displays a good model for presenting the different consistency models and their relation to other consistency models.\\
 \subsection{Strict Serializability}
 
 For a system to be Strict Serializability, it is required that the entire system operationally appears to occur in order, with regards to both the order and the real-time of the operations. Within the CAP theorem, this would be considered a CA system.\\
@@ -436,13 +436,13 @@ Snapshot Isolation behaves differently to any of the systems. It can be consider
 Snapshot Isolation, like Readable Read, operates on an object level and therefore allows for the same behavior. Items are stable once read however the predicate again isn't; we can fail to observe a previously committed transaction and place operations arbitrary places in the transaction due to no linearizability constraint. It also allows sub-operations to interleave  and this can result in write skews, which allow transactions to read overlapping states, modify disjoint sets of objects, then commit; and a read-only transaction anomaly, involving partially disjoint write sets.
 
 
-It should also be noted that there exist multiple versions of Snapshot Isolation, one being prefix-consistent snapshot isolation that enforces process-level transaction ordering, which prevents a given process from failing to observe a previous transaction; and another being parallel snapshot isolation that allows for total availability but this allows for long fork anomalies, as each node has its own transaction ordering.
+It should also be noted that there exist multiple versions of Snapshot Isolation, one being prefix-consistent snapshot isolation that enforces process-level transaction ordering, which prevents a given process from failing to observe a previous transaction; and another being parallel snapshot isolation that allows for total availability but this allows for long fork anomalies, as each node h?as its own transaction ordering.
 
-Formally Snapshot Isolation is defined by \cite{Berensonetal}
+Formally Snapshot Isolation is defined by TODO (defined by who):\cite{Berensonetal}
 
-\textit{… each transaction reads data from a snapshot of the (committed) data as of the time the transaction started, called its Start-Timestamp. This time may be any time before the transaction’s first Read. A transaction running in Snapshot Isolation is never blocked attempting a read as long as the snapshot data from its Start-Timestamp can be maintained. The transaction’s writes (updates, inserts, and deletes) will also be reflected in this snapshot, to be read again if the transaction accesses (i.e., reads or updates) the data a second time. Updates by other transactions active after the transaction Start-Timestamp are invisible to the transaction.
+\textit{… each transaction reads data from a snapshot of the (committed) data as of the time the transaction started, called its Start-Timestamp. This time may be any time before the transaction's first Read. A transaction running in Snapshot Isolation is never blocked attempting a read as long as the snapshot data from its Start-Timestamp can be maintained. The transaction's writes (updates, inserts, and deletes) will also be reflected in this snapshot, to be read again if the transaction accesses (i.e., reads or updates) the data a second time. Updates by other transactions active after the transaction Start-Timestamp are invisible to the transaction.
 \\
-When the transaction T1 is ready to commit, it gets a Commit-Timestamp, which is larger than any existing Start-Timestamp or Commit-Timestamp. The transaction successfully commits only if no other transaction T2 with a Commit-Timestamp in T1’s execution interval [StartTimestamp, Commit-Timestamp] wrote data that T1 also wrote. Otherwise, T1 will abort. This feature, called First-committer-wins prevents lost updates (phenomenon P4). When T1 commits, its changes become visible to all transactions whose Start-Timestamps are larger than T1‘s Commit-Timestamp.}
+When the transaction T1 is ready to commit, it gets a Commit-Timestamp, larger than any existing Start-Timestamp or Commit-Timestamp. The transaction successfully commits only if no other transaction T2 with a Commit-Timestamp in T1's execution interval [StartTimestamp, Commit-Timestamp] wrote data that T1 also wrote. Otherwise, T1 will abort. This feature, called First-committer-wins prevents lost updates (phenomenon P4). When T1 commits, its changes become visible to all transactions whose Start-Timestamps are larger than T1's Commit-Timestamp.}
 
 There also exist multiple other definitions from \cite{CeroneBernardiGotsman} and \cite{CrooksPuAlvisiClement}
 
@@ -480,7 +480,7 @@ The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation, it r
 
 and by \cite{Adya99weakconsistency:} as prohibiting:
 \begin{itemize}
-    \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction’s final modification of that object. Intuitively, transactions have to finish before we can read them,
+    \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
 \end{itemize}
 
 Further size MAV is strictly stronger than Read committed it also disallows the ANSI phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
@@ -753,7 +753,7 @@ One of the key differences between storage systems build on SF and other highly-
 Writes are relayed from the primary replica to secondary replicas via passive replication and are considered complete when the majority of secondaries acknowledges it. the relaxations allow an application to achieve weaker consistency by relaxing where a read can go, eg always read from primary to read from secondary. \\
 \vspace{5mm}
 
-SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable,available, self-*, and upgradable because the lower layers assure consistency "\cite{SFpaper} \\
+SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable,available, self-*, and upgradable because the lower layers assure consistency"\cite{SFpaper} \\
 \vspace{5mm}
 
 \paragraph{Consistency models/isolation levels}
