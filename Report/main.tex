@@ -2,12 +2,16 @@
 
 \documentclass[a4paper,10pt,titlepage]{report}
 
+
+
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
 \usepackage{listings}
+\usepackage{csquotes}
 \usepackage{marvosym}
 \usepackage[document]{ragged2e}
 \usepackage[margin=1in]{geometry}
@@ -15,7 +19,7 @@
 \usepackage{datenumber}
 \usepackage{venndiagram}
 \usepackage{chngcntr}
-\usepackage[utf8]{inputenc}
+
 \usepackage{amsmath,amsthm}
 \usepackage{mathtools}
 \usepackage{wrapfig}
@@ -259,7 +263,7 @@
     "Dirty read" is when an S1 can read data that S2 has written but not yet committed. It is considered dirty as S2 can roll back the transaction where S1 read data that must be considered non-existent.
 
 %todo {Make example diagram}
-    \\
+   
     The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. So if S1 rereads the same data, it will have changed. This results in two equal, select statements returning different results.
 %todo {Make example diagram}
 
@@ -270,7 +274,7 @@
 
     \subsubsection{dirty read}
 
-    \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
+    \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
 
     \subsubsection{Non-repeatable read and}
 
@@ -473,7 +477,7 @@
     The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation, it requires that effects by transactions are fully visible once read by other transactions, such that t1 may preform w(1), w(2), w(2), c. These 3 sub operations effects should all either be fully visible or not at all, so partial transactions aren't allowed. Formally this is defined by Bailis et al \cite{HighlyAvailableTransactionsVirtuesandLimitations}
     \textit{Under MAV, once some of the effects of a transaction Ti are observed by another transaction Tj, thereafter, all effects of Ti are observed by Tj. That is, if a transaction Tj reads a version of an object that transaction Ti wrote, then a later read by Tj cannot return a value whose later version is installed by Ti.}
 
-    and by Adya et al\cite{Adya99weakconsistency:} as prohibiting:
+    and by Adya et al\cite{Adya99weakconsistency} as prohibiting:
     \begin{itemize}
         \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction which was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
     \end{itemize}
@@ -485,13 +489,13 @@
 
 
     Formally it is defined ANSISQL1999\cite{ansisql1999} by disallowing P1
-    \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper,Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al\cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
+    \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper,Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
 
 
     %TODO Make Diagram Read committed
 
     \subsection{Read Uncommitted}
-    Read uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al\cite{Berensonetal} where they argue that read uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al \cite{Adya99weakconsistency:} which again provides are better definition based on what can be interpreted from the loose definition in ANSISQL1999\cite{ansisql1999}. it should be noted that due to the loose specification in ANSI multiple mainstream interpretations exists.\\
+    Read uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al\cite{Berensonetal} where they argue that read uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al \cite{Adya99weakconsistency} which again provides are better definition based on what can be interpreted from the loose definition in ANSISQL1999\cite{ansisql1999}. it should be noted that due to the loose specification in ANSI multiple mainstream interpretations exists.\\
 
     by the Aday's specification Read uncommitted disallows
     \begin{itemize}
