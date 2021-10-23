@@ -267,7 +267,8 @@ The second case of 'Non-repeatable read' is when S1 reads data that is changed b
 
 Phantom Read
 The third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a  where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
-%TODO {Make example diagram}
+
+%TODO Make example diagram Phantom Read
 
     \subsubsection{dirty read}
 
@@ -423,7 +424,7 @@ The third and last type is phantom read which is a special case of non-repeatabl
     \end{itemize}
 
 
-    %TODO {make diagram Cursor Stability}
+    %TODO Make diagram Cursor Stability
 
     \subsection{Snapshot Isolation}
 
@@ -489,7 +490,7 @@ The third and last type is phantom read which is a special case of non-repeatabl
 \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper,Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al\cite{Adya99weakconsistency:} is commonly used as it provides a concrete specification based on the unconcise ANSI specification. 
 
 
-    %TODO {Read committed  Make Diagram}
+    %TODO Make Diagram Read committed
 
     \subsection{Read Uncommitted}
     Read uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al\cite{Berensonetal} where they argue that read uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al \cite{Adya99weakconsistency:} which again provides are better definition based on what can be interpreted from the loose definition in ANSISQL1999\cite{ansisql1999}. it should be noted that due to the loose specification in ANSI multiple mainstream interpretations exists.\\
