@@ -262,10 +262,12 @@
 
     "Dirty read" is when an S1 can read data that S2 has written but not yet committed. It is considered dirty as S2 can roll back the transaction where S1 read data that must be considered non-existent.
 
-%todo {Make example diagram}
-   
+
+%TODO {Make example diagram}
+    \\
+
     The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. So if S1 rereads the same data, it will have changed. This results in two equal, select statements returning different results.
-%todo {Make example diagram}
+%TODO {Make example diagram}
 
     Phantom Read
     The third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called phantom read because the new records seem to be of phantom origin.
@@ -634,7 +636,6 @@
 
 
     https://aphyr.com/posts/291-call-me-maybe-zookeeper
-
 
     \section{related work to Jepsen}
 
