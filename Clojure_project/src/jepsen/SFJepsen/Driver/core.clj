@@ -101,16 +101,12 @@
   "The URL for a key under a specified root-key.
   (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
   ([client uri]
-
    (str (primarybase-url) "/" uri))
   ([client uri key-seq]
-
    (str (primarybase-url) "/" uri "/" key-seq))
   ([client uri key value]
-
    (str (primarybase-url) "/" uri "/" key "/" value))
   ([client uri key value1 value2]
-
    (str (primarybase-url) "/" uri "/" key "/" value1 "/" value2)))
 
 (defn http-opts
@@ -129,18 +125,13 @@
 (defn parse
   "Parse an inputstream or string as JSON"
   [response]
-
-  ;(info response)
-
   (when (= 204 (response :status)) (throw+ {:stutus   204
                                             :type     :missing-value
                                             :response response
                                             }))
-
   (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type     :missing-body
                                                                          :response response
                                                                          }))
-
   ((first (json/parse-string (response :body) true)) :Value)
   )
 
