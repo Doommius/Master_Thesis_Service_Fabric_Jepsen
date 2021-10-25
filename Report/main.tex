@@ -680,21 +680,29 @@ The network is split into two or more parts where they each believe different tr
     \section{Past jepsen tests}
         Finding in past Jepsen test.
     \subsection{Cassandra}
-    A test was done on Cassandra in 2013 that showed some interesting behavior, with interesting names such as doomstones, and that doing conflicts a lexicographically bigger value is winning. such that separate parts of separate transactions might end up in the database. The article concerning the test itself is named "Some Write Loses".\\
+    A test was done on Cassandra in 2013 that showed some interesting behavior, with interesting names such as doomstones, and that doing conflicts a lexicographically bigger value is winning. such that separate parts of separate transactions might end up in the database. .\\
     \vspace{5mm}
+    Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. but unlike most other database it uses timestamp based last write wins. this allows for extremely high performance but also at the cost of being highly sensitive to clock skew.\\
     
-    Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. but unlike most other database it uses timestamp based last write wins. this allows for extremely high performance but also at the cost of being highly sensitive to clock skew.
-    
+    In the test on Cassandra it was found that:
+    \begin{itemize}
+        \item doing a single key heavy write operations Losing 28\% of committed data and fails linearizable by any definition.
+        \item Doing Write conflicts roughly 1 in 200 rows end up being corrupt due to poor handling time time where milliseconds are used with 3 zeros at the end instead of microseconds.
+        \item \textit{No. Cassandra lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes–and this doesn’t even require a network partition to demonstrate. It’s just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013 where a insert is rejected but committed anyway. (unnecessarily high false negative probabilities).}
+    \end{itemize}
 
-    
-    
     https://aphyr.com/posts/294-call-me-maybe-cassandra
 
 
-
-
     \subsection{Postgres}
-    https://aphyr.com/posts/291-call-me-maybe-zookeeper
+    
+    
+    
+    \begin{itemize}
+        \item \textit{Users should be aware that PostgreSQL’s “repeatable read” is in fact snapshot isolation—a fact long-understood in the PostgreSQL community and previously reported by Kleppmann. Since G2-item is prohibited under common formalizations of repeatable read, users may have designed applications assuming this held true for PostgreSQL. In this case, users may wish to run selected transactions under serializable isolation instead, add explicit locking, or redesign those transactions such that they are no longer sensitive to G2-item.}
+        \item \textit{It appears that no version of PostgreSQL has ever guaranteed serializability. Users should be aware that concurrent update and insert transactions may exhibit G2-item. High-contention workloads are especially susceptible. The PostgreSQL team has written tests to reproduce the problem and is evaluating a patch; we recommend upgrading once the next minor release becomes available.}
+    \end{itemize}
+    https://jepsen.io/analyses/postgresql-12.3
 
     \section{related work to Jepsen}
     
