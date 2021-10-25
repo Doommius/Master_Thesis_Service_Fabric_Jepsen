@@ -19,7 +19,8 @@
 \usepackage{datenumber}
 \usepackage{venndiagram}
 \usepackage{chngcntr}
-
+% \usepackage{bera}% optional: just to have a nice mono-spaced font
+\usepackage{xcolor}
 \usepackage{amsmath,amsthm}
 \usepackage{mathtools}
 \usepackage{wrapfig}
@@ -31,6 +32,43 @@
 ]{biblatex}
 
 \newtheorem{theorem}{Theorem}
+
+
+
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+
 
 
 
@@ -640,13 +678,29 @@ The network is split into two or more parts where they each believe different tr
 
 
     \section{Past jepsen tests}
-%TODO write more on the Past jepsen tests
+        Finding in past Jepsen test.
+    \subsection{Cassandra}
+    A test was done on Cassandra in 2013 that showed some interesting behavior, with interesting names such as doomstones, and that doing conflicts a lexicographically bigger value is winning. such that separate parts of separate transactions might end up in the database. The article concerning the test itself is named "Some Write Loses".\\
+    \vspace{5mm}
+    
+    Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. but unlike most other database it uses timestamp based last write wins. this allows for extremely high performance but also at the cost of being highly sensitive to clock skew.
+    
+
+    
+    
     https://aphyr.com/posts/294-call-me-maybe-cassandra
 
 
+
+
+    \subsection{Postgres}
     https://aphyr.com/posts/291-call-me-maybe-zookeeper
 
     \section{related work to Jepsen}
+    
+    Elle
+    
+    Knosos
 
     %TODO move these to BIB file and write this section
     % K. Kingsbury. Knossos.
@@ -961,6 +1015,7 @@ The network is split into two or more parts where they each believe different tr
         
         The design uses a 2 service setup, the initial stateless service that processes the initial request and routes it to the back-end service. the read key call will be explained here but all the stateless endpoints work nearly identical to each other. so only one is included in the report.\\
         
+        \paragraph{Stateless Service}
         The first first lines of code simply specify the uri of the function as well as what parts of the uri are parameters.
 \begin{lstlisting}[language=csh]
 // GET: uri:https://..../../api/.../key
@@ -997,7 +1052,9 @@ The Following lines of code retrieves the the results from the partitions in the
 }
 \end{lstlisting}  
 
+\paragraph{Statefull Service}
 
+The stateful service was implemented with simplicity in mind that where each endpoint did one operation and committed this change to the database after some further consideration this approach was fairly flawed as it treats the system in the same manner that Base handles operations, however this realization wasn't made until much later is the process.
 
 \begin{lstlisting}[language=csh]
         [HttpGet("{key}")]
@@ -1008,9 +1065,7 @@ The Following lines of code retrieves the the results from the partitions in the
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
                 var list = await votesDictionary.CreateEnumerableAsync(tx);
-
                 var enumerator = list.GetAsyncEnumerator();
-
                 List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
 
                 while (await enumerator.MoveNextAsync(ct))
@@ -1019,45 +1074,80 @@ The Following lines of code retrieves the the results from the partitions in the
                     {
                         result.Add(enumerator.Current);
                     }
-
                 }
-
                 return this.Json(result);
             }
         }
-
 \end{lstlisting}   
 
-
-      
-        
-        
-        
-
     \subsubsection{Implementation details Clojure}
-%TODO write section on Implementation details Clojure
-
-
-
-
-
-Nemesis killer
+        For the first implementation of the jepsen test a lot of things were a mess, due to a lot of considerations not having been made prior to writing the code and not fully understanding many of the underlying systems. which resulted in a board array of unintended and weird behavior, that mainly boiled down to asynchronous distributed systems being hard. 
+        
+        
+        The clujure application itself it build into a few different entities, Core/runner, generators, Nemesis, db, client, connector/driver and workloads. where the skeleton code is built based on other Jensen tests.
+        
+        The Core/runner contains the configurations and cli interface options and generalized options for the tests are specified, and where selections of parameters and workload is parsed and prepared.
+\begin{lstlisting}        
+(defn SF-test
+  "Given an options map from the command line runner (e.g. :nodes, :ssh,
+  :concurrency, ...), constructs a test map."
+  [opts]
+  (let [workload-name (:workload opts)
+        workload ((workloads workload-name) opts)
+        db (cond (:existing-service opts) jdb/noop
+                 (:deploy_service opts) (db/just-deploy opts)
+                 true (db/db))
+        os (if (:existing-service opts)
+             os/noop
+             ubuntu/os)
+\end{lstlisting}  
+Generalized specifications that all tests will follow regarding induced faults, this can be considered as a Chaos monkey \cite{Choasmonkey} as it follows the same principles of Chaos engineering to build a reliable system.
 \begin{lstlisting}
-(defn killer
-  "Kills a random node on start, restarts it on stop."
-  []
-  (nemesis/node-start-stopper
-    rand-nth
-    (fn start [test node] (db/stop! node test))
-    (fn stop [test node] (db/start! node test))))
+        nemesis (nemesis/nemesis-package
+                  {:db        db
+                   :nodes     (:nodes opts)
+                   :faults    (:nemesis opts)
+                   :partition {:targets [:primaries]}
+                   
+                   :pause     {:targets [nil :one :primaries :majority :all]}
+                   :kill      {:targets [nil :one :primaries :majority :all]}
+                   :interval  (:nemesis-interval opts)})]
+    (merge tests/noop-test
+           opts
+           {:name            (str "SF " (name workload-name)
+                                  " " (short-isolation (:isolation opts)) " ("
+                                  (short-isolation (:expected-consistency-model opts)) ")"
+                                  " " (str/join "," (map name (:nemesis opts))))
+            :pure-generators true
+            :os              os
+            :db              db
+\end{lstlisting}  
+Base configuration for the checker, the base things that should be logged by Jepsen, Performance, unhandled exceptions that cause internal server error, stats on transactions, reject, commit, abort etc.
+\begin{lstlisting}
+            :checker         (checker/compose
+                               {:perf       (checker/perf
+                                              {:nemeses (:perf nemesis)})
+                                :clock      (checker/clock-plot)
+                                :stats      (checker/stats)
+                                :exceptions (checker/unhandled-exceptions)
+                                :workload   (:checker workload)})
+            :client          (:client workload)
+            :nemesis         (:nemesis nemesis)
+            :generator       (gen/phases
+                               (->> (:generator workload)
+                                    (gen/stagger (/ (:rate opts)))
+                                    (gen/nemesis (:generator nemesis))
+                                    (gen/time-limit (:time-limit opts))))})))
+\end{lstlisting} 
+
+Additional modules for the partition-random-halves of the network to attempt to induce a brain split
+\begin{lstlisting}
+:nemesis   (nemesis/partition-random-halves)
 \end{lstlisting}  
 
-Nemesis Partitioner
 
 
-
-Generator
-
+Generator that generates the input for the reliable Directory reliable collection.
 \begin{lstlisting}
 (defn r [_ _] {:type :invoke, :f :read, :value nil})
 (defn d [_ _] {:type :invoke, :f :delete, :value nil})
@@ -1084,11 +1174,49 @@ Generator
 
 \end{lstlisting}
 
+SF connector
+\begin{lstlisting}
+(defn write
+  "Resets the current value of a given key to `value`. Options:
 
+  :ttl
+  :timeout"
+  ([client key value]
+   (write client key value {}))
+  ([client key value opts]
+   (->> (assoc opts :value value)
+        (http-opts client)
+        ;(info (url client RDuri key value))
+        (http/put (url client RDuri key value))
+        parse)
+   ;(catch [:status 500] _ :type :not_primary :errorCode 405)
+   ))
+   
+(defn parse
+  "Parse an inputstream or string as JSON"
+  [response]
+  (when (= 204 (response :status)) (throw+ {:stutus   204
+                                            :type     :missing-value
+                                            :response response
+                                            }))
+  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type     :missing-body
+                                                                         :response response
+                                                                         }))
+  ((first (json/parse-string (response :body) true)) :Value)
+  )   
 
-
-
-
+(defn ^String url
+  "The URL for a key under a specified root-key.
+  (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
+  ([client uri]
+   (str (base-url) "/" uri))
+  ([client uri key-seq]
+   (str (base-url) "/" uri "/" key-seq))
+  ([client uri key value]
+   (str (base-url) "/" uri "/" key "/" value))
+  ([client uri key value1 value2]
+   (str (base-url) "/" uri "/" key "/" value1 "/" value2)))
+\end{lstlisting}  
 
 
     \subsection{2nd iteration of the design.}
@@ -1103,65 +1231,101 @@ Generator
     The implementation of this initial design was supposed to have been been fairly straight forward however the non feature parity again poked it ugly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which caused some warnings to turn into errors. that exposed my inexperience of working with the dotnet framework and the service fabric API. These issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as I had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up being related to some changes in allowed port ranges that were usable by services and therefor killed the application as it was using an illegal port. These warnings were however not displayed correctly in the Linux distribution.
 
     \subsubsection{Implementation details SF}
-    
+    The second iteration of the design remove the stateless layer of the application however this approach was still flawed and was used for a large part of the initial testing. it had the limitation that it was threatening the system with the eyes of the Base consistency model and had some invariants of the real time constraints that are required by the Base models.
 \begin{lstlisting}[language=csh]
 // GET VoteData/name
 [HttpGet("{key}")]
 public async Task<IActionResult> Get(string key)
 {
-
-
     IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
     List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-
-
     using (ITransaction tx = this.stateManager.CreateTransaction())
-    {
-        ConditionalValue<int> conditionalValue = await votesDictionary.TryGetValueAsync(tx, key);
+    {        ConditionalValue<int> conditionalValue = await votesDictionary.TryGetValueAsync(tx, key);
         if (conditionalValue.HasValue)
-        {
-            int value = conditionalValue.Value;
+        {   int value = conditionalValue.Value;
             result.Add(new KeyValuePair<string, int>(key, value));
-
-            return this.Json(result);
-        }
-        else
-        {
-            return NoContent();
-        }
-
-    }
-}
-
+            return this.Json(result);        }
+        else {return NoContent(); }
+    }}
 \end{lstlisting}  
 
 
-%TODO write section on Implementation details SF 2
-
     \subsubsection{Implementation details Clojure}
     
-    %TODO runner handles configs, rates, hosts, ssh keys, test suite
+    This design iteration didn't have any major changes to the Clojure implementation as the changes were on the routing side of service fabric.
     
-    %TODO nemasis, killer, partion
-    
-    %TODO generator 
-    
-    %TODO client
-    
-    %TODO db\_layer
-    
-    %TODO db driver
-    
-    
-%TODO write section on Implementation details Clojure 2
+    The only change made was adding a primary node to the connector such that all writes went to the leader while reads were distributed throughout the cluster. 
+    \begin{lstlisting}
+(defn write
+  "Resets the current value of a given key to `value`. Options:
 
+  :ttl
+  :timeout"
+  ([client key value]
+   (write client key value {}))
+  ([client key value opts]
+   (->> (assoc opts :value value)
+        (http-opts client)
+        ;(info (url client RDuri key value))
+        (http/put (primaryurl client RDuri key value))
+        parse)
+   ;(catch [:status 500] _ :type :not_primary :errorCode 405)
+   ))
+ 
+(defn ^String primaryurl
+  "The URL for a key under a specified root-key.
+  (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
+  ([client uri]
+   (str (primarybase-url) "/" uri))
+  ([client uri key-seq]
+   (str (primarybase-url) "/" uri "/" key-seq))
+  ([client uri key value]
+   (str (primarybase-url) "/" uri "/" key "/" value))
+  ([client uri key value1 value2]
+   (str (primarybase-url) "/" uri "/" key "/" value1 "/" value2)))
+\end{lstlisting}  
+
+    
 
 \subsection{Final iteration of the design.}
-    In this iteration the way transactions and calls between the client and server was changed, this required significant rewrite of the entire code and project.
+    In this iteration the way transactions and calls between the client and server was changed, this required significant rewrite of the entire code and project. due to the flawed approach in the 2 previous iterations.
     
-    The first first major change was changing the API to do multi operational transactions. this required rebuilding the back-end to support this functionality which was greatly eased by using Postman and dotnetfiddle and curiousconcept json tools.
+    This required a full redesign of the way the request where handled such that the system used transactions and not just sub operations on the system. first a new back end had to be designed that was able to handle a transaction that contains a arbitrary long ordered list of operations to execute. and trivial compared to designing a new jepsen test due to the way that the current jepsen test generates, performs, parses, and checks the transaction history,
     
-    The new code for the backend was simplified downto 2 main functions,
+
+    \paragraph{The Stateless service}
+    
+    
+    The first first major change was changing the state full API to do multi operational transactions. this required rebuilding the back-end to support this functionality which was greatly eased by using Postman and dotnetfiddle and curiousconcept json tools. but still extremely time consuming due to the lack of debug tools and generally black box behavior of Service Fabric were issues weren't reproducible outside the cluster, and the cluster only returning internal server codes. The issue here turned out to be wrong documentation, where it doesn't return anything similar to any other functions. which ended requiring a few days of investigation prior to finding this issue. but it also summarizes the entire development process.\\
+    \vspace{5mm}
+    
+    
+    The revised backend code gets the transaction as a uri parameter containing json with the transaction list in the following format\\
+    \begin{lstlisting}[language=json]
+    {
+  "transaction":[
+    {
+      "operation":"Enqueue",
+      "value":3234234
+    },
+    {
+      "operation":"Peek"
+    },
+    {
+      "operation":"Enqueue",
+      "key":"Key123",
+      "value":456456
+    },
+    {
+      "operation":"Dequeue",
+      "key":"Key123"
+    },
+    {
+      "operation":"abort"
+      }
+  ]
+}
+    \end{lstlisting}  
     \begin{lstlisting}[language=csh]
 [HttpPut]
 public async Task<IActionResult> Put()
@@ -1196,24 +1360,10 @@ public async Task<IActionResult> Put()
     { result.Add(new KeyValuePair<string, string>("Exception", e.ToString()));return this.Json(result);}
 }
 \end{lstlisting}  
+
+     \subsubsection{Implementation changes Clojure}
+     %TODO
     
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
