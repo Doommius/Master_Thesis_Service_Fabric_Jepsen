@@ -100,7 +100,7 @@ namespace JepsenAPI.Controllers
         //    return this.Json(result);
         //}
 
-        // GET: api/Votes
+        // GET: api/key
         [HttpGet("{key}")]
         public async Task<IActionResult> Get(string key)
         {

@@ -88,7 +88,6 @@
 
 
 (defn dict-gen
-  "A generator for queue operations. Emits enqueues of sequential integers."
   [opts]
   (->> (independent/concurrent-generator
          20

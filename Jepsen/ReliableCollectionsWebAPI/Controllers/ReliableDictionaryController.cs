@@ -14,6 +14,7 @@ namespace ReliableCollectionsWebAPI.Controllers
     using System.Net.Http;
     using System;
     using System.Fabric;
+    using Newtonsoft.Json.Linq;
 
     [Route("api/[controller]")]
     public class ReliableDictionaryController : Controller
@@ -101,6 +102,111 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
 
         }
+
+        [HttpPut]
+        public async Task<IActionResult> Put()
+        {
+            IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
+
+            String transactionquery;
+            if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
+            {
+                transactionquery = HttpContext.Request.Query["query"];
+            }
+
+            else
+            {
+                return NoContent();
+            }
+                
+            List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+            dynamic operationlist;
+            try
+            {
+
+                operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
+
+                using (ITransaction tx = this.stateManager.CreateTransaction())
+                {
+                    ConditionalValue<int> conditionalValue;
+                    ConditionalValue<Task> conditionalTask;
+                    Boolean v;
+                    foreach (var item in operationlist.transaction)
+                    {
+
+                        if (item.operation.Value == "r")
+                        {
+                            conditionalValue = await votesDictionary.TryGetValueAsync(tx, item.key.Value);
+                            if (conditionalValue.HasValue)
+                            {
+                                int value = conditionalValue.Value;
+                                result.Add(new KeyValuePair<string, string>(item.key.Value, value.ToString()));
+
+                            }
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.key.Value, "False"));
+                            }
+                        }
+
+                        else if (item.operation.Value == "w")
+                        {
+
+                            int returnint = await votesDictionary.SetAsync(tx, item.key.Value, (int)item.value.Value);
+                            result.Add(new KeyValuePair<string, string>(item.key.Value, returnint.ToString()));
+                        }
+                        else if (item.operation.Value == "c")
+                        {
+                            v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, (int)item.value.Value, (int)item.expected.Value);
+                            if (!v)
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.key.Value, "False"));
+                            }
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.key.Value, "True"));
+                            }
+
+                        }
+                        else if (item.operation.Value == "abort")
+                        {
+
+                            tx.Abort();
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Completed"));
+                            return this.Json(result);
+                        }
+                        else if (item.operation.Value == "d")
+                        {
+                            conditionalValue = await votesDictionary.TryRemoveAsync(tx, item.key.Value);
+                            if (conditionalValue.HasValue)
+                                result.Add(new KeyValuePair<string, string>(item.key.Value, "True"));
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.key.Value, "False"));
+                            }
+                        }
+                        else
+                        {
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Failed"));
+                        }
+                    }
+                 await tx.CommitAsync();
+                }
+                return this.Json(result);
+            }
+            catch (FabricNotPrimaryException)
+            {
+                return new ForbidResult("Not Primary");
+
+            }
+            catch (Exception e)
+            {
+                result.Add(new KeyValuePair<string, string>("Exception", e.ToString()));
+                return this.Json(result);
+            }
+        }
+
+
 
         [HttpPut("{key}/{value}")]
         public async Task<IActionResult> Put(string key, int value)

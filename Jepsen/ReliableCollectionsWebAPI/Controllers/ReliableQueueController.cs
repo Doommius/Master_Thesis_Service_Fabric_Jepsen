@@ -44,6 +44,112 @@ namespace ReliableCollectionsWebAPI.Controllers
         }
 
 
+        [HttpPut]
+        public async Task<IActionResult> Put()
+        {
+            IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
+
+            String transactionquery;
+            if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
+            {
+                transactionquery = HttpContext.Request.Query["query"];
+            }
+
+            else
+            {
+                return NoContent();
+            }
+
+            List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+            result.Add(new KeyValuePair<string, string>("query", transactionquery));
+
+
+            dynamic operationlist;
+            try
+            {
+                operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
+
+
+                using (ITransaction tx = this.StateManager.CreateTransaction())
+                {
+                    ConditionalValue<long> returnvalue;
+                    Boolean v;
+                    foreach (var item in operationlist.transaction)
+                    {
+
+                        if (item.operation.Value == "Peek")
+                        {
+                            returnvalue = await queue.TryPeekAsync(tx);
+                            if (returnvalue.HasValue)
+                            {
+
+                                result.Add(new KeyValuePair<string, string>("Peek", returnvalue.Value.ToString()));
+
+                            }
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.operation.Value, "False"));
+                            }
+                        }
+
+                        else if (item.operation.Value == "Enqueue")
+                        {
+
+                            await queue.EnqueueAsync(tx, (long)item.value);
+
+                            result.Add(new KeyValuePair<string, string>("enqueue", item.value.Value.ToString()));
+
+                        }
+                        else if (item.operation.Value == "Dequeue")
+                        {
+
+                            returnvalue = await queue.TryDequeueAsync(tx);
+                            if (returnvalue.HasValue)
+                            {
+                                result.Add(new KeyValuePair<string, string>("Dequeue", returnvalue.Value.ToString()));
+
+                            }
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.operation.Value, "False"));
+                            }
+                        }
+                        else if (item.operation.Value == "abort")
+                        {
+
+                            tx.Abort();
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Completed"));
+                            return this.Json(result);
+                        }
+                        else
+                        {
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Failed"));
+
+                        }
+
+                    }
+
+                    await tx.CommitAsync();
+                }
+                return this.Json(result);
+
+            }
+            catch (FabricNotPrimaryException)
+            {
+                return new ForbidResult("Not Primary");
+
+            }
+            catch (Exception e)
+            {
+                result.Add(new KeyValuePair<string, string>("Exception", e.ToString()));
+                return this.Json(result);
+            }
+
+        }
+
+
+
+
         // get api/ReliableQueue/ to get Queue Length
         [HttpGet("peek")]
         public async Task<IActionResult> Get(int request)
