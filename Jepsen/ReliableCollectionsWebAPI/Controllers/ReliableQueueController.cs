@@ -47,26 +47,27 @@ namespace ReliableCollectionsWebAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> Put()
         {
-            IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
-
-            String transactionquery;
-            if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
-            {
-                transactionquery = HttpContext.Request.Query["query"];
-            }
-
-            else
-            {
-                return NoContent();
-            }
-
             List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
-            result.Add(new KeyValuePair<string, string>("query", transactionquery));
-
-
-            dynamic operationlist;
             try
             {
+                IReliableQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableQueue<long>>("myReliableQueue");
+
+                String transactionquery;
+                if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
+                {
+                    transactionquery = HttpContext.Request.Query["query"];
+                }
+
+                else
+                {
+                    return NoContent();
+                }
+
+                
+                result.Add(new KeyValuePair<string, string>("query", transactionquery));
+
+
+                dynamic operationlist;
                 operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
 
 

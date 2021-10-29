@@ -106,23 +106,25 @@ namespace ReliableCollectionsWebAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> Put()
         {
-            IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
-
-            String transactionquery;
-            if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
-            {
-                transactionquery = HttpContext.Request.Query["query"];
-            }
-
-            else
-            {
-                return NoContent();
-            }
-                
             List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
-            dynamic operationlist;
             try
+
             {
+                IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
+
+                String transactionquery;
+                if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
+                {
+                    transactionquery = HttpContext.Request.Query["query"];
+                }
+
+                else
+                {
+                    return NoContent();
+                }
+
+                
+                dynamic operationlist;
 
                 operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
 

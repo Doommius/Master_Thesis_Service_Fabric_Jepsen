@@ -27,6 +27,7 @@
             [clojure.tools.logging :refer [debug info warn]]
             [clj-http.client :as http]
             [clj-http.util :as http.util]
+             [clojure.data.json :as json2]
             [cheshire.core :as json]
             [slingshot.slingshot :refer [try+ throw+]])
   (:import (com.fasterxml.jackson.core JsonParseException)
@@ -265,6 +266,33 @@
    (->> opts
         (http/get (primaryurl client Quri "peek"))
         parse))
+  )
+
+(defn parsetxntojson [txn]
+  (json2/write-str txn)
+  )
+
+(defn parsejsontotxn [json]
+  (json2/read-str json)
+  )
+
+
+(defn txntourl [client uri query]
+   (str (base-url client) "/" uri "?query=" query)
+  )
+
+(defn parsetxn [resultmap]
+  (info resultmap)
+  (info (:body resultmap))
+  (parsejsontotxn (:body resultmap))
+  )
+
+(defn txn [client, txn]
+  (info client txn)
+  (info(txntourl client RDuri (parsetxntojson txn)))
+  (parsetxn (http/put (txntourl client RDuri (parsetxntojson txn))
+       ))
+
   )
 
 (defn queuepeek

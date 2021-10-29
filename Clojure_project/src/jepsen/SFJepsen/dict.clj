@@ -26,7 +26,7 @@
 (defn d [_ _] {:type :invoke, :f :delete, :value nil})
 (defn w [_ _] {:type :invoke, :f :write, :value (rand-int 5)})
 (defn cas [_ _] {:type :invoke, :f :cas, :value [(rand-int 5) (rand-int 5)]})
-
+(defn txn [_ _] {:type :invoke, :f :txn, :value [(rand-int 5) (rand-int 5)]})
 
 
 
@@ -54,7 +54,7 @@
                         (assoc op :type :ok))
             :write (do (sfc/write conn k v)
                        (assoc op :type :ok))
-            :txn (do (sfc/write conn k v)
+            :txn (do (sfc/txn conn txn)
                        (assoc op :type :ok))
             :insert (do (sfc/write conn k v)
                        (assoc op :type :ok))
@@ -85,6 +85,21 @@
       ; If our connection were stateful, we'd close it here.
       ; we doesn't actually hold connections, so there's nothing to close.
       ))
+
+
+
+(defn txn-gen
+  [opts]
+  (->> (independent/concurrent-generator
+         20
+         (range)
+         (fn [k]
+           (->> (gen/mix [r w cas])
+                (gen/limit (:ops-per-key opts))))
+         )
+       )
+
+  )
 
 
 (defn dict-gen

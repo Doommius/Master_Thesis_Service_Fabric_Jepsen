@@ -1,10 +1,14 @@
 (ns jepsen.SFJepsen.Driver.core_test
   (:require [clojure.test :refer :all]
-            ;[clojure.tools.logging :refer [debug info warn]]
+    ;[clojure.tools.logging :refer [debug info warn]]
             [cheshire.core :refer :all]
             [jepsen.SFJepsen.Driver.core :as sfc]))
 
-(def c (sfc/connect "10.0.0.7"))
+(def c (sfc/connect "10.0.0.5"))
+;(def c (sfc/connect "jepsen.northeurope.cloudapp.azure.com"))
+
+
+
 
 ; Delete all data before each test
 ;(use-fixtures :each #(do (sfc/delete-all! c nil) (%)))
@@ -122,6 +126,36 @@
 
   (testing "read_Test_fail"
     (is (= nil (sfc/get c "ℵ123")))
+    )
+  )
+
+
+(defn txnpayload []
+  (sfc/parsejsontotxn "{\"transaction\":[
+                                {\"operation\":\"w\", \"key\":\"thekey\",\"value\":3},
+                                {\"operation\":\"r\",\"key\":\"thekey\"},
+                                {\"operation\":\"c\",\"key\":\"thekey\",\"value\":15,\"expected\":3},
+                                {\"operation\":\"r\",\"key\":\"thekey\"},
+                                {\"operation\":\"d\",\"key\":\"thekey\"}
+                                ]}")
+  )
+
+(deftest txn
+  "   Id: int
+  Type: str
+  Values:
+    key: string
+    Value: int
+    Expected: int
+  Return: future return value that can be used and compares to history. "
+  (testing "parse txn test"
+    (print (txnpayload))
+    (print (sfc/parsetxntojson (txnpayload)))
+    )
+
+  (testing "txn test"
+
+    (is (= [{"Key" "thekey", "Value" "3"} {"Key" "thekey", "Value" "3"} {"Key" "thekey", "Value" "True"} {"Key" "thekey", "Value" "15"} {"Key" "thekey", "Value" "True"}] (sfc/txn c (txnpayload))))
     )
   )
 
