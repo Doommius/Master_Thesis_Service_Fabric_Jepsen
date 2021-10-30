@@ -8,7 +8,7 @@ if [ -f "/home/jervelund/SF_cluster.key" ]; then
 else
   echo "Setup: Start"
   echo "Install: Installing required packages"
-  sudo apt install -y leiningen expect iproute2 gnuplot ca-certificates curl apt-transport-https lsb-release gnupg
+  sudo apt install -y leiningen expect iproute2 gnuplot ca-certificates curl apt-transport-https lsb-release gnupg graphviz
   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
   curl -sL https://packages.microsoft.com/keys/microsoft.asc |    gpg --dearmor |    sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
   sudo apt update
@@ -32,6 +32,6 @@ lein install
 echo "Jepsen Test: Start reliabledict"
 
 
-lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 120 -r 500 --ops-per-key 500 --test-count 10
+lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 300 -r 100 --ops-per-key 500 --test-count 1
 
 echo "Jepsen Test: END"

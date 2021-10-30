@@ -174,7 +174,7 @@ namespace ReliableCollectionsWebAPI.Controllers
                         {
 
                             tx.Abort();
-                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Completed"));
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "abort"));
                             return this.Json(result);
                         }
                         else if (item.operation.Value == "d")

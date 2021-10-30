@@ -3,7 +3,8 @@
             [clojure.tools.logging :refer [debug info warn]]
             [slingshot.slingshot :refer [try+]]
             [elle.core :as elle]
-            [elle.list-append :as la]
+            [elle.rw-register :as ellerw]
+            [elle.txn :as elletxn]
             [jepsen [generator :as gen]
              [client :as client]
              [checker :as checker]
@@ -21,135 +22,102 @@
             )
   )
 
-
-(defn r [_ _] {:type :invoke, :f :read, :value nil})
-(defn d [_ _] {:type :invoke, :f :delete, :value nil})
-(defn w [_ _] {:type :invoke, :f :write, :value (rand-int 5)})
-(defn cas [_ _] {:type :invoke, :f :cas, :value [(rand-int 5) (rand-int 5)]})
-(defn txn [_ _] {:type :invoke, :f :txn, :value [(rand-int 5) (rand-int 5)]})
-
-
-
 (defn client-url [node]
   (node)
   )
 
-(defrecord  Client [conn]
+
+
+
+(defrecord Client [conn]
   client/Client
-    (open! [this test node]
-      (assoc this :conn (sfc/connect  node)))
+  (open! [this test node]
+    (assoc this :conn (sfc/connect node)))
 
-    (setup! [this test])
+  (setup! [this test])
 
-    (invoke! [_ test op]
-      (let [[k v] (:value op)]
-        (try+
-          (case (:f op)
-            :read (let [value (sfc/get conn k {:quorum? true})]
-                    (info value)
-                    (assoc op :type :ok, :value (independent/tuple k value)))
-            ;:read (do (sfc/get conn (:value op))
-            ;          (assoc op :type :ok))
-            :delete (do (sfc/delete conn k)
-                        (assoc op :type :ok))
-            :write (do (sfc/write conn k v)
-                       (assoc op :type :ok))
-            :txn (do (sfc/txn conn txn)
-                       (assoc op :type :ok))
-            :insert (do (sfc/write conn k v)
-                       (assoc op :type :ok))
-            :cas (let [[old new] v]
-                   (assoc op :type (if (= new (sfc/cas conn k new old))
-                                     :ok
-                                     :fail))))
-          (catch java.net.SocketTimeoutException e
-            (assoc op
-              :type (if (= :read (:f op)) :fail :info)
-              :error :timeout))
-          (catch java.net.ConnectException e
-            ;(info e)
-            (assoc op
-              :type (if (= :read (:f op)) :fail :info)
-              :error :ConnectException))
-          (catch [:stutus 400] e
-            (assoc op :type :fail, :error :Connectrefused))
-          (catch [:stutus 204] e
-            (assoc op :type :fail, :error :not-found))
+  (invoke! [_ test op]
+    (let [k (:value op)]
+      (try+
+        ;(warn op)
+        (case (:f op)
+          :txn (->> (sfc/txn conn k)
+                    (mapv (fn [[f k v] r]
+                            [f k (case f
+                                   :r (sfc/parseresult r)
+                                   :w (sfc/parseresult r)
+                                   :cas (sfc/parseresult r)
+                                   :d (sfc/parseresult r)
+                                   :a (sfc/parseresult r)
+                                   :append v)])
+                          (:value op))
+                    (assoc op :type :ok, :value)
+                    )
           )
-        ))
-
-    (teardown! [_ test]
-      )
-
-    (close! [_ test]
-      ; If our connection were stateful, we'd close it here.
-      ; we doesn't actually hold connections, so there's nothing to close.
+        (catch [:status 500] e
+          (assoc op :type :fail, :error :internal-server-error))
+        (catch [:status 400] e
+          (assoc op :type :fail, :exception :Connectrefused))
+        (catch [:status 204] e
+          (assoc op :type :fail, :error :not-found))
+        (catch [:status 601] e
+          (assoc op :type :fail, :exception :RealiableCollectionslockTimeout))
+        (catch java.net.SocketTimeoutException e
+          (assoc op :type :fail, :error :timeout))
+        (catch java.net.ConnectException e
+          (assoc op :type :fail, :error :ConnectException))
+        )
       ))
 
+  (teardown! [_ test]
+    )
 
+  (close! [_ test]
+    ; If our connection were stateful, we'd close it here.
+    ; we doesn't actually hold connections, so there's nothing to close.
+    ))
 
-(defn txn-gen
-  [opts]
-  (->> (independent/concurrent-generator
-         20
-         (range)
-         (fn [k]
-           (->> (gen/mix [r w cas])
-                (gen/limit (:ops-per-key opts))))
-         )
-       )
-
-  )
 
 
 (defn dict-gen
-  [opts]
-  (->> (independent/concurrent-generator
-         20
-         (range)
-         (fn [k]
-           (->> (gen/mix [r w cas])
-                (gen/limit (:ops-per-key opts))))
-         )
-       (gen/nemesis
-         (cycle [(gen/sleep 5)
-                 {:type :info, :f :start}
-                 (gen/sleep 5)
-                 {:type :info, :f :stop}]))
-       (gen/time-limit (:time-limit opts))
-       ))
-
-(defn gen
   "Wrapper for elle.list-append/gen; as a Jepsen generator."
   [opts]
-  (la/gen opts))
+  (ellerw/gen opts))
+
+
+(defn dict-gentxn
+  "Wrapper for elle.list-append/gen; as a Jepsen generator."
+  [opts]
+  )
+
 
 (defn checker
   "Full checker for append and read histories. See elle.list-append for
   options."
   ([]
-   (checker {:anomalies [:G1 :G2]}))
+   (checker {:anomalies [:G0 :G1 :G2 :GSIa :GSIb]}))
   ([opts]
    (reify checker/Checker
      (check [this test history checker-opts]
-       (la/check (assoc opts :directory
-                             (.getCanonicalPath
-                               (store/path! test (:subdirectory checker-opts) "elle")))
-                 history)))))
+       (ellerw/check (assoc opts :directory
+                                 (.getCanonicalPath
+                                   (store/path! test (:subdirectory checker-opts) "elle")))
+                     history)))))
 (defn workload
   "A package of client, checker, etc."
   [opts]
   {:client    (Client. nil)
    :checker   (checker/compose
-                { :perf       (checker/perf)
+                {:perf       (checker/perf)
                  :clock      (checker/clock-plot)
                  :stats      (checker/stats)
                  :exceptions (checker/unhandled-exceptions)
-                 })
+                 :elle       (checker opts)
+                 }
+                )
 
    :generator (dict-gen opts)
 
-   ;:checker   (checker opts)
    ;:generator  (la/gen opts)
 
    })

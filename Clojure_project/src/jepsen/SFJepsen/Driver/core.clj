@@ -27,7 +27,7 @@
             [clojure.tools.logging :refer [debug info warn]]
             [clj-http.client :as http]
             [clj-http.util :as http.util]
-             [clojure.data.json :as json2]
+            [clojure.data.json :as json2]
             [cheshire.core :as json]
             [slingshot.slingshot :refer [try+ throw+]])
   (:import (com.fasterxml.jackson.core JsonParseException)
@@ -68,8 +68,8 @@
 
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   [clientaddress]
-  (str "http://" (:endpoint clientaddress) ":35112/api")
-  ;(str "http://10.0.0.7:35112/api")
+  ;(str "http://" (:endpoint clientaddress) ":35112/api")
+  (str "http://10.0.0.7:35112/api")
   )
 
 
@@ -79,7 +79,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   []
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.7:35112/api"))
+  (str "http://10.0.0.6:35112/api"))
 
 
 (defn ^String url
@@ -269,7 +269,7 @@
   )
 
 (defn parsetxntojson [txn]
-  (json2/write-str txn)
+  (json2/write-str {:transaction txn})
   )
 
 (defn parsejsontotxn [json]
@@ -278,20 +278,92 @@
 
 
 (defn txntourl [client uri query]
-   (str (base-url client) "/" uri "?query=" query)
+  (str (base-url client) "/" uri "?query=" query)
   )
 
-(defn parsetxn [resultmap]
-  (info resultmap)
-  (info (:body resultmap))
+
+
+(defn parsetxn [transaction resultmap]
+  "gets a http response and parses the body to a map
+
+
+  Body : [{\"Key\":\"thekey\",\"Value\":\"3\"},{\"Key\":\"thekey\",\"Value\":\"3\"},{\"Key\":\"thekey\",\"Value\":\"True\"},{\"Key\":\"thekey\",\"Value\":\"15\"},{\"Key\":\"thekey\",\"Value\":\"True\"}][\\r][\\n]\"
+
+  return value: [{\"Key\" \"thekey\", \"Value\" \"3\"} {\"Key\" \"thekey\", \"Value\" \"3\"} {\"Key\" \"thekey\", \"Value\" \"True\"} {\"Key\" \"thekey\", \"Value\" \"15\"} {\"Key\" \"thekey\", \"Value\" \"True\"}]
+
+  "
+
   (parsejsontotxn (:body resultmap))
   )
 
-(defn txn [client, txn]
-  (info client txn)
-  (info(txntourl client RDuri (parsetxntojson txn)))
-  (parsetxn (http/put (txntourl client RDuri (parsetxntojson txn))
-       ))
+
+(defn parseresult [r]
+  (if (= (val (second r)) "False")
+    nil
+    (if (clojure.string/includes? (val (second r)) "System.TimeoutException:") (throw+ {:status   601
+                                                                                 :type     :RealiableCollectionslockTimeout
+                                                                                 :response (val (second r))
+                                                                                 }) (Long/parseLong (val (second r))))
+
+    )
+
+  )
+
+
+(defn Clojuremaptojsonoperation
+  [operation]
+
+  (case (first operation)
+    :r
+    {:operation "r"
+     :key       (str (second operation))}
+
+    :w
+    {:operation "w"
+     :key       (str (second operation))
+     :value     (nth operation 2)}
+
+    :cas
+    {:operation "cas"
+     :key       (str (second operation))
+     :value     (nth operation 2)
+     :exspected (nth operation 3)}
+
+    :d
+    {:operation "d"
+     :key       (str (second operation))}
+
+    :enqueue
+    {:operation "enqueue"
+     :value     (nth operation 2)}
+
+    :dequeue
+    {:operation "dequeue"
+     :value     (nth operation 1)}
+
+    :peek
+    {:operation "peek"}
+
+    :count
+    {:operation "coundcount"}
+
+    :drain
+    {:operation "drain"}
+
+    )
+
+  )
+
+(defn txn [client, transaction]
+  "Gets a client a list a transactions in a map
+  [:r 1039 nil]
+  {\"operation\":\"w\",
+  \"key\":\"thekey\",
+  \"value\":3}
+
+  http://10.0.0.5:35112/api/ReliableDictionary?query={\"transaction\":[{\"operation\":\"w\",\"key\":\"thekey\",\"value\":3},{\"operation\":\"r\",\"key\":\"thekey\"},{\"operation\":\"c\",\"key\":\"thekey\",\"value\":15,\"expected\":3},{\"operation\":\"r\",\"key\":\"thekey\"},{\"operation\":\"d\",\"key\":\"thekey\"}]}
+  "
+  (parsetxn transaction (http/put (txntourl client RDuri (parsetxntojson (mapv Clojuremaptojsonoperation transaction)))))
 
   )
 
