@@ -1,0 +1,36 @@
+G-single-realtime #0
+Let:
+  T1 = {:type :ok, :f :txn, :value [[:r 131 11] [:w 125 27] [:r 130 9] [:r 118 nil] [:r 131 11]], :time 14173794757, :process 2, :index 259}
+  T2 = {:type :ok, :f :txn, :value [[:w 118 1]], :time 16515359516, :process 8, :index 307}
+  T3 = {:type :ok, :f :txn, :value [[:r 131 26] [:w 131 27] [:w 131 28] [:r 131 28] [:r 130 21]], :time 16549787087, :process 8, :index 309}
+  T4 = {:type :ok, :f :txn, :value [[:r 130 21] [:w 131 29] [:w 123 9] [:w 130 22]], :time 16716033697, :process 7, :index 311}
+  T5 = {:type :ok, :f :txn, :value [[:w 117 1] [:w 124 2] [:r 123 9] [:r 127 3] [:r 127 3]], :time 2555119611, :process 4, :index 7}
+  T6 = {:type :ok, :f :txn, :value [[:w 125 4] [:r 127 6] [:r 124 2] [:w 124 3]], :time 3111662012, :process 0, :index 19}
+  T7 = {:type :ok, :f :txn, :value [[:w 127 8] [:w 126 4] [:r 124 3] [:w 127 9]], :time 3349964496, :process 2, :index 25}
+  T8 = {:type :ok, :f :txn, :value [[:r 127 9] [:w 125 5] [:w 126 5] [:r 127 9]], :time 3382723555, :process 2, :index 27}
+  T9 = {:type :ok, :f :txn, :value [[:r 125 5] [:w 122 2] [:w 127 28] [:w 127 29] [:w 127 30]], :time 5219457473, :process 5, :index 63}
+  T10 = {:type :ok, :f :txn, :value [[:w 128 32] [:r 128 32] [:r 122 2]], :time 9810425032, :process 3, :index 165}
+  T11 = {:type :ok, :f :txn, :value [[:w 126 27] [:w 125 19] [:r 126 27]], :time 9995949897, :process 1, :index 169}
+  T12 = {:type :ok, :f :txn, :value [[:w 126 32] [:r 125 19] [:w 129 18] [:w 123 5]], :time 11545135623, :process 3, :index 201}
+  T13 = {:type :ok, :f :txn, :value [[:r 123 5]], :time 13279405804, :process 3, :index 235}
+  T14 = {:type :ok, :f :txn, :value [[:r 131 3] [:r 131 3] [:w 124 11] [:r 130 8] [:r 131 3]], :time 13337729564, :process 7, :index 237}
+  T15 = {:type :ok, :f :txn, :value [[:w 131 5] [:w 131 6] [:r 124 11]], :time 13558236603, :process 4, :index 241}
+  T16 = {:type :ok, :f :txn, :value [[:w 130 9] [:w 124 12] [:r 130 9] [:r 125 24] [:r 122 5]], :time 13688789732, :process 6, :index 244}
+
+Then:
+  - T1 < T2, because T1 read key 118 = nil, and T2 set it to 1, which came later in the version order.
+  - T2 < T3, because T2 completed at index 307, 0.001 seconds before the invocation of T3, at index 308.
+  - T3 < T4, because T3 completed at index 309, 0.144 seconds before the invocation of T4, at index 310.
+  - T4 < T5, because T4 wrote 123 = 9, which was read by T5.
+  - T5 < T6, because T5 wrote 124 = 2, which was read by T6.
+  - T6 < T7, because T6 wrote 124 = 3, which was read by T7.
+  - T7 < T8, because T7 wrote 127 = 9, which was read by T8.
+  - T8 < T9, because T8 wrote 125 = 5, which was read by T9.
+  - T9 < T10, because T9 wrote 122 = 2, which was read by T10.
+  - T10 < T11, because T10 completed at index 165, 0.145 seconds before the invocation of T11, at index 167.
+  - T11 < T12, because T11 wrote 125 = 19, which was read by T12.
+  - T12 < T13, because T12 wrote 123 = 5, which was read by T13.
+  - T13 < T14, because T13 completed at index 235, 0.026 seconds before the invocation of T14, at index 236.
+  - T14 < T15, because T14 wrote 124 = 11, which was read by T15.
+  - T15 < T16, because T15 completed at index 241, 0.105 seconds before the invocation of T16, at index 242.
+  - However, T16 < T1, because T16 wrote 130 = 9, which was read by T1: a contradiction!

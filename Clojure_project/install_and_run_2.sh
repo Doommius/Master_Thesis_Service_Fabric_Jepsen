@@ -32,6 +32,6 @@ lein install
 echo "Jepsen Test: Start reliabledict"
 
 
-lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 300 -r 100 --ops-per-key 500 --test-count 1
+lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 300 -r 100 --ops-per-key 500 --test-count 1 --nemesis pause,clock
 
 echo "Jepsen Test: END"

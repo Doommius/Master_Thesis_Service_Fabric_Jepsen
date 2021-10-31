@@ -6,6 +6,7 @@
              [client :as client]
              [checker :as checker]
              [generator :as gen]]
+            [elle.graph :as elle]
             [jepsen.tests.cycle.append :as append]
             [slingshot.slingshot :refer [try+]]
             [knossos.model :as model]
@@ -32,21 +33,19 @@
   (invoke! [this test op]
     (try+
       (case (:f op)
-        :enqueue (do (sfc/enqueue conn (:value op))
-                     (assoc op :type :ok))
-        :dequeue (if-let [v (sfc/dequeue conn)]
-                   (assoc op :type :ok, :value v)
-                   (assoc op :type :fail, :error :empty))
-        :peek (if-let [v (sfc/queuepeek conn)]
-                (assoc op :type :ok, :value v)
-                (assoc op :type :fail, :error :empty))
-        :count (if-let [v (sfc/queuecount conn)]
-                 (assoc op :type :ok, :value v)
-                 (assoc op :type :fail, :error :empty))
-        :drain (loop [values []]
-                 (if-let [v (repeat (sfc/queuecount conn) (sfc/dequeue conn))]
-                   (recur (conj values v))
-                   (assoc op :type :ok, :value values))))
+        :txn (->> (sfc/txn conn sfc/RQuri op)
+                  (mapv (fn [[f k v] r]
+                          [f k (case f
+                                 :e (sfc/parseresult r)
+                                 :d (sfc/parseresult r)
+                                 :p (sfc/parseresult r)
+                                 :c (sfc/parseresult r)
+                                 :a (sfc/parseresult r)
+                                 :append v)])
+                        (:value op))
+                  (assoc op :type :ok, :value)
+                  )
+        )
       (catch java.net.SocketTimeoutException e
         (assoc op
           :type (if (= :read (:f op)) :fail :info)
@@ -75,19 +74,11 @@
 
   )
 
-
-(defn e [_ _] {:type :invoke, :f :enqueue, :value (rand-int 5)})
-(defn d [_ _] {:type :invoke, :f :dequeue, :value nil})
-(defn p [_ _] {:type :invoke, :f :peek, :value nil})
-(defn c [_ _] {:type :invoke, :f :count, :value nil})
-
-
-
 (defn workload
   "A package of client, checker, etc."
   [opts]
   {:client    (Client. nil)
    :model     (model/unordered-queue)
-   :generator (->> (gen/mix [e d p c]))
+   :generator (->> (elle.list-append/gen [opts]))
    :checker   (checker/compose {:queue   checker/total-queue
                                 :latency (checker/latency-graph)})})

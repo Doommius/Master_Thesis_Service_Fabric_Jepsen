@@ -41,6 +41,8 @@
   (info "Deployed Service to Cluster"))
 
 
+
+
 (defn stop!
   "Stops DB."
   [node test]
@@ -72,6 +74,7 @@
       (start! test node)
       (Thread/sleep 5000)
       )
+
 
     (teardown! [_ test node]
       (stop! test node)

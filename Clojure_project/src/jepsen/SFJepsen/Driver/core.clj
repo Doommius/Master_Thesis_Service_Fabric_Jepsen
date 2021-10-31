@@ -36,8 +36,8 @@
 
 (def api-version "")
 (def RDuri "ReliableDictionary")
-(def Quri "ReliableConcurrentQueue")
-(def CQuri "ReliableConcurrent")
+(def RCQuri "ReliableConcurrentQueue")
+(def RQuri "ReliableQueue")
 
 (def default-timeout "milliseconds" 200)
 
@@ -69,7 +69,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   [clientaddress]
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.7:35112/api")
+  (str "http://10.0.0.6:35112/api")
   )
 
 
@@ -79,7 +79,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   []
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.6:35112/api"))
+  (str "http://10.0.0.4:35112/api"))
 
 
 (defn ^String url
@@ -224,7 +224,7 @@
    (enqueue* client key {}))
   ([client key opts]
 
-   (->> (http/put (primaryurl client Quri key))))
+   (->> (http/put (primaryurl client RQuri key))))
   )
 
 (defn enqueue
@@ -244,7 +244,7 @@
   ([client opts]
 
    (->> opts
-        (http/delete (primaryurl client Quri))
+        (http/delete (primaryurl client RQuri))
         parse))
   )
 
@@ -264,7 +264,7 @@
   ([client opts]
 
    (->> opts
-        (http/get (primaryurl client Quri "peek"))
+        (http/get (primaryurl client RQuri "peek"))
         parse))
   )
 
@@ -300,10 +300,17 @@
 (defn parseresult [r]
   (if (= (val (second r)) "False")
     nil
-    (if (clojure.string/includes? (val (second r)) "System.TimeoutException:") (throw+ {:status   601
-                                                                                 :type     :RealiableCollectionslockTimeout
-                                                                                 :response (val (second r))
-                                                                                 }) (Long/parseLong (val (second r))))
+    (if (clojure.string/includes? (val (second r)) "System.Fabric.FabricNotPrimaryException")
+      (throw+ {:status   602
+               :type     :notprimary
+               :response (val (second r))
+               })
+      (if (clojure.string/includes? (val (second r)) "System.TimeoutException:")
+        (throw+ {:status   601
+                 :type     :RealiableCollectionslockTimeout
+                 :response (val (second r))
+                 })
+        (Long/parseLong (val (second r)))))
 
     )
 
@@ -333,28 +340,28 @@
     {:operation "d"
      :key       (str (second operation))}
 
-    :enqueue
-    {:operation "enqueue"
-     :value     (nth operation 2)}
-
-    :dequeue
-    {:operation "dequeue"
+    :qe
+    {:operation "qe"
      :value     (nth operation 1)}
 
-    :peek
-    {:operation "peek"}
+    :qd
+    {:operation "qd"
+     :value     (nth operation 1)}
 
-    :count
-    {:operation "coundcount"}
+    :qp
+    {:operation "qp"}
 
-    :drain
-    {:operation "drain"}
+    :qc
+    {:operation "qc"}
+
+    :qq
+    {:operation "qq"}
 
     )
 
   )
 
-(defn txn [client, transaction]
+(defn txn [client type transaction]
   "Gets a client a list a transactions in a map
   [:r 1039 nil]
   {\"operation\":\"w\",
@@ -363,7 +370,7 @@
 
   http://10.0.0.5:35112/api/ReliableDictionary?query={\"transaction\":[{\"operation\":\"w\",\"key\":\"thekey\",\"value\":3},{\"operation\":\"r\",\"key\":\"thekey\"},{\"operation\":\"c\",\"key\":\"thekey\",\"value\":15,\"expected\":3},{\"operation\":\"r\",\"key\":\"thekey\"},{\"operation\":\"d\",\"key\":\"thekey\"}]}
   "
-  (parsetxn transaction (http/put (txntourl client RDuri (parsetxntojson (mapv Clojuremaptojsonoperation transaction)))))
+  (parsetxn transaction (http/put (txntourl client type (parsetxntojson (mapv Clojuremaptojsonoperation transaction)))))
 
   )
 
@@ -382,7 +389,7 @@
   ([client opts]
 
    (->> opts
-        (http/get (primaryurl client Quri))
+        (http/get (primaryurl client RQuri))
         parse))
   )
 

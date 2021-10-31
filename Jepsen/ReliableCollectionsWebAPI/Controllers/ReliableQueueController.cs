@@ -63,9 +63,6 @@ namespace ReliableCollectionsWebAPI.Controllers
                     return NoContent();
                 }
 
-                
-                result.Add(new KeyValuePair<string, string>("query", transactionquery));
-
 
                 dynamic operationlist;
                 operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
@@ -78,13 +75,13 @@ namespace ReliableCollectionsWebAPI.Controllers
                     foreach (var item in operationlist.transaction)
                     {
 
-                        if (item.operation.Value == "Peek")
+                        if (item.operation.Value == "qp")
                         {
                             returnvalue = await queue.TryPeekAsync(tx);
                             if (returnvalue.HasValue)
                             {
 
-                                result.Add(new KeyValuePair<string, string>("Peek", returnvalue.Value.ToString()));
+                                result.Add(new KeyValuePair<string, string>("qp", returnvalue.Value.ToString()));
 
                             }
                             else
@@ -93,21 +90,21 @@ namespace ReliableCollectionsWebAPI.Controllers
                             }
                         }
 
-                        else if (item.operation.Value == "Enqueue")
+                        else if (item.operation.Value == "de")
                         {
 
                             await queue.EnqueueAsync(tx, (long)item.value);
 
-                            result.Add(new KeyValuePair<string, string>("enqueue", item.value.Value.ToString()));
+                            result.Add(new KeyValuePair<string, string>("de", item.value.Value.ToString()));
 
                         }
-                        else if (item.operation.Value == "Dequeue")
+                        else if (item.operation.Value == "qd")
                         {
 
                             returnvalue = await queue.TryDequeueAsync(tx);
                             if (returnvalue.HasValue)
                             {
-                                result.Add(new KeyValuePair<string, string>("Dequeue", returnvalue.Value.ToString()));
+                                result.Add(new KeyValuePair<string, string>("qd", returnvalue.Value.ToString()));
 
                             }
                             else
@@ -115,7 +112,7 @@ namespace ReliableCollectionsWebAPI.Controllers
                                 result.Add(new KeyValuePair<string, string>(item.operation.Value, "False"));
                             }
                         }
-                        else if (item.operation.Value == "abort")
+                        else if (item.operation.Value == "a")
                         {
 
                             tx.Abort();
@@ -133,11 +130,6 @@ namespace ReliableCollectionsWebAPI.Controllers
                     await tx.CommitAsync();
                 }
                 return this.Json(result);
-
-            }
-            catch (FabricNotPrimaryException)
-            {
-                return new ForbidResult("Not Primary");
 
             }
             catch (Exception e)

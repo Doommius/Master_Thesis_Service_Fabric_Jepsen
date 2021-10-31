@@ -43,6 +43,96 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
         }
 
+
+        [HttpPut]
+        public async Task<IActionResult> Put()
+        {
+            List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
+            try
+            {
+                IReliableConcurrentQueue<long> queue = await this.StateManager.GetOrAddAsync<IReliableConcurrentQueue<long>>("myReliableConcurrentQueue");
+
+                String transactionquery;
+                if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
+                {
+                    transactionquery = HttpContext.Request.Query["query"];
+                }
+
+                else
+                {
+                    return NoContent();
+                }
+
+
+                result.Add(new KeyValuePair<string, string>("query", transactionquery));
+
+
+                dynamic operationlist;
+                operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
+
+
+                using (ITransaction tx = this.StateManager.CreateTransaction())
+                {
+                    ConditionalValue<long> returnvalue;
+                    Boolean v;
+                    foreach (var item in operationlist.transaction)
+                    {
+
+                        if (item.operation.Value == "qp")
+                        {
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Failed"));
+                        }
+
+                        else if (item.operation.Value == "de")
+                        {
+
+                            await queue.EnqueueAsync(tx, (long)item.value);
+
+                            result.Add(new KeyValuePair<string, string>("de", item.value.Value.ToString()));
+
+                        }
+                        else if (item.operation.Value == "qd")
+                        {
+
+                            returnvalue = await queue.TryDequeueAsync(tx);
+                            if (returnvalue.HasValue)
+                            {
+                                result.Add(new KeyValuePair<string, string>("qd", returnvalue.Value.ToString()));
+
+                            }
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, string>(item.operation.Value, "False"));
+                            }
+                        }
+                        else if (item.operation.Value == "a")
+                        {
+
+                            tx.Abort();
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Completed"));
+                            return this.Json(result);
+                        }
+                        else
+                        {
+                            result.Add(new KeyValuePair<string, string>(item.operation.Value, "Failed"));
+
+                        }
+
+                    }
+
+                    await tx.CommitAsync();
+                }
+                return this.Json(result);
+
+            }
+            catch (Exception e)
+            {
+                result.Add(new KeyValuePair<string, string>("Exception", e.ToString()));
+                return this.Json(result);
+            }
+
+        }
+
         // PUT VoteData/name
         [HttpDelete("")]
         public async Task<IActionResult> get()

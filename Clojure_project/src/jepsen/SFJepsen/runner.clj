@@ -38,7 +38,7 @@
 (def workloads
   "A map of test names to test constructors."
   {
-  ; :reliablequeue queue/workload
+   :reliablequeue queue/workload
    :reliabledict dict/workload
    ;:concurrentqueue concurrentqueue/workload
    :none          (fn [_] tests/noop-test)}
@@ -134,6 +134,9 @@
     :parse-fn keyword
     :validate [#{:read-uncommitted
                  :read-committed
+                 :strict-serializable
+                 :snapshot-isolation
+                 :monotonic-atomic-view
                  :linearizable
                  :repeatable-read
                  :serializable}
@@ -143,14 +146,14 @@
     :default true]
 
    [nil "--expected-consistency-model MODEL" "What level of isolation do we *expect* to observe? Defaults to the same as --isolation."
-    :default nil
+    :default :repeatable-read
     :parse-fn keyword]
 
-   [nil "--just-deploy" "Don't bother with replication or anything, just set up a plain old single-node deply."
+   [nil "--just-deploy" "Don't bother with replication or anything, just set up a plain old single-node deploy."
     :default false]
 
    [nil "--key-count NUM" "Number of keys in active rotation."
-    :default 128
+    :default 256
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 
@@ -160,7 +163,7 @@
                "Faults must be pause, kill, partition, clock, or member, or the special faults all or none."]]
 
    [nil "--max-txn-length NUM" "Maximum number of operations in a transaction."
-    :default 5
+    :default 10
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 
@@ -191,9 +194,6 @@
     :default 100
     :parse-fn read-string
     :validate [pos? "Must be a positive number."]]
-
-   ["-v" "--version STRING" "What version of Stolon should we test?"
-    :default "0.16.0"]
 
    ["-w" "--workload NAME" "What workload should we run?"
     :parse-fn keyword

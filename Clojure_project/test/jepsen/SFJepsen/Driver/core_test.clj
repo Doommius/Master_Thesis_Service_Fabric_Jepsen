@@ -10,6 +10,8 @@
 (def opr [[:r 9992886 nil]])
 (def opw [[:w 9992886 31] [:w 9992887 1]])
 (def opcas [[:w 9992886 31] [:cas 9992886 1 31]])
+(def openque [[:qe 9992886] [:qe 9992886]])
+(def opdeque [[:qd nil] [:qd nil]])
 ;(def c (sfc/connect "jepsen.northeurope.cloudapp.azure.com"))
 
 
@@ -63,29 +65,28 @@
     Value: int
     Expected: int
   Return: future return value that can be used and compares to history. "
-  (testing "TXN read"
-    (is (= [{"Key" "2886", "Value" "31"}] (sfc/txn c opr)))
+  (testing "TXN read RDI"
+    (is (= [{"Key" "9992886", "Value" "31"}] (sfc/txn c sfc/RDuri opr)))
 
     )
-  (testing "TXN Write"
-    (is (= [{"Key" "2886", "Value" "31"} {"Key" "2887", "Value" "1"}] (sfc/txn c opw)))
+  (testing "TXN Write RDI"
+    (is (= [{"Key" "9992886", "Value" "31"} {"Key" "9992887", "Value" "1"}] (sfc/txn c sfc/RDuri opw)))
 
     )
 
-  (testing "TXN CAS"
+  (testing "TXN CAS RDI"
 
-    (is (= [{"Key" "2886", "Value" "31"} {"Key" "cas", "Value" "Failed"}] (sfc/txn c opcas)))
+    (is (= [{"Key" "9992886", "Value" "31"} {"Key" "cas", "Value" "Failed"}] (sfc/txn c sfc/RDuri opcas)))
     )
 
-  (testing "TXN MAX"
+  (testing "TXN mix RDI"
 
-    (is (= [{"Key" "2886", "Value" "31"} {"Key" "2886", "Value" "31"} {"Key" "2887", "Value" "1"}] (sfc/txn c opa)))
+    (is (= [{"Key" "9992886", "Value" "31"} {"Key" "9992886", "Value" "31"} {"Key" "9992887", "Value" "1"}] (sfc/txn c sfc/RDuri opa)))
     )
 
 
-
-  (testing "TXN + parse result"
-    (is (= [[:r 127 nil] [:w 123 1] [:w 126 3] [:r 127 nil] [:r 123 1]] (->> (sfc/txn c (:value op))
+  (testing "TXN + parse result RDI"
+    (is (= [[:r 999127 nil] [:w 999123 1] [:w 999126 3] [:r 999127 nil] [:r 999123 1]] (->> (sfc/txn c sfc/RDuri (:value op))
                 (mapv (fn [[f k v] r]
                         [f k (case f
                                :r (sfc/parseresult r)
@@ -96,6 +97,18 @@
                                :append v)])
                       (:value op))
                 )))
+    )
+
+  (testing "TXN enqueu RDQ"
+
+    (is (= [{"Key" "en", "Value" "9992886"} {"Key" "en", "Value" "9992886"}] (sfc/txn c sfc/RQuri openque)))
+    )
+
+
+
+  (testing "TXN deque RDq"
+
+    (is (= [{"Key" "de", "Value" "9992886"} {"Key" "de", "Value" "9992886"}] (sfc/txn c sfc/RQuri opdeque)))
     )
 
 

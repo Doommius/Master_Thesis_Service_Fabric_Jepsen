@@ -4,7 +4,7 @@
             [slingshot.slingshot :refer [try+]]
             [elle.core :as elle]
             [elle.rw-register :as ellerw]
-            [elle.txn :as elletxn]
+
             [jepsen [generator :as gen]
              [client :as client]
              [checker :as checker]
@@ -41,7 +41,7 @@
       (try+
         ;(warn op)
         (case (:f op)
-          :txn (->> (sfc/txn conn k)
+          :txn (->> (sfc/txn conn sfc/RDuri k)
                     (mapv (fn [[f k v] r]
                             [f k (case f
                                    :r (sfc/parseresult r)
@@ -57,11 +57,13 @@
         (catch [:status 500] e
           (assoc op :type :fail, :error :internal-server-error))
         (catch [:status 400] e
-          (assoc op :type :fail, :exception :Connectrefused))
+          (assoc op :type :fail, :error :bad-request))
         (catch [:status 204] e
           (assoc op :type :fail, :error :not-found))
         (catch [:status 601] e
-          (assoc op :type :fail, :exception :RealiableCollectionslockTimeout))
+          (assoc op :type :fail, :error e))
+        (catch [:status 602] e
+          (assoc op :type :fail, :error :notprimary))
         (catch java.net.SocketTimeoutException e
           (assoc op :type :fail, :error :timeout))
         (catch java.net.ConnectException e

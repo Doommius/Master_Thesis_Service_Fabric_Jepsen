@@ -110,7 +110,7 @@ namespace ReliableCollectionsWebAPI.Controllers
             try
 
             {
-                IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
+                IReliableDictionary<string, List<int>> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, List<int>>>("counts");
 
                 String transactionquery;
                 if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
@@ -154,12 +154,18 @@ namespace ReliableCollectionsWebAPI.Controllers
                         else if (item.operation.Value == "w")
                         {
 
-                            int returnint = await votesDictionary.SetAsync(tx, item.key.Value, (int)item.value.Value);
+                            int returnint = await votesDictionary.SetAsync(tx, item.key.Value, new List<int>() { (int)item.value.Value });
+                            result.Add(new KeyValuePair<string, string>(item.key.Value, returnint.ToString()));
+                        }
+                        else if (item.operation.Value == "a")
+                        {
+
+                            int returnint = await votesDictionary.TryAddAsync(tx, item.key.Value, new List<int>() { (int)item.value.Value });
                             result.Add(new KeyValuePair<string, string>(item.key.Value, returnint.ToString()));
                         }
                         else if (item.operation.Value == "c")
                         {
-                            v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, (int)item.value.Value, (int)item.expected.Value);
+                            v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, new List<int>() { (int)item.value.Value }, new List<int>(){(int)item.expected.Value});
                             if (!v)
                             {
                                 result.Add(new KeyValuePair<string, string>(item.key.Value, "False"));
@@ -195,11 +201,6 @@ namespace ReliableCollectionsWebAPI.Controllers
                  await tx.CommitAsync();
                 }
                 return this.Json(result);
-            }
-            catch (FabricNotPrimaryException)
-            {
-                return new ForbidResult("Not Primary");
-
             }
             catch (Exception e)
             {
