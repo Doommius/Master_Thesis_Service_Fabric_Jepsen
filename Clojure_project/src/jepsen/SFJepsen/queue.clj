@@ -36,16 +36,27 @@
         :txn (->> (sfc/txn conn sfc/RQuri op)
                   (mapv (fn [[f k v] r]
                           [f k (case f
-                                 :e (sfc/parseresult r)
-                                 :d (sfc/parseresult r)
-                                 :p (sfc/parseresult r)
-                                 :c (sfc/parseresult r)
-                                 :a (sfc/parseresult r)
-                                 :append v)])
+                                 :qe (sfc/parseresult r)
+                                 :qd (sfc/parseresult r)
+                                 :qp (sfc/parseresult r)
+                                 :qc (sfc/parseresult r)
+                                 :qa (sfc/parseresult r)
+                                 )])
                         (:value op))
                   (assoc op :type :ok, :value)
                   )
         )
+
+      (catch [:status 500] e
+        (assoc op :type :fail, :error :internal-server-error))
+      (catch [:status 400] e
+        (assoc op :type :fail, :error :bad-request))
+      (catch [:status 204] e
+        (assoc op :type :fail, :error :not-found))
+      (catch [:status 601] e
+        (assoc op :type :fail, :error :RealiableCollectionslockTimeout))
+      (catch [:status 602] e
+        (assoc op :type :fail, :error :notprimary))
       (catch java.net.SocketTimeoutException e
         (assoc op
           :type (if (= :read (:f op)) :fail :info)
@@ -54,15 +65,7 @@
         ;(info e)
         (assoc op
           :type (if (= :read (:f op)) :fail :info)
-          :error :ConnectException))
-      (catch [:errorCode 400] e
-        (assoc op :type :fail, :error :Connectrefused))
-      (catch [:status 405] e
-        (assoc op :type :fail, :error :internal-server-error))
-      (catch [:status 500] e
-        (assoc op :type :fail, :error :internal-server-error))
-      (catch [:errorCode 204] e
-        (assoc op :type :fail, :error :not-found))))
+          :error :ConnectException))))
 
   (teardown! [this test])
 
@@ -74,11 +77,18 @@
 
   )
 
+
+
+
+(defn qe   [_ _] {:type :invoke, :f :txn , :value (rand-int 5)})
+(defn qd   [_ _] {:type :invoke, :f :txn , :value nil})
+
+
 (defn workload
   "A package of client, checker, etc."
   [opts]
   {:client    (Client. nil)
    :model     (model/unordered-queue)
-   :generator (->> (elle.list-append/gen [opts]))
+   :generator (->> (gen/mix [qe, qd]))
    :checker   (checker/compose {:queue   checker/total-queue
                                 :latency (checker/latency-graph)})})

@@ -73,9 +73,7 @@ namespace ReliableCollectionsWebAPI.Controllers
 
                 using (ITransaction tx = this.StateManager.CreateTransaction())
                 {
-                    ConditionalValue<long> returnvalue;
-                    Boolean v;
-                    foreach (var item in operationlist.transaction)
+                   foreach (var item in operationlist.transaction)
                     {
 
                         if (item.operation.Value == "qp")
@@ -94,7 +92,7 @@ namespace ReliableCollectionsWebAPI.Controllers
                         else if (item.operation.Value == "qd")
                         {
 
-                            returnvalue = await queue.TryDequeueAsync(tx);
+                            ConditionalValue<long> returnvalue = await queue.TryDequeueAsync(tx);
                             if (returnvalue.HasValue)
                             {
                                 result.Add(new KeyValuePair<string, string>("qd", returnvalue.Value.ToString()));

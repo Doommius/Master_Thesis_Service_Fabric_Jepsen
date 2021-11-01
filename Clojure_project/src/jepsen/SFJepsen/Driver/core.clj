@@ -36,6 +36,7 @@
 
 (def api-version "")
 (def RDuri "ReliableDictionary")
+(def RAuri "ReliableAppend")
 (def RCQuri "ReliableConcurrentQueue")
 (def RQuri "ReliableQueue")
 
@@ -298,6 +299,7 @@
 
 
 (defn parseresult [r]
+
   (if (= (val (second r)) "False")
     nil
     (if (clojure.string/includes? (val (second r)) "System.Fabric.FabricNotPrimaryException")
@@ -316,6 +318,30 @@
 
   )
 
+(defn parseresultlist [r]
+  (if (= (val (first r)) "False")
+    nil
+    (if (clojure.string/includes? (val (first r)) "System.Fabric.FabricNotPrimaryException")
+      (throw+ {:status   602
+               :type     :notprimary
+               :response (val (first r))
+               })
+      (if (clojure.string/includes? (val (first r)) "System.TimeoutException:")
+        (throw+ {:status   601
+                 :type     :RealiableCollectionslockTimeout
+                 :response (val (first r))
+                 })
+        (if (=(val (second r)) "[-1]")
+          (throw+ {:status   603
+                   :type     :unhandledexception
+                   :response (val (first r))
+                   })
+          (val (second r))))
+
+      )
+
+    ))
+
 
 (defn Clojuremaptojsonoperation
   [operation]
@@ -327,6 +353,11 @@
 
     :w
     {:operation "w"
+     :key       (str (second operation))
+     :value     (nth operation 2)}
+
+    :append
+    {:operation "a"
      :key       (str (second operation))
      :value     (nth operation 2)}
 
@@ -356,6 +387,9 @@
 
     :qq
     {:operation "qq"}
+
+    :abort
+    {:operation "abort"}
 
     )
 

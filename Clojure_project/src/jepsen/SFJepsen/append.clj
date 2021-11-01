@@ -1,18 +1,17 @@
-(ns jepsen.SFJepsen.dict
+(ns jepsen.SFJepsen.append
   (:require [clojure [string :as str]]
             [clojure.tools.logging :refer [debug info warn]]
             [slingshot.slingshot :refer [try+]]
             [elle.core :as elle]
-            [elle.rw-register :as ellerw]
-
+            [elle.list-append :as la]
             [jepsen [generator :as gen]
              [client :as client]
              [checker :as checker]
              [independent :as independent]
              [store :as store]
              ]
-            [knossos.model :as model]
-            [clojure.set :as set]
+            [jepsen.checker.timeline :as timeline]
+            [jepsen.tests.cycle.append :as append]
             [jepsen.tests.cycle.append :as append]
             [jepsen.checker.timeline :as timeline]
             [jepsen.SFJepsen.Driver.core :as sfc]
@@ -41,15 +40,11 @@
       (try+
         ;(warn op)
         (case (:f op)
-          :txn (->> (sfc/txn conn sfc/RDuri k)
+          :txn (->> (sfc/txn conn sfc/RAuri k)
                     (mapv (fn [[f k v] r]
                             [f k (case f
-                                   :r (sfc/parseresult r)
-                                   :w (sfc/parseresult r)
-                                   :cas (sfc/parseresult r)
-                                   :d (sfc/parseresult r)
-                                   :a (sfc/parseresult r)
-                                   :append v)])
+                                   :r (sfc/parseresultlist r)
+                                   :append v, (sfc/parseresultlist r))])
                           (:value op))
                     (assoc op :type :ok, :value)
                     )
@@ -79,33 +74,20 @@
     ; we doesn't actually hold connections, so there's nothing to close.
     ))
 
-(defn checker
-  "Full checker for append and read histories. See elle.list-append for
-  options."
-  ([]
-   (checker {:anomalies [:G0 :G1 :G2 :GSIa :GSIb]}))
-  ([opts]
-   (reify checker/Checker
-     (check [this test history checker-opts]
-       (ellerw/check (assoc opts :directory
-                                 (.getCanonicalPath
-                                   (store/path! test (:subdirectory checker-opts) "elle")))
-                     history)))))
 (defn workload
   "A package of client, checker, etc."
   [opts]
-  {:client    (Client. nil)
-   :checker   (checker/compose
-                {:perf       (checker/perf)
-                 :clock      (checker/clock-plot)
-                 :stats      (checker/stats)
-                 :exceptions (checker/unhandled-exceptions)
-                 :elle       (checker opts)
-                 }
-                )
 
-   :generator (ellerw/gen opts)
+  (-> (append/test {; Exponentially distributed, so half of the time it's gonna
+                    ; be one key, 3/4 of ops will use one of 2 keys, 7/8 one of
+                    ; 3 keys, etc.
+                    :key-count          (:key-count opts 12)
+                    :min-txn-length     1
+                    :max-txn-length     (:max-txn-length opts 4)
+                    :max-writes-per-key (:max-writes-per-key opts 128)
+                    :consistency-models [:repeatable-read]
+                    })
+      (assoc :client (Client. nil))
+      (assoc :generator (la/gen opts))
 
-   ;:generator  (la/gen opts)
-
-   })
+      ))
