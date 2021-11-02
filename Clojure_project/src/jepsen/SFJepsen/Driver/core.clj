@@ -70,7 +70,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   [clientaddress]
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.6:35112/api")
+  (str "http://10.0.0.4:35112/api")
   )
 
 
@@ -128,11 +128,13 @@
   "Parse an inputstream or string as JSON"
   [response]
   (when (= 204 (response :status)) (throw+ {:stutus   204
+                                            :definite? false
                                             :type     :missing-value
-                                            :response response
+                                            :description response
                                             }))
   (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type     :missing-body
-                                                                         :response response
+                                                                         :definite? false
+                                                                         :description response
                                                                          }))
   ((first (json/parse-string (response :body) true)) :Value)
   )
@@ -304,13 +306,15 @@
     nil
     (if (clojure.string/includes? (val (second r)) "System.Fabric.FabricNotPrimaryException")
       (throw+ {:status   602
+               :definite? true
                :type     :notprimary
-               :response (val (second r))
+               :description  (val (second r))
                })
       (if (clojure.string/includes? (val (second r)) "System.TimeoutException:")
         (throw+ {:status   601
                  :type     :RealiableCollectionslockTimeout
-                 :response (val (second r))
+                 :definite? false
+                 :description (val (second r))
                  })
         (Long/parseLong (val (second r)))))
 
@@ -324,17 +328,20 @@
     (if (clojure.string/includes? (val (first r)) "System.Fabric.FabricNotPrimaryException")
       (throw+ {:status   602
                :type     :notprimary
-               :response (val (first r))
+               :definite? true
+               :description (val (first r))
                })
       (if (clojure.string/includes? (val (first r)) "System.TimeoutException:")
         (throw+ {:status   601
                  :type     :RealiableCollectionslockTimeout
-                 :response (val (first r))
+                 :definite? false
+                 :description (val (first r))
                  })
         (if (=(val (second r)) "[-1]")
           (throw+ {:status   603
                    :type     :unhandledexception
-                   :response (val (first r))
+                   :definite? false
+                   :description (val (first r))
                    })
           (val (second r))))
 

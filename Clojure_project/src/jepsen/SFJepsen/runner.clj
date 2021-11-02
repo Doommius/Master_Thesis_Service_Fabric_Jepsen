@@ -27,6 +27,7 @@
             [jepsen.SFJepsen
              [queue :as queue]
              [dict :as dict]
+             [cas :as cas]
              [append :as append]
              [concurrentqueue :as concurrentqueue]
              [db :as db]
@@ -40,16 +41,17 @@
   "A map of test names to test constructors."
   {
    ;:reliablequeue queue/workload
-   :reliabledict dict/workload
-   :reliableappend append/workload
+   :reliabledict    dict/workload
+   :reliableappend  append/workload
+   ;:reliablecasdict cas/workload
    ;:concurrentqueue concurrentqueue/workload
-   :none          (fn [_] tests/noop-test)}
+   :none            (fn [_] tests/noop-test)}
   )
 
 
 (def all-workloads
   "A collection of workloads we run by default."
-  (remove #{:none} (keys workloads)))
+  (remove #{:reliabledict :reliableappend} (keys workloads)))
 
 (def workloads-expected-to-pass
   "A collection of workload names which we expect should actually pass."
@@ -155,7 +157,7 @@
     :default false]
 
    [nil "--key-count NUM" "Number of keys in active rotation."
-    :default 256
+    :default 25
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 
@@ -165,7 +167,7 @@
                "Faults must be pause, kill, partition, clock, or member, or the special faults all or none."]]
 
    [nil "--max-txn-length NUM" "Maximum number of operations in a transaction."
-    :default 10
+    :default 3
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 

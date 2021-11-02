@@ -61,7 +61,7 @@
         (catch [:status 204] e
           (assoc op :type :fail, :error :not-found))
         (catch [:status 601] e
-          (assoc op :type :fail, :error :RealiableCollectionslockTimeout))
+          (assoc op :type :fail, :error e))
         (catch [:status 602] e
           (assoc op :type :fail, :error :notprimary))
         (catch java.net.SocketTimeoutException e
@@ -82,29 +82,29 @@
 (defn checker
   "Full checker for append and read histories. See elle.list-append for
   options."
-  ([]
-   (checker {:anomalies [:G0 :G1 :G2 :GSIa :GSIb]}))
-  ([opts]
+[opts]
    (reify checker/Checker
      (check [this test history checker-opts]
        (ellerw/check (assoc opts :directory
                                  (.getCanonicalPath
                                    (store/path! test (:subdirectory checker-opts) "elle")))
-                     history)))))
+                     history))))
 (defn workload
   "A package of client, checker, etc."
   [opts]
-  {:client    (Client. nil)
+  {
+   :generator (ellerw/gen opts)
+   :client    (Client. nil)
    :checker   (checker/compose
                 {:perf       (checker/perf)
                  :clock      (checker/clock-plot)
                  :stats      (checker/stats)
                  :exceptions (checker/unhandled-exceptions)
-                 :elle       (checker opts)
+                 :elle       (checker (assoc opts :anomalies [:G0 :G1 :G2 :GSIa :GSIb]))
                  }
                 )
 
-   :generator (ellerw/gen opts)
+
 
    ;:generator  (la/gen opts)
 

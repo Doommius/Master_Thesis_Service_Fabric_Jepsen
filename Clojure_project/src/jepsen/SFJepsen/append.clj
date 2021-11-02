@@ -12,20 +12,14 @@
              ]
             [jepsen.checker.timeline :as timeline]
             [jepsen.tests.cycle.append :as append]
-            [jepsen.tests.cycle.append :as append]
             [jepsen.checker.timeline :as timeline]
+            [jepsen.tests.long-fork :as longfork]
             [jepsen.SFJepsen.Driver.core :as sfc]
 
 
             [jepsen.nemesis :as nemesis]
             )
   )
-
-(defn client-url [node]
-  (node)
-  )
-
-
 
 
 (defrecord Client [conn]
@@ -38,33 +32,28 @@
   (invoke! [_ test op]
     (let [k (:value op)]
       (try+
-        ;(warn op)
-        (case (:f op)
-          :txn (->> (sfc/txn conn sfc/RAuri k)
-                    (mapv (fn [[f k v] r]
-                            [f k (case f
-                                   :r (sfc/parseresultlist r)
-                                   :append v, (sfc/parseresultlist r))])
-                          (:value op))
-                    (assoc op :type :ok, :value)
-                    )
-          )
-        (catch [:status 500] e
-          (assoc op :type :fail, :error :internal-server-error))
-        (catch [:status 400] e
-          (assoc op :type :fail, :error :bad-request))
-        (catch [:status 204] e
-          (assoc op :type :fail, :error :not-found))
-        (catch [:status 601] e
-          (assoc op :type :fail, :error :RealiableCollectionslockTimeout))
-        (catch [:status 602] e
-          (assoc op :type :fail, :error :notprimary))
-        (catch java.net.SocketTimeoutException e
-          (assoc op :type :fail, :error :timeout))
-        (catch java.net.ConnectException e
-          (assoc op :type :fail, :error :ConnectException))
+      ;(warn op)
+      (case (:f op)
+        :txn (->> (sfc/txn conn sfc/RAuri k)
+                  (mapv (fn [[f k v] r]
+                          [f k (case f
+                                 :r (sfc/parseresultlist r)
+                                 :append v, (sfc/parseresultlist r))])
+                        (:value op))
+                  (assoc op :type :ok, :value)
+                  )
         )
-      ))
+      (catch [:status 500] e
+        (assoc op :type :fail, :error :internal-server-error))
+      (catch [:status 400] e
+        (assoc op :type :fail, :error :bad-request))
+      (catch [:status 204] e
+        (assoc op :type :fail, :error :not-found))
+      (catch [:status 601] e
+         (assoc op :type :fail, :error e))
+      (catch [:status 602] e
+        (assoc op :type :fail, :error :notprimary))
+      ) ))
 
   (teardown! [_ test]
     )
@@ -74,20 +63,14 @@
     ; we doesn't actually hold connections, so there's nothing to close.
     ))
 
+
 (defn workload
   "A package of client, checker, etc."
   [opts]
+  {
+   :generator (append/gen opts)
+   :client    (Client. nil)
+   :checker   (append/checker (assoc opts :anomalies [:G0 :G1 :G2 :GSIa :GSIb]))
+   }
 
-  (-> (append/test {; Exponentially distributed, so half of the time it's gonna
-                    ; be one key, 3/4 of ops will use one of 2 keys, 7/8 one of
-                    ; 3 keys, etc.
-                    :key-count          (:key-count opts 12)
-                    :min-txn-length     1
-                    :max-txn-length     (:max-txn-length opts 4)
-                    :max-writes-per-key (:max-writes-per-key opts 128)
-                    :consistency-models [:repeatable-read]
-                    })
-      (assoc :client (Client. nil))
-      (assoc :generator (la/gen opts))
-
-      ))
+  )
