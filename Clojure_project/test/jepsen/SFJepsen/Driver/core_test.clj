@@ -56,14 +56,6 @@
 ;  (is (false? (sfc/get c "SDFSDFSDFSD:nonexistent"))))
 
 
-
-(deftest read_Test_fail
-
-  (testing "read_Test_fail"
-    (is (= nil (sfc/get c "ℵ123")))
-    )
-  )
-
 (deftest txn
   "   Id: int
   Type: str
@@ -145,6 +137,17 @@
             {"Key" "9992886", "Value" [31 1 2 3 1 2 3]} {"Key" "9992886", "Value" [31 1 2 3 1 2 3]} {"Key" "9992887", "Value" [32 32 1 2 3 4]} {"Key" "9992887", "Value" [32 32 1 2 3 4 1]}
             {"Key" "9992887", "Value" [32 32 1 2 3 4 1 2]} {"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3]} {"Key" "9992886", "Value" [31 1 2 3 1 2 3]}
             {"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3]} {"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]}] (sfc/txn c sfc/RAuri opappenappendtest)))
+    )
+
+  )
+
+
+
+(deftest txnparse
+  (testing "txntojson"
+
+    (is (= "1" (sfc/parsetxntojson (mapv sfc/Clojuremaptojsonoperation opappenappendtest))))
+
     )
 
   )
