@@ -379,8 +379,6 @@ The network is split into two or more parts where they each believe different tr
 
 %TODO Sigurd skip end
     \section{Consistency models}
-
-
     \begin{wrapfigure}{r}{0.5\linewidth}
         \centering
         \includegraphics[scale=0.4]{images/consistency models.PNG}
@@ -639,11 +637,7 @@ The network is split into two or more parts where they each believe different tr
     % Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
 
 
-
-
-
     \newpage
-
 
     \chapter{Database Consistency testing}
 
@@ -705,6 +699,48 @@ The network is split into two or more parts where they each believe different tr
     But a lot of this lay outside the scope of this thesis but it's also a super interesting field that will probably see grow in the next decade.
 
 
+    \subsection{Elle}
+    
+    
+    Elle is a consistency checker and generator available in Jepsen. It supports a few different methods 
+    
+    Elle is the one of the Jepsen Consistency checkers available in jepsen, other exist but for all intents and purposes Elle should always to used. 
+    Introduction to Elle
+    ...
+    What it aims to solve
+    ...
+    DSG
+    ...
+    Checker
+    ...
+    Generators
+    ...
+    TXN
+    ...
+    
+        %TODO move these to BIB file and write this section
+    % K. Kingsbury. Knossos.
+    % https://github.com/jepsen-io/knossos, 2013-2019.
+
+    % G. Lowe. Testing and Verifying Concurrent Objects.
+    % Concurrency and Computation: Practice and
+    % Experience, 29(4), 2017
+
+    % J. M. Wing and C. Gong. Testing and Verifying
+    % Concurrent Objects. Journal of Parallel and
+    % Distributed Computing, 17(1-2), 1993.
+
+    % P. B. Gibbons and E. Korach. Testing shared
+    % memories. SIAM Journal on Computing, 26(4), 1997
+
+    % S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
+    % Line-up: A Complete and Automatic Linearizability
+    % Checker. PLDI '10, 2010.
+    
+    
+    
+    
+
     \section{Past Jepsen tests}
         Finding in past Jepsen test.
     \subsection{Cassandra}
@@ -732,32 +768,6 @@ The network is split into two or more parts where they each believe different tr
     \end{itemize}
     https://jepsen.io/analyses/postgresql-12.3
 
-    \section{related work to Jepsen}
-    
-    Elle
-    
-    Knosos
-
-    %TODO move these to BIB file and write this section
-    % K. Kingsbury. Knossos.
-    % https://github.com/jepsen-io/knossos, 2013-2019.
-
-    % G. Lowe. Testing and Verifying Concurrent Objects.
-    % Concurrency and Computation: Practice and
-    % Experience, 29(4), 2017
-
-    % J. M. Wing and C. Gong. Testing and Verifying
-    % Concurrent Objects. Journal of Parallel and
-    % Distributed Computing, 17(1-2), 1993.
-
-    % P. B. Gibbons and E. Korach. Testing shared
-    % memories. SIAM Journal on Computing, 26(4), 1997
-
-    % S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
-    % Line-up: A Complete and Automatic Linearizability
-    % Checker. PLDI '10, 2010.
-
-%TODO write introduction to writing jepsen test
 
 
 
