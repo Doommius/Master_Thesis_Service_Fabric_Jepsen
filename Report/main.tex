@@ -138,6 +138,7 @@
 
     The Thesis findings discover issues both within Service Fabric reliable Collections and within specifications of consistency Models. 
     Within Service fabrics, reliable collections, there are three issues: poor locks handling that cause significant abort rates and long transaction times that span up to 4 seconds per transaction,  and no use available optimizations allowed within the Repeatable read consistency model. 
+    The results for the test show that Service Fabric expresses G0 and G1 -RT violations as well as as exponential abort rates in correlation with transaction length. and no guarantees with scaling beyond a single node, due to the under laying architecture that require the individual  implementations of a transaction manager and optimizer, however this might not solve the issue of deadlocking.
     Within the industry, the classifications and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
     A wide range of papers, outdated standards, and articles are currently used with mixed terminology, definitions, and specifications, which means that users cannot rely on documentation of how a given database or data store behaves.
 
@@ -249,14 +250,14 @@
         \vspace*{4mm}\\
         A system cannot guarantee that every transaction will commit—transactions may choose to abort themselves—but we need to ensure that the system will not indefinitely abort transactions of its own volition. We call a transaction abort due to a transaction's own choosing (e.g., as an operation of the transaction itself or due to a would-be violation of a declared integrity constraint) an internal abort and an abort due to system implementation or operation of an external abort. We say that a system provides transactional availability if, given replica availability for every data item in a transaction, the transaction eventually commits (possibly after multiple client retries) or internally aborts [9]. A system provides sticky transactional availability if, given sticky availability, a transaction eventually commits or internally aborts}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
-        \item Unavailable: A consistency model is considered available if it is unable to make progress on any nodes doing a network partition, as it would break the consistency constraints required by a given model. These systems, therefore, have reduced scale-ability as they are often limited to running on a single node or cluster as any form of broader distribution would induce network issues that would pause the system or quit a brain split with subsequent data losses.
+        \item Unavailable: A consistency model is considered unavailable if it is unable to make progress on any nodes doing a network partition, as it would break the consistency constraints required by a given model. These systems, therefore, have reduced scale-ability as they are often limited to running on a single node or cluster as any form of broader distribution would induce network issues that would pause the system or quit a brain split with subsequent data losses.
 
-        \item Totally Available: A totally available system can be considered fully distributed and leaderless, such that any non-faulty node accepts traffic even doing a full partitioning. No guarantee  can be given of data staleness as partition data can only be read from the node it can write to until the network is healed. If strict node persistence is maintained, a read your writes can be maintained doing such a partitioning. Otherwise, we aren't guaranteed to observe our own writes. 
+        \item Totally Available: A totally available system can be considered fully distributed and leaderless, such that any non-faulty node accepts traffic even doing a full partitioning. No guarantee  can be given on staleness as data can only be read from the node it was written to until the network is healed. If strict node persistence is maintained, "Read your Writes" can be maintained doing a network partitioning. Otherwise, there's is no guarantee provider that we can observe our own writes. 
 
     \end{itemize}
 
-    \subsection{Phenomena}
-    Most consistency models are defined by what Phenomena they allow or prohibit. However, due to poor or loose definitions, there often exist multiple different definitions on each consistency model, as well as on many of the Phenomena, or simply the lack of a definition on some properties. Therefore an explanation of the different definitions and additions will be given below.
+    \subsection{Transaction Anomalies \& Phenomena}
+    Most consistency models are defined by what Phenomena they allow or prohibit. However, due to poor or loose definitions, there often exist multiple different definitions on each consistency model, as well as on many of the Phenomena, or simply the lack of a definition on some properties. Therefore an explanation of the different definitions and additions will be given below.\\
 
    ANSISQL99\cite{ansisql1999} defines three phenomena that are used to describe the different consistency models with transactional models. These are defined as follows:
     \begin{itemize}
@@ -291,33 +292,32 @@
     \item P3 (Phantom): r1(P) … w2(y in P)
 \end{itemize}
 
-    \subsubsection{Dirty Write}
+    \subsubsection{P0 - Dirty Write}
      %TODO fix this section Dirty Write
         Suppose T1 modifies x and T2 further modifies x before T1 commits or aborts. If either T1 or T2 aborts, it is unclear what the real value of x should be. the preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. Dirty write can also be defined as a locking mechanism in disguise that require the locking protocol in the history, that requires long-term locks for write and at least short term locks for read operations.
 
 
-    \subsubsection{Dirty Read}
+    \subsubsection{P1 - Dirty Read}
     %TODO fix this section Dirty Read.
         The preventative interpretation, P1, is more restrictive and requires that a transaction T2 must not read any object from an uncommitted transaction T1 (there is no abort or commit action for T1 between w1(x) and r2(x)); the lack of an abort or commit action in the condition simply means that all combinations of aborts and commits after r2(x) are disallowed.
 
 
-    \textit{P1 ("Dirty Read"): suppose transaction T1 modifies a row. transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al\cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the ambiguous ANSI specification, that adds the Drity Write constraint defined by Berenson et al.:
+    \textit{P1 ("Dirty Read"): suppose transaction T1 modifies a row. transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al\cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the ambiguous ANSI specification, that adds the Drity Write constraint defined by Berenson et al\cite{Berensonetal}.:
     
      P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock,
 
 
     %TODO {Make example diagram}
-    \subsubsection{Non-repeatable Read}
+    \subsubsection{P2 - Non-repeatable/Fuzzy Read}
 
    
     The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. So if S1 rereads the same data, it will have changed. This results in two equal, select statements returning different results.
     %TODO {Make example diagram}
     
-     P2
-requires the use of long read and write-locks; 
+     P2 requires the use of long read and write-locks; 
 
 
-    \subsubsection{Phantom Read}
+    \subsubsection{P3 - Phantom Read}
 
     The third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called Phantom Read because the new records seem to be of phantom origin.
     
@@ -325,8 +325,40 @@ requires the use of long read and write-locks;
 
     %TODO Make example diagram Phantom Read
     
+\newpage
+\subsection{The harsh reality}
+    
+    However in reality the above doesn't cover a lot of issues that can exist in DBMS systems. In Haixiang Li et al on COO\cite{li2021coo} 18 definitions on anomalies is brought 
+\begin{table}[]
+    \begin{tabular}{l|l|l}
+        No & Anomaly, reference, year                        & Formal definition  \\ \hline
+        1  & Dirty Write {[}1{]} 1992                        & $W_1 [x_1 ]...W_2 [x_2 ]...((C_1 or A_1) and (C_2 or A_2) in any order) $  \\
+        2  & Lost Update {[}6{]} 1995                        & $  R_1 [x_0 ]...W_2 [x_1 ]...C_2...W_1 [x_2 ] $ \\
+        3  & Dirty Read {[}1{]} 1992                         & $ W_1 [x ]...R_2 [x ]...(A_1 and C_2 in either order) $ \\
+        4  & Aborted Reads {[}45{]} 2015, {[}2{]} 2000       & $ W_1 [x : i]...R_2 [x : i]...(A_1 and C_2 in any order) $  \\
+        5  & Fuzzy/Non-repeatable Read {[}1{]} 1992          & $ R_1 [x ]...W_2 [x ]...C_2...R_1 [x ]...C_1 $  \\
+        6  & Phantom {[}1{]} 1992                            & $ R_1 [P ]...W_2[y in P]...C_2...R_1 [P ]...C_1 $  \\
+        7  & Intermediate Reads {[}45{]} 2015, {[}2{]} 2000  & $ W_1 [x : i]...R_2 [x : i]...W_1 [x : j]...C_2  $  \\
+        8  & Read Skew {[}6{]} 1995                          & $ R_1 [x_0 ]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1] $ \\
+        9  & Unnamed Anomaly {[}38{]} 2000                   & \begin{tabular}[c]{@{}l@{}}$ R_1 [y]...R_2 [x ]...W_2 [x ]...R_2 [y]...W_2 [y]...C_2...R_3 [x ]...W_3 [x ]$\\$...R_3 [z]...W_3 [z]...C_3...R_1 [z]...C_1 $\end{tabular}      \\
+        10 & Fractured Reads {[}16{]} 2017, {[}5{]} 2014     & $ R_1 [x_0]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1 ] $ \\
+        11 & Serial-Concurrent-phenomenon {[}12{]} 2014      & $ R_1 [x_0 ]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1 ] $  \\
+        12 & Cross-phenomenon {[}12{]} 2014                  & $ R_1 [x_0 ]...R_2 [y_0 ]...W_3 [x_1 ]...C_3...W_4 [y_1 ]...C_4...R_2 [x_1 ]...R_1 [y_1 ] $ \\
+        13 & Long Fork Anomaly {[}16{]} 2017                 & $ R_1 [x_0 ]...R_2 [y_0 ]...W_3 [x_1 ]...C_3...W_4 [y_1 ]...C_4...R_2 [x_1 ]...R_1 [y_1 ] $ \\
+        14 & Causality Violation Anomaly {[}16{]} 2017       & $ R_1 [x_0 ]...W_2 [x_1 ]...C_2...R_3 [x_1 ]...W_3 [y_1 ]...C_3...R_1 [y_1 ] $  \\
+        15 & Read-only Transaction Anomaly {[}26, 43{]} 2004 & \begin{tabular}[c]{@{}l@{}}$ R_1 [x_0, 0]...R_1 [y_0, 0]...R_2 [y_0, 0]...W_2 [y_1, 20]...C_2$\\$...R_3 [x_0,0]...R_3 [y_1, 20]...C_3...W_1 [x_2, -11]...C_1 $\end{tabular} \\
+        16 & Write Skew {[}6{]} 1995                         & $ R_1 [x_0 ]...R_2 [y_0 ]...W_1 [y_1 ]...W_2 [x_1 ] $   \\
+        17 & Predicate-based Write Skew {[}27{]} 2005        & $ R_1 [P ]...R_2 [P ]...W_1 [y_1 in P]...W_2[x_1 in P] $  \\
+        18 & Read Partial-Committed {[}44{]} 2019            & $ R_1[x] W_2[x] W_2[y] C_2 R_1[Y] C_1 $ 
+    \end{tabular}
+\end{table}
 
-    \subsection{Transaction anomalies}
+
+
+
+
+    
+    https://arxiv.org/pdf/2109.06485.pdf base it on this paper ? ohh fancy !
 %TODO Write Section about Faults and anomalies.
 
     \subsubsection{Long Fork}
