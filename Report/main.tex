@@ -929,13 +929,55 @@ The network is split into two or more parts where they each believe different tr
 
 
     \section{Programming for Service Fabric}
+    
+    Implementing services for SF is written in ether Java or .Net. The documentation for Java is highly lacking so .Net was chosen. 
+        ...
+    It was discovered that the documentation for .Net was also highly lacking, outdated in other ways had issues so a lot of issues was figuring it out from the ground up. Implementation features, 
+    ...
+    testing how they behaved and learning from there. This also meant that a lot of time was spent learning .Net and the specific frameworks used in the implementations.
+    ...
+    The .Net code was fairly straight forward to learn while the Service fabric and other libraries where more of a challenge to decipher and implement. 
+    ..
+    this was further escalated by poor support for development on non Windows platforms that require manual everything and no feedback loop from deployment. 
+    ...
+    Web application in SF are programming using Model View Controllers (MVC) and the SF framework for the under laying reliable collections 
+    
+    
+    
     Dotnet, lack of debugging tools, non features parity between platforms. etc
 %TODO write Programming for Service Fabric
 
-    \subsection{Cassadra}
-    Last write wins Clock skrew issues
 
-%TODO write sectrion on Cassadra
+
+    \section{Comparison}
+%TODO write Comparison between the 3 datastores
+    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Dynamo. Therefore, comparisons will be made to two of these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
+    
+    
+    
+    \subsection{Cassadra}
+    
+    Facebook database product made opensource,
+    
+    Ring via hash table
+    
+    Last write wins
+    
+    Leaderless
+    
+    scalability
+    
+    Clock skrew issues
+    
+    Handling of conflicts
+    
+    sensitivity to time desync
+    
+    possible solution ?
+    
+    usecases
+    
+    
 
     \subsection{Redis}
 %TODO write section on Redis
@@ -944,9 +986,7 @@ The network is split into two or more parts where they each believe different tr
 %TODO write section on Dynamo
 
 
-    \section{Comparison}
-%TODO write Comparison between the 3 datastores
-    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Redis. Therefore, comparisons will be made to these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
+
 
 
     \chapter{Jepsen Test on Service Fabric Reliable collections}
@@ -1538,12 +1578,14 @@ actual: (not (=
 
     Performance benefit.
 
-    \subsection{Lost transactions}
-%TODO Write Lost transactions
 
     \subsection{Violations of promised consistency level}
 %TODO Write Violations of promised consistency level
     Initially violation but was maybe due to network queue or other network issues?
+    
+    
+    
+    No making use of many of the optimizations allowed within the consistency model that leaves a lot on the table.  
 
 
     \section{Discussion}
@@ -1611,7 +1653,7 @@ actual: (not (=
 
     \section{Future Work}
 %TODO write Future Work
-    Future work could include implementing a deeper testing suite that checks for more types of invariants and issues that might occur in the system.
+    Future work could include implementing a deeper testing suite that checks for more types of invariant and issues that might occur in the system.
 
 
 
