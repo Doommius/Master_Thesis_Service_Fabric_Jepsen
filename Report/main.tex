@@ -146,24 +146,37 @@
 
 
     \chapter{Introduction}
-    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost. How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
+    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability, and low cost. How do we guarantee this is a distributed system that spans the planet?
+    %Probably not what you want. Maybe reformulate how to guarantee consistency and ... on systems that are distributed all over the world
+    Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
     \vspace{5mm}
 
 
-    Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present. Some users remember the YouTube video counter that got stuck at around 300 views and didn't update for a while. YouTube induced the reason it got stuck; however, it did not induce the number it got stuck on; the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views onto the displayed counter even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about.
+    Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present.
+    % For example, the youtube ...
+    Some users remember the YouTube video counter that got stuck at around 300 views and didn't update for a while. YouTube induced
+    %induced?
+    the reason it got stuck;
+    %punctuation. Use more dots. 
+    however, it did not induce the number it got stuck on; the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views onto the displayed counter even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about.
 
-    Many user-facing services aren't required to be ACID compliant; however, there are use cases where not being compliant can have a severe impact. Strong ACID transactions are of utmost importance when dealing with data produced and consumed in real-time, such as financial data, automated or autonomous systems, and other areas.
+    Many user-facing services aren't required to be ACID compliant;
+    %what is ACID
+    however, there are use cases where not being compliant can have a severe impact. Strong ACID transactions are of utmost importance when dealing with data produced and consumed in real-time, such as financial data, automated or autonomous systems, and other areas.
 
-    These mentioned use cases are where a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
+    In these cases a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
 
     \vspace{5mm}
     How do we test and verify a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
 
+Here you should write what the thesis is about. In this thesis we .... We show that  ... (1 paragraph summary of results)
 
-    First, I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
+Structure of the thesis.
+
+    In Chapter 1 I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
     \vspace{5mm}
 
-    Then, I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
+    In Chapter I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
     \vspace{5mm}
 
     Next, I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
@@ -992,9 +1005,18 @@ The network is split into two or more parts where they each believe different tr
     \chapter{Jepsen Test on Service Fabric Reliable collections}
 
 
-    \section{Introduction}
 
-    The Goal of the thesis was to attempt to preform a Jepsen test on Service Fabric with it's reliable collection as the data store feature that powers a lot of the services being the target of this endeavor. To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
+
+
+    %\section{Introduction}
+
+    The goal of the thesis was to attempt to preform a 
+    The goal is to test the concurrency properties of the ... by using
+    Jepsen test on Service Fabric with it's reliable collection as the data store feature that powers a lot of the services being the target of this endeavor.
+    
+    I miss here a phrase saying that "In this chapter we will present ..." 
+    
+    To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
     \begin{itemize}
         \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
         \item Understanding the problem, requirement, topology, architectures and how we want to test these things.
@@ -1005,24 +1027,35 @@ The network is split into two or more parts where they each believe different tr
         \item Analyse the data from the test.
     \end{itemize}
 
+
+Consider moving this into conclusions
     I will only write deeper about designing, implementing, testing, executing and analysing the results. However this does not mean that the learning and understanding phase of the project was any smaller, quite the contrary. Learning 2 new programming languages that I've never interacted with before isn't an easy task; adding in the complexity of write code for cloud framework that I had no prior experience working on didn't help either. Spicing it with up with outdated documentation, incompatibility between versions of the framework and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute forcing solutions to a lot of issues due to lacking features on the Linux version of the cluster.\\
 
 
     \section{Design \& implementation}
-    The Design of the services required for preforming the Jepsen test were designed on the fly as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure.
+    The Design of the services required for preforming the Jepsen test were designed on the fly
+    on the fly is the wrong term - consider removing this sentence
+    as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure.
 
     \subsection{Initial Design}
 
-    The initial design of the of the testing suite contained two applications: a stateful service Fabric application and a Clojure application running the Jepsen test.
+    The initial design of the testing suite contained two applications: a stateful service Fabric application and a Clojure application running the Jepsen test.
 
     \subsubsection{Service Fabric Stateful Service}
 
-    The Service Fabric stateful service should contain the desired operation that our Jepsen test can interact with, the first designed endpoints were insert/add, Update, Check and set, delete and delete all on a reliable directory class. It would be implemented using C\# as the lack of documentation for java made this this seem easier in the beginning and due to all documentation being in C\#. The service would expose these end points via a web endpoint and kestrel was selected for this as it was a native provided already integrated into SF and was the one most ex samples used and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateful service should contain the desired operation that our Jepsen test can interact with, the first designed endpoints 
+    
+    what are endpoints? Interfaces? Microservice exposing something? Explain better
+    were insert/add, Update, Check and set, delete and delete all on a reliable directory class. It would be implemented using C\# as the lack of documentation for java made this this seem easier in the beginning and due to all documentation being in C\#. The service would expose these end points via a web endpoint and kestrel
+    citation
+    was selected for this as it was a native provided already integrated into SF and was the one most examples used and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
     A diagram of the service looks as the following. \\
     \vspace{5mm}
     \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
-
+    
+    EXPLAIN FIGURE
+    
     This implementation contains 2 main codebases. The c\# dotnet web service that acts as a REST API to the reliable collections using 3 controllers for the 2 default data structures implemented in the framework, and a Clojure codebase that contains the test suite as well as the API connector that handles parsing, connections and connections faults.
 
     \subsubsection{Infrastructure}
@@ -1520,20 +1553,34 @@ actual: (not (=
 %
 
 
-    \section{Results}
+\chapter{Results}
 
     \subsection{Introduction}
-
-%TODO Write introduction to the results we've found
-    What we results we have.
-
-    \subsection{Rejected transactions}
-    %TODO Write Rejected transactions
-    We initially had a rejection rate of x
-    ....
     
-    Rejection rates with depending on txn lenght.
-    up to 10 operations per txn -> 89.5 \% Abort rate.
+    The Results of the test show that While Jepsen test preforms fine for single node and partition workloads in terms of Serializability there are some linearizability issues. This however all falls to the ground rather quickly as higher and more complex workloads cause exponential deadlocks and aborts and due to the design of the entire system multipartion workloads that allow for scaling doesn't allow for any consistency which cause a great range of issues where the entirely process of consistency handling lies with the developer. and which requires the developer to write an entire DBMS system on top of the reliable collections as they only provide reliable storage of singular objects once committed.
+    
+    
+    The first telling part of the issues with Reliable collections showed up when doing the development where the complexity required to test service fabric as a multiple agent system grew way out of scale compared to what is with time both the time frame and grasp of this project. A entire DBMS system on top of service fabric would be needed and here it can be argued that you're simply building a reliable system onto of something unreliable. While Service Fabric does appear to have use full use cases it does however not pose well as a transnational data store.
+    
+    
+    The first results from the tested showed much promise for Service Fabric as we were simply testing a linearizable workload where it was simply atomic operations that did not require any complex locking structure. However there was some performance limitation where the API was "Only" able to handle 20k Request per second before reaching a bottle neck and dropping packages due to the request overflowing. which shows there might be some under laying performance issues as well compared to using a framework like Flask or FastAPI and a regular datastore such as SQL, or a key value store that often preforms even better.
+    
+    The Initial reuslts
+    
+\begin{lstlisting}
+       
+\end{lstlisting}
+    
+    The results from the first rounds of test showed that the designed testing framework didn't test the system to it's limits and didn't allow for in depth testing and checking via directed serializations graphs so a more complex and in depth testing suite had to be designed and implemented to show faults and issues in the inner workings of the reliable collections. From these tests some interesting results started poping up, The more complex workload didn't consist of simpler and naive transactions like the earlier but also testing handling, conflict handling, transactions with dependencies on itself and more. This brought a few issues with regards to deadlocks out into the light.
+    
+    
+    \subsection{Rejected transactions}
+    The first more complex test run on the Service Fabric cluster was a multiple transaction used transaction with 1-10 operations per transaction, this cases a abort rate of 89.5 \%. This was caused by heavy deadlocking a cascading aborts due to timeouts and and circular locking issues. 
+    This initially was questioned if this was due to network issues within Azure or latency issues between the nodes. To eliminate the risk of this being the culprit a Proximity group was established. This did however now resolve anything. This brought me back to an earlier belief that SF reliable collections are a distributed Atomic datatype where you preform a singular operation er transaction or lock the entire datastore to preform writes. this does mean that for the transaction that make it though the deadlocking issues SF is serializable which is more than the Reliable read that is presented from Microsoft, but this is the case for all atomic datatypes, but here it comes with built it network (read only) replication. 
+    
+
+The full results for the initail test are below.
+\begin{lstlisting}
     :stats {:valid? true,
          :count 13086,
          :ok-count 1365,
@@ -1544,9 +1591,11 @@ actual: (not (=
                       :ok-count 1365,
                       :fail-count 11721,
                       :info-count 0}}},
-                      
-    ...
-    with a txn lenght of max 3 of 32.9 \% Abort rate.
+\end{lstlisting}
+
+     with a txn lenght of max 3 of 32.9 \% Abort rate.    
+\begin{lstlisting}
+       
      :stats {:valid? true,
          :count 29225,
          :ok-count 19616,
@@ -1557,27 +1606,7 @@ actual: (not (=
                       :ok-count 19616,
                       :fail-count 9609,
                       :info-count 0}}},
-                      
-    
-    
-    
-    
-    ...
-
-    Due to these reasons
-
-    ...
-
-    A revised setup was implemented to try and resolve this.
-
-    ...
-
-    Proximity group
-    ...
-
-
-    Performance benefit.
-
+\end{lstlisting}
 
     \subsection{Violations of promised consistency level}
 %TODO Write Violations of promised consistency level
@@ -1588,7 +1617,7 @@ actual: (not (=
     No making use of many of the optimizations allowed within the consistency model that leaves a lot on the table.  
 
 
-    \section{Discussion}
+    \chapter{Discussion}
 
     \subsection{Violations of promised consistency level}
 
@@ -1667,10 +1696,11 @@ actual: (not (=
     \pagestyle{empty}
     \printbibliography
 
-
     \section{Proposal}
     \input{Proposal}
 
+    \section{Proposal revision}
+    \input{proposal_revised}
 
     % \section{Schedule}
 
