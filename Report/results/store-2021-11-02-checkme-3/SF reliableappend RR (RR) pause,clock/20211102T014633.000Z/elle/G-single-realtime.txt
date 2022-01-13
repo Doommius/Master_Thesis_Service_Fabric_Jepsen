@@ -1,0 +1,22 @@
+G-single-realtime #0
+Let:
+  T1 = {:type :ok, :f :txn, :value [[:append 1702 9] [:r 1700 nil]], :time 2251558052550, :process 84, :index 110173}
+  T2 = {:type :ok, :f :txn, :value [[:append 1700 1] [:r 1700 [1]] [:append 1697 22]], :time 2243531262865, :process 34, :index 109776}
+  T3 = {:type :ok, :f :txn, :value [[:append 1702 1]], :time 2243558721152, :process 34, :index 109793}
+
+Then:
+  - T1 < T2, because T1 observed the initial (nil) state of 1700, which T2 created by appending 1.
+  - T2 < T3, because T2 completed at index 109776, 0.000 seconds before the invocation of T3, at index 109778.
+  - However, T3 < T1, because T3 completed at index 109793, 0.062 seconds before the invocation of T1, at index 109806: a contradiction!
+
+
+G-single-realtime #1
+Let:
+  T1 = {:type :ok, :f :txn, :value [[:r 1714 [1 3 19]] [:r 1717 nil] [:append 1711 17]], :time 2275658946136, :process 44, :index 111363}
+  T2 = {:type :ok, :f :txn, :value [[:append 1717 1] [:r 1717 [1]] [:append 1715 32]], :time 2267790906735, :process 12, :index 111017}
+  T3 = {:type :ok, :f :txn, :value [[:append 1711 22] [:append 1719 23]], :time 2275640302409, :process 30, :index 111331}
+
+Then:
+  - T1 < T2, because T1 observed the initial (nil) state of 1717, which T2 created by appending 1.
+  - T2 < T3, because T2 completed at index 111017, 0.056 seconds before the invocation of T3, at index 111026.
+  - However, T3 < T1, because T1 appended 17 after T3 appended 22 to 1711: a contradiction!
