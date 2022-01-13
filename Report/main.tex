@@ -146,37 +146,27 @@
 
 
     \chapter{Introduction}
-    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability, and low cost. How do we guarantee this is a distributed system that spans the planet?
-    %Probably not what you want. Maybe reformulate how to guarantee consistency and ... on systems that are distributed all over the world
-    Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
+    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost. How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
     \vspace{5mm}
 
-
     Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present.
-    % For example, the youtube ...
-    Some users remember the YouTube video counter that got stuck at around 300 views and didn't update for a while. YouTube induced
-    %induced?
-    the reason it got stuck;
-    %punctuation. Use more dots. 
-    however, it did not induce the number it got stuck on; the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views onto the displayed counter even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, the issue of a comment or view being a few seconds or ½ a minute delayed isn't something we notice or care about.
+    for example the YouTube video counter that got stuck at around 300 views and didn't update for a while. it was a side effect of a anti botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people notice as a few seconds to a a minute delay when dealing with comments, views or likes or if the our comment isn't available to viewers around the world in real time and theirs aren't to us. 
 
-    Many user-facing services aren't required to be ACID compliant;
-    %what is ACID
-    however, there are use cases where not being compliant can have a severe impact. Strong ACID transactions are of utmost importance when dealing with data produced and consumed in real-time, such as financial data, automated or autonomous systems, and other areas.
+    Many user-facing services aren't required to be fully consistent; however, there are use cases where not being consistent can have a severe impact. Strongly consistent transactions are of utmost importance when dealing with same types of data , such as financial data, automated or autonomous systems, and other areas where out of sync states might lead to issues.
 
-    In these cases a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
+    In the cases a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
 
     \vspace{5mm}
     How do we test and verify a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
-
-Here you should write what the thesis is about. In this thesis we .... We show that  ... (1 paragraph summary of results)
-
+    
+    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system, in this paper Azure Service Fabric will be analyzed. and the results show that even though it is consistent the implementation used is not without is drawbacks that highly limit the performance of the system.
+    
 Structure of the thesis.
 
-    In Chapter 1 I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
+    In Chapter 1, I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
     \vspace{5mm}
 
-    In Chapter I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
+    In Chapter 2, I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
     \vspace{5mm}
 
     Next, I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
@@ -281,7 +271,7 @@ Structure of the thesis.
 
 
     However, these three Phenomena leave a lot of behavior of the models up to interpretation; therefore, Berenson et al\cite{Berensonetal}. from Microsoft wrote a paper on "A Critique of ANSI SQL Isolation Levels" in 1995 to include Read and Write Skew that defines data item constraint violations, where the ANSI models admit non-serializable histories. To resolve these issues, they wrote about a 4th phenomenon that describes item constraint violations. The exact definition is below: \\
-%TODO Sigurd skip start
+
 \textit{(Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation}\\
     \begin{itemize}
         \item \textit{A5A: Read skew — Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If T1 reads y now, it may see an inconsistent state and produce an inconsistent state as output.
@@ -390,8 +380,10 @@ The network is split into two or more parts where they each believe different tr
 
     \newpage
 
-%TODO Sigurd skip end
+
     \section{Consistency models}
+
+
     \begin{wrapfigure}{r}{0.5\linewidth}
         \centering
         \includegraphics[scale=0.4]{images/consistency models.PNG}
@@ -624,7 +616,7 @@ The network is split into two or more parts where they each believe different tr
         \item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).)
         \item RVal (the order must be consistent with the semantics of the datatype)
     \end{itemize}
-%TODO Sigurd stopped
+
     %TODO Make Diagram Sequential Consistency
 
     % \subsubsection{Casual Consistency}
@@ -650,7 +642,11 @@ The network is split into two or more parts where they each believe different tr
     % Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
 
 
+
+
+
     \newpage
+
 
     \chapter{Database Consistency testing}
 
@@ -781,6 +777,32 @@ The network is split into two or more parts where they each believe different tr
     \end{itemize}
     https://jepsen.io/analyses/postgresql-12.3
 
+    \section{related work to Jepsen}
+    
+    Elle
+    
+    Knosos
+
+    %TODO move these to BIB file and write this section
+    % K. Kingsbury. Knossos.
+    % https://github.com/jepsen-io/knossos, 2013-2019.
+
+    % G. Lowe. Testing and Verifying Concurrent Objects.
+    % Concurrency and Computation: Practice and
+    % Experience, 29(4), 2017
+
+    % J. M. Wing and C. Gong. Testing and Verifying
+    % Concurrent Objects. Journal of Parallel and
+    % Distributed Computing, 17(1-2), 1993.
+
+    % P. B. Gibbons and E. Korach. Testing shared
+    % memories. SIAM Journal on Computing, 26(4), 1997
+
+    % S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
+    % Line-up: A Complete and Automatic Linearizability
+    % Checker. PLDI '10, 2010.
+
+%TODO write introduction to writing jepsen test
 
 
 
@@ -999,23 +1021,18 @@ The network is split into two or more parts where they each believe different tr
 %TODO write section on Dynamo
 
 
-
+    \section{Comparison}
+%TODO write Comparison between the 3 datastores
+    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Redis. Therefore, comparisons will be made to these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
 
 
     \chapter{Jepsen Test on Service Fabric Reliable collections}
 
 
+    \section{Introduction}
 
-
-
-    %\section{Introduction}
-
-    The goal of the thesis was to attempt to preform a 
-    The goal is to test the concurrency properties of the ... by using
-    Jepsen test on Service Fabric with it's reliable collection as the data store feature that powers a lot of the services being the target of this endeavor.
-    
-    I miss here a phrase saying that "In this chapter we will present ..." 
-    
+    The Goal of the thesis was to attempt to preform a Jepsen test on Service Fabric with it's reliable collection subsystem that powers a lot of the services in Azure and being the target of this endeavor. 
+    In this chapter we will present the design, and implementation and revisions of the testomg suite-
     To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
     \begin{itemize}
         \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
@@ -1027,47 +1044,36 @@ The network is split into two or more parts where they each believe different tr
         \item Analyse the data from the test.
     \end{itemize}
 
-
-Consider moving this into conclusions
-    I will only write deeper about designing, implementing, testing, executing and analysing the results. However this does not mean that the learning and understanding phase of the project was any smaller, quite the contrary. Learning 2 new programming languages that I've never interacted with before isn't an easy task; adding in the complexity of write code for cloud framework that I had no prior experience working on didn't help either. Spicing it with up with outdated documentation, incompatibility between versions of the framework and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute forcing solutions to a lot of issues due to lacking features on the Linux version of the cluster.\\
+   
 
 
     \section{Design \& implementation}
-    The Design of the services required for preforming the Jepsen test were designed on the fly
-    on the fly is the wrong term - consider removing this sentence
-    as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure.
+    The Design of the services required for preforming the Jepsen test revised multiple times as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure.
 
     \subsection{Initial Design}
 
-    The initial design of the testing suite contained two applications: a stateful service Fabric application and a Clojure application running the Jepsen test.
+    The initial design of the of the testing suite contained two applications: aservice Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure running the Jepsen testing suite..
 
-    \subsubsection{Service Fabric Stateful Service}
+    \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateful service should contain the desired operation that our Jepsen test can interact with, the first designed endpoints 
-    
-    what are endpoints? Interfaces? Microservice exposing something? Explain better
-    were insert/add, Update, Check and set, delete and delete all on a reliable directory class. It would be implemented using C\# as the lack of documentation for java made this this seem easier in the beginning and due to all documentation being in C\#. The service would expose these end points via a web endpoint and kestrel
-    citation
-    was selected for this as it was a native provided already integrated into SF and was the one most examples used and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with which then routes the request to the correct stateful service. the initial design contained endpoints for insert, add, Update, Check, set, delete and delete all on a reliable directory class. It is implemented using C\# as the lack of documentation for Service fabric for java made this this seem the better choice as documentation was primarily written for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and contained the most documentation for this use case and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
-    A diagram of the service looks as the following. \\
+    A diagram of the stateful service looks as the following. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for routing of the request. \\
     \vspace{5mm}
     \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
-    
-    EXPLAIN FIGURE
-    
-    This implementation contains 2 main codebases. The c\# dotnet web service that acts as a REST API to the reliable collections using 3 controllers for the 2 default data structures implemented in the framework, and a Clojure codebase that contains the test suite as well as the API connector that handles parsing, connections and connections faults.
+
+    This implementation contains 2 main codebases. The c\# dotnet web service that acts as a REST API to the reliable collections using 3 controllers for the 2 default data structures implemented in the framework, and a Clojure codebase that contains the test suite as well as an API connector, parsing, connections manager and fault handling..
 
     \subsubsection{Infrastructure}
-    The infrastructure is centered around v-net containing 6 virtual machines all running Linux, in this case Ubuntu 18.04 and 20.04 for the Jepsen host. I'll refer to the service fabric nodes from n1-n5 and the Jepsen host as Jepsenhost from now on.
+    The infrastructure is centered around Azure, using a isolated v-net containing 6 virtual machines all running Linux, in this case Ubuntu was chosen as it's a known distribution that we are familiar with.1 of the 6 nodes is running the Jepsen application while the 5 other notes are running a Service Fabric Cluster.
     The 5 service fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide} which was the process used doing the development stages of the project.
 
-    This Jepsenhost was management via ssh and rsync to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results was used instead. rsync was used instead of scp to reduce the files being moved back and forth from the deployment machine and the test cluster.
+    This Jepsenhost is accessed via sshand scp is used to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
 
-    The topology of the network is so that \\
+    The topology of the network is simply just arrange such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection to cause issues with the test.
     \includegraphics[scale=0.3]{images/topology.png}
 
-    All traffic resides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as expected.
+    All traffic resides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as expected, These endpoint were protected by firewall rules that only allowed connections for the development address to avoid external influence of the results.
 
     \paragraph*{Node Sizes}
 
@@ -1142,33 +1148,15 @@ Consider moving this into conclusions
 public async Task<IActionResult> Get(string key)
 {
 \end{lstlisting}   
-The next few lines of code gets the context of our application as well as the reverse proxy address to the stateful service placed elsewhere in the cluster, as well and calculating the partition keyhash that is used to route the the correct partition of the database.
+Service Fabric reliable collections are very much a datatype in the hands of the developer, This wasn't entirely understood when starting out this project, but the reliable collections only expose a transactional storage engine, This requires of to first query to get a list of partions.
 \begin{lstlisting}[language=csh]
-    Uri serviceName = JepsenAPI.GetJepsenAPIStoreServiceName(this.serviceContext);
-    Uri proxyAddress = this.GetProxyAddress(serviceName);
-    long partitionKey = this.GetPartitionKey(key);
     ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
-    List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
 \end{lstlisting}   
-
-The Following lines of code retrieves the the results from the partitions in the cluster, however as the behavior of the database as identical when running a single or multiple partitions this added functionality was unneeded and later discarded.
-
+And then enumerate the individual partitions, where some operations might require us to enumerated the values within each partition. 
 \begin{lstlisting}[language=csh]
     foreach (Partition partition in partitions)
-    {
-        string proxyUrl =
-            $"{proxyAddress}api/ReliableDictionary/{key}?PartitionKey={partitionKey}&PartitionKind=Int64Range";
-
-        using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
-        {
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
-            {                continue;            }
-            result.AddRange(JsonConvert.DeserializeObject<List<KeyValuePair<string, int>>>(await response.Content.ReadAsStringAsync()));
-        }
-    }
-
+    {  .. Do something ..  }
     return this.Json(result);
-}
 \end{lstlisting}  
 
 \paragraph{Statefull Service}
@@ -1177,410 +1165,130 @@ The stateful service was implemented with simplicity in mind that where each end
 
 \begin{lstlisting}[language=csh]
         [HttpGet("{key}")]
-        public async Task<IActionResult> Get(string key)
-        {
-            CancellationToken ct = new CancellationToken();
-            IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
-            using (ITransaction tx = this.stateManager.CreateTransaction())
-            {
-                var list = await votesDictionary.CreateEnumerableAsync(tx);
-                var enumerator = list.GetAsyncEnumerator();
-                List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-
-                while (await enumerator.MoveNextAsync(ct))
-                {
-                    if (enumerator.Current.Key == key)
-                    {
-                        result.Add(enumerator.Current);
-                    }
-                }
-                return this.Json(result);
-            }
-        }
+        public async Task<IActionResult> Get(string key){
+        ...
+         while (await enumerator.MoveNextAsync(ct)){
+                  if (enumerator.Current.Key == key)
+                  { return this.Json(;(enumerator.Current);
+    }}}
 \end{lstlisting}   
 
     \subsubsection{Implementation details Clojure}
-        For the first implementation of the Jepsen test a lot of things were a mess, due to a lot of considerations not having been made prior to writing the code and not fully understanding many of the underlying systems. which resulted in a board array of unintended and weird behavior, that mainly boiled down to asynchronous distributed systems being hard. 
+        For the implementation of the first deign for the Jepsen test a lot of things were a mess, due to a lot of considerations not having been made prior to writing the code and not fully understanding many of the underlying systems and learning a new programming language. which resulted in a board array of unintended and weird behavior, resulted from asynchronous distributed systems being complex and concurrent applications handling 100s, or 1000s of threads require planning and considerations where knowledge from concurrency theory should be used. 
         
         
-        The clujure application itself it build into a few different entities, Core/runner, generators, Nemesis, db, client, connector/driver and workloads. where the skeleton code is built based on other Jensen tests.
+        The Clujure application itself is split into a few different functions and classes. These are a runner, generator, Nemesis, db, client, connector/driver and workloads.
+        \begin{itemize}
+            \item         The runner contains the the majority of the configurations and a CLI interface that exposes options and settings where generalized values for the tests are specified. This is also where a select Workload is chosen for running the test. in total 3 different workloads were implemented that each require a generator, checker, client, and Nemesis.
         
-        The Core/runner contains the configurations and CLI interface options and generalized options for the tests are specified, and where selections of parameters and workload is parsed and prepared.
-\begin{lstlisting}        
-(defn SF-test
-  "Given an options map from the command line runner (e.g. :nodes, :ssh,
-  :concurrency, ...), constructs a test map."
-  [opts]
-  (let [workload-name (:workload opts)
-        workload ((workloads workload-name) opts)
-        db (cond (:existing-service opts) jdb/noop
-                 (:deploy_service opts) (db/just-deploy opts)
-                 true (db/db))
-        os (if (:existing-service opts)
-             os/noop
-             ubuntu/os)
-\end{lstlisting}  
-Generalized specifications that all tests will follow regarding induced faults, this can be considered as a Chaos monkey \cite{Choasmonkey} as it follows the same principles of Chaos engineering to build a reliable system.
-\begin{lstlisting}
-        nemesis (nemesis/nemesis-package
-                  {:db        db
-                   :nodes     (:nodes opts)
-                   :faults    (:nemesis opts)
-                   :partition {:targets [:primaries]}
-                   
-                   :pause     {:targets [nil :one :primaries :majority :all]}
-                   :kill      {:targets [nil :one :primaries :majority :all]}
-                   :interval  (:nemesis-interval opts)})]
-    (merge tests/noop-test
-           opts
-           {:name            (str "SF " (name workload-name)
-                                  " " (short-isolation (:isolation opts)) " ("
-                                  (short-isolation (:expected-consistency-model opts)) ")"
-                                  " " (str/join "," (map name (:nemesis opts))))
-            :pure-generators true
-            :os              os
-            :db              db
-\end{lstlisting}  
-Base configuration for the checker, the base things that should be logged by Jepsen, Performance, unhandled exceptions that cause internal server error, stats on transactions, reject, commit, abort etc.
-\begin{lstlisting}
-            :checker         (checker/compose
-                               {:perf       (checker/perf
-                                              {:nemeses (:perf nemesis)})
-                                :clock      (checker/clock-plot)
-                                :stats      (checker/stats)
-                                :exceptions (checker/unhandled-exceptions)
-                                :workload   (:checker workload)})
-            :client          (:client workload)
-            :nemesis         (:nemesis nemesis)
-            :generator       (gen/phases
-                               (->> (:generator workload)
-                                    (gen/stagger (/ (:rate opts)))
-                                    (gen/nemesis (:generator nemesis))
-                                    (gen/time-limit (:time-limit opts))))})))
-\end{lstlisting} 
+        \item  The generator class generate a list of transaction to execute, which can later be used to check the transaction history for any anomalies. this is closely linked with the checker.
+        
+        \item  The checker checks the transaction history for anomalies.
+        
+        \item  the client interface maps Jepsen operations to API calls for our Service fabric Service and parses the result, and handles any faults that might have occurred doing the transaction.
+        \end{itemize}
+        
+        
+        For the Clojure application a few supporting libraries has to be written to allow it to interact with the API exposed by the Service Fabric applications. This connector was written in Clojure as well, It preforms a few different tasks mainly the HTTP/HTTPS calls, but also connection management, fault handling of connection, http, and server errors, as well as preparing and parsing information flowing both ways.
+        
+        
 
-Additional modules for the partition-random-halves of the network to attempt to induce a brain split
-\begin{lstlisting}
-:nemesis   (nemesis/partition-random-halves)
-\end{lstlisting}  
+    \subsection{resolving issues with the design.}
+    
+    The initial version of the service fabric has some issues with the stateless service where the connection buffer simply overflew due to handling multiple connections for each incoming connection.
 
+    The choice for solving this issue was simply to redesign the back-end service from the ground up. This revised service should simply provide a direct API from the stateful service, as the transactions are going to behave the same on a single partition compared to  a cluster with 500 partitions. the service is configured such that all replicas are active. this resolves and simplifies two things.  Routing is no longer an issue as our proxy node is removed, we no longer need to consider routing data to the correct node from our Clojure connector, where it's possible to route all traffic to the primary or only route writes to the primary possibly allowing for higher throughput.
 
-
-Generator that generates the input for the reliable Directory reliable collection.
-\begin{lstlisting}
-(defn r [_ _] {:type :invoke, :f :read, :value nil})
-(defn d [_ _] {:type :invoke, :f :delete, :value nil})
-(defn w [_ _] {:type :invoke, :f :write, :value (rand-int 5)})
-(defn cas [_ _] {:type :invoke, :f :cas, :value [(rand-int 5) (rand-int 5)]})
-
-
-(defn dict-gen
-  [opts]
-  (->> (independent/concurrent-generator
-         20
-         (range)
-         (fn [k]
-           (->> (gen/mix [r w cas])
-                (gen/limit (:ops-per-key opts))))
-         )
-       (gen/nemesis
-         (cycle [(gen/sleep 5)
-                 {:type :info, :f :start}
-                 (gen/sleep 5)
-                 {:type :info, :f :stop}]))
-       (gen/time-limit (:time-limit opts))
-       ))
-
-\end{lstlisting}
-
-SF connector
-\begin{lstlisting}
-(defn write
-  "Resets the current value of a given key to `value`. Options:
-
-  :ttl
-  :timeout"
-  ([client key value]
-   (write client key value {}))
-  ([client key value opts]
-   (->> (assoc opts :value value)
-        (http-opts client)
-        ;(info (url client RDuri key value))
-        (http/put (url client RDuri key value))
-        parse)
-   ;(catch [:status 500] _ :type :not_primary :errorCode 405)
-   ))
-   
-(defn parse
-  "Parse an inputstream or string as JSON"
-  [response]
-  (when (= 204 (response :status)) (throw+ {:stutus   204
-                                            :type     :missing-value
-                                            :response response
-                                            }))
-  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type     :missing-body
-                                                                         :response response
-                                                                         }))
-  ((first (json/parse-string (response :body) true)) :Value)
-  )   
-
-(defn ^String url
-  "The URL for a key under a specified root-key.
-  (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
-  ([client uri]
-   (str (base-url) "/" uri))
-  ([client uri key-seq]
-   (str (base-url) "/" uri "/" key-seq))
-  ([client uri key value]
-   (str (base-url) "/" uri "/" key "/" value))
-  ([client uri key value1 value2]
-   (str (base-url) "/" uri "/" key "/" value1 "/" value2)))
-\end{lstlisting}  
-
-
-    \subsection{2nd iteration of the design.}
-
-    This 3rd service should simply provide the API directly from the stateful service, as the transactions are going to behave the same on a single partition as with 500 partitions. this 3rd service was configured such that replicas were active. this implies two things: Routing is no longer an issue, we need to route primary traffic to the primary node from our Clojure connector.
-
-    This issue can be resolved in two ways. one is rather quick, while the other queries the SF cluster for which node is primary. The quick solution of just defining the primary at launch and from there checking which node allows writes in case the current node start blocking writes. This is a messy solution but as it doesn't induce noise in the data as these transactions are simply rejected/discarded it is therefor not an issue. optimally we should query the SF cluster for primary node, this implementation could chosen but as it takes more time and doesn't yield any further results this is deemed unnecessary.
+    For the implementation a solution where all traffic is routed to the primary is simply selected as IO issues haven't yet been an issue.
 
     \subsection{Implementation of this design}
 
+    The implementation of this revised design was supposed to be fairly straight forward, however the non feature parity poking it ugly head out again. Issues started showing up that was mainly due to a change in the release and forced update of a new version service fabric which change the behavior of some warning codes to instead cause errors. this exposed my inexperience working with the dotnet framework and the service fabric API. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster itself which turned the development cycle upside down as I had no way to execute the code without service fabric but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services and therefor the application where killed. These warnings were however not displayed correctly in the Linux distribution so tweaking code and settings was the only apparent solution for these issues.
 
-    The implementation of this initial design was supposed to have been been fairly straight forward however the non feature parity again poked it ugly head out again. The issues that arrived from here was mainly due to a change in the settings of the service fabric version which caused some warnings to turn into errors. that exposed my inexperience of working with the dotnet framework and the service fabric API. These issues were however eventually ironed out but a lot of times was lost due to the lack of debugging output from the cluster which turned the development cycle upside down as I had no way to execute the code without service fabric but the code wouldn't un on service fabric. The issue here ended up being related to some changes in allowed port ranges that were usable by services and therefor killed the application as it was using an illegal port. These warnings were however not displayed correctly in the Linux distribution.
-
-    \subsubsection{Implementation details SF}
-    The second iteration of the design remove the stateless layer of the application however this approach was still flawed and was used for a large part of the initial testing. it had the limitation that it was threatening the system with the eyes of the Base consistency model and had some invariants of the real time constraints that are required by the Base models.
-\begin{lstlisting}[language=csh]
-// GET VoteData/name
-[HttpGet("{key}")]
-public async Task<IActionResult> Get(string key)
-{
-    IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
-    List<KeyValuePair<string, int>> result = new List<KeyValuePair<string, int>>();
-    using (ITransaction tx = this.stateManager.CreateTransaction())
-    {        ConditionalValue<int> conditionalValue = await votesDictionary.TryGetValueAsync(tx, key);
-        if (conditionalValue.HasValue)
-        {   int value = conditionalValue.Value;
-            result.Add(new KeyValuePair<string, int>(key, value));
-            return this.Json(result);        }
-        else {return NoContent(); }
-    }}
-\end{lstlisting}  
-
-
-    \subsubsection{Implementation details Clojure}
+    \subsubsection{Implementation changes for the SF Application}
+    The second iteration of the design remove the stateless layer of the application however this approach was still flawed and was used for a large part of the initial project. it had the limitation that it was threatening the system with the eyes of the Base consistency model, This did show issues with the real tine constraint required by strict serializability or linearizability. \\
     
-    This design iteration didn't have any major changes to the Clojure implementation as the changes were on the routing side of service fabric.
+    The code changes to the service fabric aggregated the request handling from the stateless service into the stateful service along with changes to configurations to routing, request handling, and parsing.
     
-    The only change made was adding a primary node to the connector such that all writes went to the leader while reads were distributed throughout the cluster. 
-    \begin{lstlisting}
-(defn write
-  "Resets the current value of a given key to `value`. Options:
+    
 
-  :ttl
-  :timeout"
-  ([client key value]
-   (write client key value {}))
-  ([client key value opts]
-   (->> (assoc opts :value value)
-        (http-opts client)
-        ;(info (url client RDuri key value))
-        (http/put (primaryurl client RDuri key value))
-        parse)
-   ;(catch [:status 500] _ :type :not_primary :errorCode 405)
-   ))
- 
-(defn ^String primaryurl
-  "The URL for a key under a specified root-key.
-  (url client [\"keys\" \"foo\"]) ; => \"http://127.0.0.1:4001/v2/keys/foo"
-  ([client uri]
-   (str (primarybase-url) "/" uri))
-  ([client uri key-seq]
-   (str (primarybase-url) "/" uri "/" key-seq))
-  ([client uri key value]
-   (str (primarybase-url) "/" uri "/" key "/" value))
-  ([client uri key value1 value2]
-   (str (primarybase-url) "/" uri "/" key "/" value1 "/" value2)))
-\end{lstlisting}  
-
+    \subsubsection{Implementation changes for the Clojure Application}
+        This design iteration didn't have any major changes on the Clojure application as the changes were on the routing side of service fabric. this did result in some changes on the connector that require spoofing to the headers on a internal service fabric application to avoid the request being rejected by the statefull application. Routing was also such that requsets were sent to the primary node by default.
     
 
 \subsection{Final iteration of the design.}
-    In this iteration the way transactions and calls between the client and server was changed, this required significant rewrite of the entire code and project. due to the flawed approach in the 2 previous iterations.
+    In this iteration the way transactions and calls between the client and server was changed, this required significant rewriting of the entire code project. due to the flawed approach in the 2 previous iterations.
     
-    This required a full redesign of the way the request where handled such that the system used transactions and not just sub operations on the system. first a new back end had to be designed that was able to handle a transaction that contains a arbitrary long ordered list of operations to execute. and trivial compared to designing a new Jepsen test due to the way that the current Jepsen test generates, performs, parses, and checks the transaction history,
+    This required a full redesign of the way the request where handled such that the system used transactions and not just operations. The first design change is a new stateful service which needs to handle transactions containing a arbitrary long ordered list of operations to execute. and trivial compared to designing a new Jepsen test due to the way that the current Jepsen test generates, performs, parses, and checks the transaction history. 
     
-
+    A change was also made to the network topology where all nodes were added to a proximity group that should reduce any latency or keep it to a minimal and ensure that outside forces such as bottle necked routing or switching gear aren't affecting the test results.  \\
+    
+    
     \paragraph{The Stateless service}
     
     
-    The first first major change was changing the state full API to do multi operational transactions. this required rebuilding the back-end to support this functionality which was greatly eased by using Postman and dotnetfiddle and curiousconcept json tools. but still extremely time consuming due to the lack of debug tools and generally black box behavior of Service Fabric were issues weren't reproducible outside the cluster, and the cluster only returning internal server codes. The issue here turned out to be wrong documentation, where it doesn't return anything similar to any other functions. which ended requiring a few days of investigation prior to finding this issue. but it also summarizes the entire development process.\\
+    The first first major change was changing the statefull API to support transactions. this required rebuilding the back-end to support this functionality which was greatly eased by using Postman, dotnetfiddle and curiousconcept json tools. but still extremely time consuming due to the lack of debug tools and generally black box behavior of Service Fabric, where issues weren't reproducible outside the cluster, and the cluster only returning internal server codes. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process.\\
     \vspace{5mm}
     
     
-    The revised backend code gets the transaction as a uri parameter containing json with the transaction list in the following format\\
+    The revised backend recieves http calls where the transaction is included as a uri parameter containing json with the transaction in the following format\\
     \begin{lstlisting}[language=json]
-    {
-  "transaction":[
-    {
-      "operation":"Enqueue",
-      "value":3234234
-    },
-    {
-      "operation":"Peek"
-    },
-    {
-      "operation":"Enqueue",
-      "key":"Key123",
-      "value":456456
-    },
-    {
-      "operation":"Dequeue",
-      "key":"Key123"
-    },
-    {
-      "operation":"abort"
-      }
-  ]
-}
+{  "transaction":[
+    {      "operation":"Enqueue",
+     "key":"Key123",
+     "value":456456    },
+    {      "operation":"Dequeue",
+     "key":"Key123"    },
+    {      "operation":"abort"      }  ]}
     \end{lstlisting}  
+    
+    The revised backend unifies that endpoints into a single endpoint that takes a transaction as payload and executes this. 
     \begin{lstlisting}[language=csh]
 [HttpPut]
 public async Task<IActionResult> Put()
 {
-    IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, int>>("counts");
-    String transactionquery;
-    if (!String.IsNullOrEmpty(HttpContext.Request.Query["query"]))
-    {        transactionquery = HttpContext.Request.Query["query"];    }
-    else    {        return NoContent();    }
-    List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
-    dynamic operationlist;
-    try{operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
-        using (ITransaction tx = this.stateManager.CreateTransaction())
-        { ConditionalValue<int> conditionalValue;
-            Boolean v;
-            foreach (var item in operationlist.transaction)
+    IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, 
+    ....
+       foreach (var item in operationlist.transaction)
             {if (item.operation.Value == "r")
                 {conditionalValue = await votesDictionary.TryGetValueAsync(tx, item.key.Value);
-                    if (conditionalValue.HasValue)
-                        {int value = conditionalValue.Value;
-                        result.Add(new KeyValuePair<string, string>(item.key.Value, value.ToString()));
-                    }else {result.Add(new KeyValuePair<string, string>(item.key.Value, "False")); }
-                }
-...... case for write, cas, and delete
-
-                else{result.Add(new KeyValuePair<string, string>(item.operation.Value, "Failed"));}
-            }
-         await tx.CommitAsync();}
+                        result.Add(new KeyValuePair<string, string>(item.key.Value, value.ToString()));}
+            ....
+     await tx.CommitAsync();
      return this.Json(result);}
-    catch (FabricNotPrimaryException){return new ForbidResult("Not Primary");}
-    catch (Exception e)
-    { result.Add(new KeyValuePair<string, string>("Exception", e.ToString()));return this.Json(result);}
-}
 \end{lstlisting}  
 
+     \subsubsection{Implementation changes to the Jepsen Clojure application.}
+
+The changes to the Jepsen application requiting starting anew and writing more functionality for the Jepsen service. Firstly was redoing the connector to use the new data types, parsing for the transactions to and from json, as well as the use of more complex generators and checkers for multi operation transaction. Elle was used as the underlaying package for some of this functionality with regards to generation and checking. The services such as the Client, db, connector etc required a bit more work code wise but less complex code compared to generation and checking.
 
 
+\subsection{Running the code.}
 
-Error due to reference in code instead of new list.
-\begin{lstlisting}
-actual: (not (= 
-[{"Key" "9992886", "Value" [31 1 2 3]} {"Key" "9992886", "Value" [31 1 2 3]} {"Key" "9992886", "Value" [31 1 2 3]} {"Key" "9992887", "Value" [32 32 1 2 3]} {"Key" "9992887", "Value" [32 32 1 2 3]} {"Key" "9992887", "Value" [32 32 1 2 3]}] 
-{"Key" "9992886", "Value" [31 1 2 3 1 2 3]} 
-{"Key" "9992886", "Value" [31 1 2 3 1 2 3]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]} 
-{"Key" "9992886", "Value" [31 1 2 3 1 2 3]} 
-{"Key" "9992886", "Value" [31 1 2 3 1 2 3]} 
-{"Key" "9992886", "Value" [31 1 2 3 1 2 3]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]} 
-{"Key" "9992886", "Value" [31 1 2 3 1 2 3]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]} 
-{"Key" "9992887", "Value" [32 32 1 2 3 4 1 2 3 4]}]
-\end{lstlisting}
-
-     \subsubsection{Implementation changes Clojure}
-     %TODO
+    The test is run in Azure on a 5 node cluster with extra node outside the service fabric cluster for Orchestration of the test itself. deployment of the code to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is simply uploaded to the Orchestration node. From here the jepsen test can connect to the 5 nodes via SSH to induce crashes, time screws, and other failures and issues.
     
+    Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results.
 
 
-
-
-
-    After this step the services to ready to test, as mentioned earlier in the paper 6 nodes are used to preform the test. 5 cluster member nodes and 1 Jepsen test node.
-
-    The steps to deploy and run the tests is as follows.
-
-    \begin{enumerate}
-        \item Deploy Cluster via a VM scale set with a SF image, the Jepsen host, a proximity group to prevent network issues, setup VLAN and add the 6 servers, add a public IP to scale set connections to the test environment, Configure storage devices and firewalls to prevent undesired access and noise in the testing.
-        \item Deploy the SF applications
-        \item connect to the Jepsenhost server and sync test framework.
-        \item run test framework with desired parameters
-        \item pull test result to local machine to analyse results.
-    \end{enumerate}
-
-    For the first few rounds of testing everything went alright, however after running a few test examples
-
-    \subsection{Issues}
-%TODO write section on Issues
-    Proximity group.
-
-    Linux and windows versions being far from interchangeable and applications and services that function on windows/local machines fail crash on deployed cluster
-
-    Visual studio being unable to load .dmp files to debug crashed applications from the cloud.
-
-    Visual studio remote debugger not working
+    \subsection{Issues that weren't resolvable}
     
-    Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a reimage.
+    Linux and windows versions of the development environment being far from interchangeable with applications and services that function on windows and the local machine that fail to run or crash on cluster, this issue was further concatenated by visual studio being unable to load crash dump files that would allow a debugger to trace why the applications from the cluster weren't functioning as intended on the cluster. other debugging options such as the  Visual studio remote debugger feature wasn't compatible with the Linux cluster either which meant that the development was flying blind fairly often while developing. There was also some minor issues with the Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required a entire new deployment of the cluster and any data that might have been in the cluster to be lost. this was not an issue for the testing as the data wasn't of importance and was simply tractable data that could be used in the generated DSG and check for illegal edges in it.
     
-    
-%\section{Execution of the test}
-%
-%Steps.
-%
-%1 start Service Fabric cluster in azure.
-%2. Add Jepsen node to Vlan of the cluster.
-%3. Deploy SF application to the cluster. This is currently done via Visual studio but could also be automated from the jepson node.
-%4. Deploy Jepsen code to the Jepsen node.
-%5. Run Jepsen test.
-%6. Retrive Test data from test node.
-%5
-%7. Clean up.
-
-%
-
-
-\chapter{Results}
+    \section{Results}
 
     \subsection{Introduction}
-    
-    The Results of the test show that While Jepsen test preforms fine for single node and partition workloads in terms of Serializability there are some linearizability issues. This however all falls to the ground rather quickly as higher and more complex workloads cause exponential deadlocks and aborts and due to the design of the entire system multipartion workloads that allow for scaling doesn't allow for any consistency which cause a great range of issues where the entirely process of consistency handling lies with the developer. and which requires the developer to write an entire DBMS system on top of the reliable collections as they only provide reliable storage of singular objects once committed.
-    
-    
-    The first telling part of the issues with Reliable collections showed up when doing the development where the complexity required to test service fabric as a multiple agent system grew way out of scale compared to what is with time both the time frame and grasp of this project. A entire DBMS system on top of service fabric would be needed and here it can be argued that you're simply building a reliable system onto of something unreliable. While Service Fabric does appear to have use full use cases it does however not pose well as a transnational data store.
-    
-    
-    The first results from the tested showed much promise for Service Fabric as we were simply testing a linearizable workload where it was simply atomic operations that did not require any complex locking structure. However there was some performance limitation where the API was "Only" able to handle 20k Request per second before reaching a bottle neck and dropping packages due to the request overflowing. which shows there might be some under laying performance issues as well compared to using a framework like Flask or FastAPI and a regular datastore such as SQL, or a key value store that often preforms even better.
-    
-    The Initial reuslts
-    
-\begin{lstlisting}
-       
-\end{lstlisting}
-    
-    The results from the first rounds of test showed that the designed testing framework didn't test the system to it's limits and didn't allow for in depth testing and checking via directed serializations graphs so a more complex and in depth testing suite had to be designed and implemented to show faults and issues in the inner workings of the reliable collections. From these tests some interesting results started poping up, The more complex workload didn't consist of simpler and naive transactions like the earlier but also testing handling, conflict handling, transactions with dependencies on itself and more. This brought a few issues with regards to deadlocks out into the light.
-    
-    
-    \subsection{Rejected transactions}
-    The first more complex test run on the Service Fabric cluster was a multiple transaction used transaction with 1-10 operations per transaction, this cases a abort rate of 89.5 \%. This was caused by heavy deadlocking a cascading aborts due to timeouts and and circular locking issues. 
-    This initially was questioned if this was due to network issues within Azure or latency issues between the nodes. To eliminate the risk of this being the culprit a Proximity group was established. This did however now resolve anything. This brought me back to an earlier belief that SF reliable collections are a distributed Atomic datatype where you preform a singular operation er transaction or lock the entire datastore to preform writes. this does mean that for the transaction that make it though the deadlocking issues SF is serializable which is more than the Reliable read that is presented from Microsoft, but this is the case for all atomic datatypes, but here it comes with built it network (read only) replication. 
-    
 
-The full results for the initail test are below.
-\begin{lstlisting}
+    The results from the experiment with Jepsen and service fabric show a few things, the consistency model of Service fabrics reliable collections is pretty good, however there are some issues with regards to linearizability, and there a rather big caveat, the abort rate when transaction operate on multiple items in the distributed variables. 
+%TODO Write introduction to the results we've found
+    What we results we have.
+
+    \subsection{Rejected transactions}
+    %TODO Write Rejected transactions
+    We initially had a rejection rate of x
+    ....
+    
+    Rejection rates with depending on txn lenght.
+    up to 10 operations per txn -> 89.5 \% Abort rate.
     :stats {:valid? true,
          :count 13086,
          :ok-count 1365,
@@ -1591,11 +1299,9 @@ The full results for the initail test are below.
                       :ok-count 1365,
                       :fail-count 11721,
                       :info-count 0}}},
-\end{lstlisting}
-
-     with a txn lenght of max 3 of 32.9 \% Abort rate.    
-\begin{lstlisting}
-       
+                      
+    ...
+    with a txn lenght of max 3 of 32.9 \% Abort rate.
      :stats {:valid? true,
          :count 29225,
          :ok-count 19616,
@@ -1606,7 +1312,27 @@ The full results for the initail test are below.
                       :ok-count 19616,
                       :fail-count 9609,
                       :info-count 0}}},
-\end{lstlisting}
+                      
+    
+    
+    
+    
+    ...
+
+    Due to these reasons
+
+    ...
+
+    A revised setup was implemented to try and resolve this.
+
+    ...
+
+    Proximity group
+    ...
+
+
+    Performance benefit.
+
 
     \subsection{Violations of promised consistency level}
 %TODO Write Violations of promised consistency level
@@ -1617,7 +1343,7 @@ The full results for the initail test are below.
     No making use of many of the optimizations allowed within the consistency model that leaves a lot on the table.  
 
 
-    \chapter{Discussion}
+    \section{Discussion}
 
     \subsection{Violations of promised consistency level}
 
@@ -1672,6 +1398,10 @@ The full results for the initail test are below.
     \chapter{Conclusion and Outlook}
     \section*{Conclusion}
     %TODO write Conclusion
+    
+     I will only write deeper about designing, implementing, testing, executing and analysing the results. However this does not mean that the learning and understanding phase of the project was any smaller, quite the contrary. Learning 2 new programming languages that I've never interacted with before isn't an easy task; adding in the complexity of write code for cloud framework that I had no prior experience working on didn't help either. Spicing it with up with outdated documentation, incompatibility between versions of the framework and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute forcing solutions to a lot of issues due to lacking features on the Linux version of the cluster.\\
+     
+     
     Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labelling and allows user and developers to choose the current system for their use-case and avoid the headaches of phantom behavior.
 
     This could be done via automated testing and verification of a given system in it's different transactional configurations.
@@ -1696,11 +1426,10 @@ The full results for the initail test are below.
     \pagestyle{empty}
     \printbibliography
 
+
     \section{Proposal}
     \input{Proposal}
 
-    \section{Proposal revision}
-    \input{proposal_revised}
 
     % \section{Schedule}
 

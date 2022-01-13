@@ -1,9 +1,9 @@
-\section{'Jepsen methods usage for consistency compliance testing in Hyperscale Cloud Frameworks(Maybe Datastores?) '}
+\section{'Jepsen methods usage for consistency compliance testing in Hyperscale Cloud Frameworks (Updated due to 3 month extension)'}
 
 \section{Introduction}
 The goal of this project is to assess how Jepsen\footnote[1]{https://aphyr.com/tags/jepsen } tests allow us to verify the properties of ACID\footnote[2]{Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510} in a cloud system.
 The Jepsen test is a method used to evaluate the compliance of a system in relation to the ACID properties. This is done is by analysing the system via Blackbox\footnote[3]{https://youtu.be/tRc0O9VgzB0?t=293} tests , in the sense that the internals of the system work are not relevant. We look at the service from a client-side and not any underlying structures or frameworks.
-The ACID properties are 
+The ACID\footnote[2]{Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510} properties are 
 \begin{itemize}
 \item	Atomicity \\
 Guarantees that each transaction is treated as a single "unit", which either succeeds completely or fails completely 
@@ -14,7 +14,7 @@ Ensures that concurrent execution of transactions leaves the database in the sam
 \item	Durability \\
 Guarantees that once a transaction has been committed, it will remain committed even in the case of a system failure 
 \end{itemize}
-\footnote[2]{Database Management Systems by Raghu Ramakrishnan \& Johannes Gehrke  ISBN13 9780071231510} \\
+ \\
 We plan to apply these methods on Service Fabric\footnote[4]{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview  } , to verify if this system is compliant with the ACID properties. Service Fabric is a framework developed by Microsoft, designed to allow developers to build Hyper-Scale Cloud (HSC) deployments on the Azure\footnote[5]{https://microsoft.com/en-us/azure/ } platform.
 The motivation behind this thesis is to study the ACID properties in an HSC environment and evaluate how the constraints of ACID hold up in practice, as well as verifying if these constraints are met, and more importantly if they are not. 
 \section{Plan}
@@ -39,8 +39,9 @@ The project is segmented into three parts. The writing of the report will take p
 \item	Writing the tests, verifying they work as intended and setting up a data collection framework to collect the data in a manner that allows our analysis.
 \item	Performing the tests on the system in different scenarios, normal conditions and different levels of faults and disaster recovery.
 \item	Analysing the data for faults, errors and inconsistencies.
+\item Use the data and the failures to improve the design of the test for another iteration of design, implementaiton and tests.
 \item	Consulting with DEVs to determine where the faults occurred, and which failures or bugs led to these fault conditions.
-\item	Concluding whether “Service Fabric” is ACID-compliant and if there there is any issues with the consistency models implemented.
+\item	Concluding whether “Service Fabric” is ACID-compliant and if there there is any deeper issues.
 \end{itemize}
 \end{itemize}
 \subsection{The report phase }
@@ -53,7 +54,7 @@ The project is segmented into three parts. The writing of the report will take p
 \begin{itemize}
 \item	A study on Jepsen tests, describing what they are, as well as why and how they are done.
 \item	An experiment in which we will analyse “Service Fabric”	
-\item	A discussion on the conclusiveness of the test and the compliance of the framework with service fabric and just as important, What Limitaitons and issues are within the frameworks and what improvements should be made.
+\item	A discussion on the conclusiveness of the test and the compliance of the framework with service fabric and just as important, What Limitations and issues are within the frameworks and what improvements could be made.
 \end{itemize}
 \item	The code \& data will include
 \begin{itemize}
@@ -67,3 +68,9 @@ The project is segmented into three parts. The writing of the report will take p
 The goal of the project is to deep dive into Jepsen tests with a focus on “Service Fabric” as the subject. The optimal goal of the project is to verify if the database aspects of “Service Fabric” comply with the ACID properties, and to locate the fault cases in case they don’t.    
 Risk assessment 
 There are a few risks in the project. In the case no faults are found within the Service Fabric, this reduces the scope of the project. If no faults are found, time allowing, different framework can be analysed. On the contrary, if the number of faults in the framework is more extensive than expected, then the scope of the project may grow uncontrollably. In this case, choices will be made to select a subset of the data to focus on.
+
+
+
+\section{Changes due to the extension}
+Due to the extension, the thesis scope has been extended. In particular, we aim at offering a better overview of the consistency model issues in the implementation of Service Fabric. Moreover, given the extra time, we changed the one-step design phase to an iterative one having 2 iterations. This will allow in the second phase to improved the design of the system based on the first iteration results.
+
