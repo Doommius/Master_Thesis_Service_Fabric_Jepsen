@@ -779,10 +779,6 @@ The network is split into two or more parts where they each believe different tr
 
     \section{related work to Jepsen}
     
-    Elle
-    
-    Knosos
-
     %TODO move these to BIB file and write this section
     % K. Kingsbury. Knossos.
     % https://github.com/jepsen-io/knossos, 2013-2019.
@@ -1068,7 +1064,7 @@ The network is split into two or more parts where they each believe different tr
     The infrastructure is centered around Azure, using a isolated v-net containing 6 virtual machines all running Linux, in this case Ubuntu was chosen as it's a known distribution that we are familiar with.1 of the 6 nodes is running the Jepsen application while the 5 other notes are running a Service Fabric Cluster.
     The 5 service fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide} which was the process used doing the development stages of the project.
 
-    This Jepsenhost is accessed via sshand scp is used to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
+    This Jepsenhost is accessed via ssh and scp is used to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
 
     The topology of the network is simply just arrange such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection to cause issues with the test.
     \includegraphics[scale=0.3]{images/topology.png}
@@ -1278,16 +1274,15 @@ The changes to the Jepsen application requiting starting anew and writing more f
 
     \subsection{Introduction}
 
-    The results from the experiment with Jepsen and service fabric show a few things, the consistency model of Service fabrics reliable collections is pretty good, however there are some issues with regards to linearizability, and there a rather big caveat, the abort rate when transaction operate on multiple items in the distributed variables. 
-%TODO Write introduction to the results we've found
-    What we results we have.
-
-    \subsection{Rejected transactions}
-    %TODO Write Rejected transactions
-    We initially had a rejection rate of x
-    ....
+    The results from the experiment with Jepsen and service fabric show a few things, the consistency model of Service fabrics reliable collections is pretty good, however there are some issues with regards to linearizability, and there a rather big caveat, the abort rate when transaction operate on multiple items in the distributed variables.
     
-    Rejection rates with depending on txn lenght.
+    It should be noted that concurrency wise Service fabric didn't do bad, but there are other aspects of the reliable collections that might pose issues when used without reading the fine grain of the documentation and having a good understanding of transaction models and what they allow.
+    
+    \subsection{Rejected transactions}
+    
+    One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test containing randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed. The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
+
+
     up to 10 operations per txn -> 89.5 \% Abort rate.
     :stats {:valid? true,
          :count 13086,
@@ -1313,32 +1308,22 @@ The changes to the Jepsen application requiting starting anew and writing more f
                       :fail-count 9609,
                       :info-count 0}}},
                       
+    \subsection{Lost writes or delayed writes.}
+    
+    The were occasions where writes seems to have disappeared, 
     
     
     
+    \subsection{Violation of Strict Serializability}
     
-    ...
-
-    Due to these reasons
-
-    ...
-
-    A revised setup was implemented to try and resolve this.
-
-    ...
-
-    Proximity group
-    ...
+    Some test showed violations of the Linearizability of the transactions. As Service fabric doesn't promise anything in terms of Linearizability, however some violations showed up doing the testing.
 
 
-    Performance benefit.
 
 
-    \subsection{Violations of promised consistency level}
-%TODO Write Violations of promised consistency level
-    Initially violation but was maybe due to network queue or other network issues?
+    \subsection{Not making use of optimizations}
     
-    
+    Service fabric doesn't make use of the optimizations available within service fabric, 
     
     No making use of many of the optimizations allowed within the consistency model that leaves a lot on the table.  
 
