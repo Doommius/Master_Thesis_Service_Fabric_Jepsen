@@ -641,15 +641,9 @@ The network is split into two or more parts where they each believe different tr
 
     % Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
 
-
-
-
-
     \newpage
 
-
     \chapter{Database Consistency testing}
-
 
     \section{Introduction}
     %TODO Write introduction Database Consistency testing
@@ -1048,7 +1042,7 @@ The network is split into two or more parts where they each believe different tr
 
     \subsection{Initial Design}
 
-    The initial design of the of the testing suite contained two applications: aservice Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure running the Jepsen testing suite..
+    The initial design of the of the testing suite contained two applications: a service Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure running the Jepsen testing suite..
 
     \subsubsection{Service Fabric Services}
 
@@ -1241,13 +1235,11 @@ The stateful service was implemented with simplicity in mind that where each end
     The revised backend unifies that endpoints into a single endpoint that takes a transaction as payload and executes this. 
     \begin{lstlisting}[language=csh]
 [HttpPut]
-public async Task<IActionResult> Put()
-{
-    IReliableDictionary<string, int> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, 
+public async Task<IActionResult> Put(){
     ....
-       foreach (var item in operationlist.transaction)
-            {if (item.operation.Value == "r")
-                {conditionalValue = await votesDictionary.TryGetValueAsync(tx, item.key.Value);
+       foreach (var item in transaction.operations)
+            {if (item.operation.type == "read")
+                {conditionalValue = await reliableDictionary.TryGetValueAsync(tx, item.key.Value);
                         result.Add(new KeyValuePair<string, string>(item.key.Value, value.ToString()));}
             ....
      await tx.CommitAsync();
@@ -1312,12 +1304,13 @@ The changes to the Jepsen application requiting starting anew and writing more f
     
     The were occasions where writes seems to have disappeared, 
     
-    
+    \includegraphics[]{Report/results/store-2021-11-02-checkme-3/SF reliableappend RR (RR) pause,clock/20211102T014633.000Z/elle/G-single-realtime/1.png}
     
     \subsection{Violation of Strict Serializability}
     
     Some test showed violations of the Linearizability of the transactions. As Service fabric doesn't promise anything in terms of Linearizability, however some violations showed up doing the testing.
-
+\\
+\includegraphics[]{Report/results/store-2021-11-02-checkme-3/SF reliableappend RR (RR) pause,clock/20211102T014633.000Z/elle/G-single-realtime/1.png}
 
 
 
@@ -1325,11 +1318,19 @@ The changes to the Jepsen application requiting starting anew and writing more f
     
     Service fabric doesn't make use of the optimizations available within service fabric, 
     
-    No making use of many of the optimizations allowed within the consistency model that leaves a lot on the table.  
-
+    No making use of many of the optimizations allowed within the consistency model that leaves a lot on the table. 
+    
+    
+    \subsection{metadata from one of the tests}
+    \includegraphics[scale=0.5]{Report/results/store-2021-11-02-checkme-3/SF reliableappend RR (RR) pause,clock/20211102T014633.000Z/clock-skew.png}
+    \\
+    \includegraphics[scale=0.5]{Report/results/store-2021-11-02-checkme-3/SF reliableappend RR (RR) pause,clock/20211102T014633.000Z/rate.png}
+    \\
+    \includegraphics[scale=0.5]{Report/results/store-2021-11-02-checkme-3/SF reliableappend RR (RR) pause,clock/20211102T014633.000Z/latency-raw.png}
+    \\
+    \includegraphics[scale=0.5]{Report/results/store-2021-11-02-checkme-3/SF reliableappend RR (RR) pause,clock/20211102T014633.000Z/latency-quantiles.png}
 
     \section{Discussion}
-
     \subsection{Violations of promised consistency level}
 
     Initially violation but was maybe due to network queue or other network issues?
