@@ -664,7 +664,7 @@ The network is split into two or more parts where they each believe different tr
 
     This means that this has been a giant scope project where case by case tests are predefined and where we only test for certain scopes, which more importantly mean that tests have been done but the test coverage haven't been perfect and a lot of anomalies are never detected.
 
-    %TODO write more on the Historically {Need to add some more to this section, add examples are past test, diagrams, papers etc}
+    %TODO write more on the Historically {Need to add some more to this section, add examples of past test, diagrams, papers etc}
 
 
     \section{Jepsen}
@@ -686,12 +686,38 @@ The network is split into two or more parts where they each believe different tr
     \section{State of the art.}
 
     The state of the art is Jepsen, or rather one of the state of the Art projects.
+    
+    The Jepsen client is build up in a modular fashion such that the different modules needed for a test can be defined independently and a given project might not require all modules. A jepsen test suite generally consist of a 5 modules. Database automation, a client, Generator, correctness checkers, and a fault introduce. on top of these test you have a test runner that glues the modules together.
+    
+    The goal of Jepsen was to have a framework that allows 
+    
+    The more inner workings of Jepsen consist of a Host node, and tentacles going connecting to the nodes in the test cluster to preform of the tasks such as database automation and the introduction of faults.
+    
+    \subsection{Runner}
+    
+    The runner is the glue that binds the underlying modules together. It contains configurations for targets, rates, how many faults should be introduced, and every other aspect of the testing suite.
+    
+    \subsection{Database Automation}
+     The Database or db module job is to handle starting, stopping and interaction with the database program or service itself. It's main job is to spin up, prepare and configure a test target, in some instances this might not be required but it is best practice to do this as it allows for better repeatably of the tests. a just as important feature is interacting with the service ones it is running, killing workers, inducing crashes, or removing the entire node from the cluster.
+    
+    \subsection{Client}
+    The Client is a interface from Jepsens commands to a connector or driver, it handles parsing, validation of return values, exception and faults handling and routing of requests to the correct endpoint.
+    
+    \subsection{Generator}
+    The generators task is to generate the test map which includes transactions and faults in a manner that allow for correctness checking. in the sense that our checker needs to be able defer a ordered history from the responses from the target database.
+    
+    \subsection{Correctness checker}
+    The checker module check for anomalies in the results, this can be a host of symptoms, out of order operations, violation of isolation, corrupt data due to conflicts. This can either be done by writing custom checkers or by using some of the functionality built into Jepsen.
+    
+    \subsection{Fault inducer}
+    Nemesis the the module within jepsen that induces faults, it's task is to induce faults at random such time skew, network partitions, crashes, increased package drop, increased latency and other such tools.
+    
+    
+    
 
     Jepsen supports quite a few different modules but the most powerfull features goes by the name Elle, inferring isolation anomalies from Experimental Observations. \\
     \vspace{5mm}
-    The way this works is by inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
-    \vspace{5mm}
-    This means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.\\
+
     \vspace{5mm}
 
     And these things can be manifested in multiple ways, some cases are as mentioned earlier in the paper accepted as eventually consistency and performance is valued higher or some applications where loosing some data points are acceptable to allow for higher write throughput.\\
@@ -705,6 +731,11 @@ The network is split into two or more parts where they each believe different tr
     \subsection{Elle}
     
     
+    The way this works is by inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
+    \vspace{5mm}
+    This means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.\\
+    
+    
     Elle is a consistency checker and generator available in Jepsen. It supports a few different methods 
     
     Elle is the one of the Jepsen Consistency checkers available in jepsen, other exist but for all intents and purposes Elle should always to used. 
@@ -712,7 +743,7 @@ The network is split into two or more parts where they each believe different tr
     ...
     What it aims to solve
     ...
-    DSG
+    \subsubsection{Directed Serialization graphs(DSG)}
     ...
     Checker
     ...
@@ -793,9 +824,6 @@ The network is split into two or more parts where they each believe different tr
     % Checker. PLDI '10, 2010.
 
 %TODO write introduction to writing jepsen test
-
-
-
 
 
 
