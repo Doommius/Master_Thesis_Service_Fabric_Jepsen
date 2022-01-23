@@ -744,6 +744,103 @@ The network is split into two or more parts where they each believe different tr
     What it aims to solve
     ...
     \subsubsection{Directed Serialization graphs(DSG)}
+    
+    
+    \paragraph{Transaction conflicts}
+    
+    \begin{itemize}
+        \item Read-dependency
+        The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$, this relation is also called Write-Read (wr) as one transaction writes a object and a second transaction depends on this prior write.
+        
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9351620672631715] 
+\draw    (70.33,79.67) -- (250.33,79.67) ;
+%Straight Lines [id:da20316716985592453] 
+\draw    (70.67,119.33) -- (250.67,120.33) ;
+%Straight Lines [id:da3663864520178606] 
+\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (128.33,84) -- (168.74,114.79) ;
+\draw [shift={(170.33,116)}, rotate = 217.3] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (45.33,65.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (45.33,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (101.67,54.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W_1(x_0)$};
+% Text Node
+\draw (160,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R_2(x_0)$};
+
+
+\end{tikzpicture}
+
+A transactional example of this relation would be the below SQL
+        
+        \begin{lstlisting}
+        update accounts set balance = INT_MAX where id = 1;  -- T_i: W_i(x_0)
+        select * from accounts where id = 1;           -- T_j: R_j(x_0)
+        \end{lstlisting}
+        
+        This set formulation for this would be:
+        
+        We have a history H. as follows.
+        \begin{equation}
+            History H: [T_i(W(x)), T_j(R(x))]
+        \end{equation}
+        This history contains two transactions $T_i$ followed by $T_j$. $T_i$ writes version $x_0$, which is later read by $T_j$, thus item-read-depends on $T_i$. this wr is also denoted by the red arrow in the above illustration.
+        
+        
+        \item predicate-based read dependency (wr)
+        A Predicate read dependency occurs when a transactions $T_j$ preforms a operation containing multiple reads while a concurrent $T_i$ is preforming writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
+        
+        This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
+        
+        
+        
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9351620672631715] 
+\draw    (41.33,82) -- (358.67,83) ;
+%Straight Lines [id:da20316716985592453] 
+\draw    (41.67,121.67) -- (359,122.67) ;
+%Straight Lines [id:da3663864520178606] 
+\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (209,84.67) -- (268.93,118.68) ;
+\draw [shift={(270.67,119.67)}, rotate = 209.58] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (16.33,68) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (162.67,58) node [anchor=north west][inner sep=0.75pt]   [align=left] {W($x_1$)};
+% Text Node
+\draw (224.33,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(P:Vset(p),x_0\notin Vset(p)$)};
+% Text Node
+\draw (37,97.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R( P:x_0 \in Vset(p))$};
+
+
+\end{tikzpicture}
+
+
+
+        \begin{lstlisting}
+        select * from accounts where value > 0;         -- Tj: Rj(P: Vset(P): x0)
+        update accounts set value = INT_MAX where id = 1;     -- Ti: Wi(x1)
+        select * from accounts where value > 0;         -- Tj: Rj(P: Vset(P): {})
+        \end{lstlisting}
+        
+        
+        \item Write-dependency (ww)
+        \item Anti-dependency (rw)
+    \end{itemize}
     ...
     Checker
     ...
