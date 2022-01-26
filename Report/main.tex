@@ -640,6 +640,149 @@ The network is split into two or more parts where they each believe different tr
     % %TODO Make Diagram Read your writes
 
     % Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
+    
+    
+    
+        \section{Directed Serialization graphs(DSG)}
+% TODO this whole section should maybe be moved to the studying and underlying theory part of the report. ?
+    
+    
+    \subsection{Transaction conflicts}
+    
+    \begin{itemize}
+        \item Read-dependency
+        The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$, this relation is also called Write-Read (wr) as one transaction writes a object and a second transaction depends on this prior write.
+        
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9351620672631715] 
+\draw    (70.33,79.67) -- (250.33,79.67) ;
+%Straight Lines [id:da20316716985592453] 
+\draw    (70.67,119.33) -- (250.67,120.33) ;
+%Straight Lines [id:da3663864520178606] 
+\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (128.33,84) -- (168.74,114.79) ;
+\draw [shift={(170.33,116)}, rotate = 217.3] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (45.33,65.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (45.33,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (101.67,54.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W_1(x_0)$};
+% Text Node
+\draw (160,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R_2(x_0)$};
+
+
+\end{tikzpicture}
+
+        This set formulation for this would be:
+        
+        We have a history H. as follows.
+        \begin{equation}
+            History H: [T_i(W(x)), T_j(R(x))]
+        \end{equation}
+        This history contains two transactions $T_i$ followed by $T_j$. $T_i$ writes version $x_0$, which is later read by $T_j$, thus item-read-depends on $T_i$. this wr is also denoted by the red arrow in the above illustration.
+        
+    A SQL example of this relation would be the below script
+        
+\begin{lstlisting}
+update accounts set balance = 42 where id = 1;
+select * from accounts where id = 1;
+\end{lstlisting}
+        
+        
+        
+        \item predicate-based read dependency (wr)
+        A Predicate read dependency occurs when a transactions $T_j$ preforms a operation containing multiple reads while a concurrent $T_i$ is preforming writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
+        
+        This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
+        
+        
+        
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9351620672631715] 
+\draw    (41.33,82) -- (358.67,83) ;
+%Straight Lines [id:da20316716985592453] 
+\draw    (41.67,121.67) -- (359,122.67) ;
+%Straight Lines [id:da3663864520178606] 
+\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (209,84.67) -- (268.93,118.68) ;
+\draw [shift={(270.67,119.67)}, rotate = 209.58] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (16.33,68) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (162.67,58) node [anchor=north west][inner sep=0.75pt]   [align=left] {W($x_1$)};
+% Text Node
+\draw (224.33,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(P:Vset(p),x_0\notin Vset(p)$)};
+% Text Node
+\draw (37,97.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R( P:x_0 \in Vset(p))$};
+
+
+\end{tikzpicture}
+
+Transaction $T_2$ sees $x_0$ in it's first predicate read, however in the second read nothing is observed as $x_0$ was overwritten by $x_1$ via $T_1$. \\
+
+A SQL example of this relation would be the below script
+
+        \begin{lstlisting}
+select * from accounts where balance > 0;
+update accounts set balance = -42 where id = 1;
+select * from accounts where balance > 0;
+        \end{lstlisting}
+        
+        
+\item Write-dependency (ww)
+A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. the relation is named ww as two writes to the same object with only one persisting.
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9351620672631715] 
+\draw    (41.67,80) -- (179.67,80) ;
+%Straight Lines [id:da20316716985592453] 
+\draw    (40.67,120.33) -- (179.33,120.67) ;
+%Straight Lines [id:da3663864520178606] 
+\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (79.33,82.67) -- (139.26,116.68) ;
+\draw [shift={(141,117.67)}, rotate = 209.58] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (16.33,68) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (58,57.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x\_1)$};
+% Text Node
+\draw (125,122.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x\_2)$};
+\end{tikzpicture}
+
+
+Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-depends on $T_1$, The dependency is denoted by the red arrow in the graph. \\
+
+A SQL example of this relation would be the below script
+
+\begin{lstlisting}
+update accounts set balance = 42 where id = 42;
+update accounts set balance = -42 where id = 42;
+\end{lstlisting}
+
+        \item Anti-dependency (rw)
+        
+        
+    \end{itemize}
 
     \newpage
 
@@ -717,7 +860,9 @@ The network is split into two or more parts where they each believe different tr
 
     Jepsen supports quite a few different modules but the most powerfull features goes by the name Elle, inferring isolation anomalies from Experimental Observations. \\
     \vspace{5mm}
-
+    The way this works is by inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
+    \vspace{5mm}
+    This means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.\\
     \vspace{5mm}
 
     And these things can be manifested in multiple ways, some cases are as mentioned earlier in the paper accepted as eventually consistency and performance is valued higher or some applications where loosing some data points are acceptable to allow for higher write throughput.\\
@@ -743,104 +888,7 @@ The network is split into two or more parts where they each believe different tr
     ...
     What it aims to solve
     ...
-    \subsubsection{Directed Serialization graphs(DSG)}
-    
-    
-    \paragraph{Transaction conflicts}
-    
-    \begin{itemize}
-        \item Read-dependency
-        The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$, this relation is also called Write-Read (wr) as one transaction writes a object and a second transaction depends on this prior write.
-        
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9351620672631715] 
-\draw    (70.33,79.67) -- (250.33,79.67) ;
-%Straight Lines [id:da20316716985592453] 
-\draw    (70.67,119.33) -- (250.67,120.33) ;
-%Straight Lines [id:da3663864520178606] 
-\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (128.33,84) -- (168.74,114.79) ;
-\draw [shift={(170.33,116)}, rotate = 217.3] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (45.33,65.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (45.33,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (101.67,54.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W_1(x_0)$};
-% Text Node
-\draw (160,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R_2(x_0)$};
-
-
-\end{tikzpicture}
-
-A transactional example of this relation would be the below SQL
-        
-        \begin{lstlisting}
-        update accounts set balance = INT_MAX where id = 1;  -- T_i: W_i(x_0)
-        select * from accounts where id = 1;           -- T_j: R_j(x_0)
-        \end{lstlisting}
-        
-        This set formulation for this would be:
-        
-        We have a history H. as follows.
-        \begin{equation}
-            History H: [T_i(W(x)), T_j(R(x))]
-        \end{equation}
-        This history contains two transactions $T_i$ followed by $T_j$. $T_i$ writes version $x_0$, which is later read by $T_j$, thus item-read-depends on $T_i$. this wr is also denoted by the red arrow in the above illustration.
-        
-        
-        \item predicate-based read dependency (wr)
-        A Predicate read dependency occurs when a transactions $T_j$ preforms a operation containing multiple reads while a concurrent $T_i$ is preforming writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
-        
-        This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
-        
-        
-        
-
-
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9351620672631715] 
-\draw    (41.33,82) -- (358.67,83) ;
-%Straight Lines [id:da20316716985592453] 
-\draw    (41.67,121.67) -- (359,122.67) ;
-%Straight Lines [id:da3663864520178606] 
-\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (209,84.67) -- (268.93,118.68) ;
-\draw [shift={(270.67,119.67)}, rotate = 209.58] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (16.33,68) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (162.67,58) node [anchor=north west][inner sep=0.75pt]   [align=left] {W($x_1$)};
-% Text Node
-\draw (224.33,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(P:Vset(p),x_0\notin Vset(p)$)};
-% Text Node
-\draw (37,97.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R( P:x_0 \in Vset(p))$};
-
-
-\end{tikzpicture}
-
-
-
-        \begin{lstlisting}
-        select * from accounts where value > 0;         -- Tj: Rj(P: Vset(P): x0)
-        update accounts set value = INT_MAX where id = 1;     -- Ti: Wi(x1)
-        select * from accounts where value > 0;         -- Tj: Rj(P: Vset(P): {})
-        \end{lstlisting}
-        
-        
-        \item Write-dependency (ww)
-        \item Anti-dependency (rw)
-    \end{itemize}
     ...
     Checker
     ...
@@ -1146,8 +1194,8 @@ A transactional example of this relation would be the below SQL
 
     \section{Introduction}
 
-    The Goal of the thesis was to attempt to preform a Jepsen test on Service Fabric with it's reliable collection subsystem that powers a lot of the services in Azure and being the target of this endeavor. 
-    In this chapter we will present the design, and implementation and revisions of the testomg suite-
+    One of the goals of the thesis was to attempt to preform a Jepsen test on Service Fabrics reliable collection subsystem that powers services in Azure and being the target of this endeavor. 
+    In this chapter we will present the design, and implementation and revisions of the testing suite-
     To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
     \begin{itemize}
         \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
@@ -1160,124 +1208,111 @@ A transactional example of this relation would be the below SQL
     \end{itemize}
 
    
-
-
     \section{Design \& implementation}
-    The Design of the services required for preforming the Jepsen test revised multiple times as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure.
+    The Design of the services required for preforming the Jepsen test were revised multiple times as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure, and a learn by doing mythology was chosen. 
 
     \subsection{Initial Design}
 
-    The initial design of the of the testing suite contained two applications: a service Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure running the Jepsen testing suite..
+    The initial design of the of the testing suite contained two applications.: a service Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure application running the Jepsen testing suite.
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with which then routes the request to the correct stateful service. the initial design contained endpoints for insert, add, Update, Check, set, delete and delete all on a reliable directory class. It is implemented using C\# as the lack of documentation for Service fabric for java made this this seem the better choice as documentation was primarily written for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and contained the most documentation for this use case and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with, these should then be routed to the correct stateful service partition. the initial design contained endpoints for insert, add, Update, Check&set, delete and delete all, which operated on a reliable directory datatype. It should be implemented using C\# as the lack of documentation for Service fabric for java made this this seem the better choice, As of writing this nearly all documentation is for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and had the most documentation and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
-    A diagram of the stateful service looks as the following. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for routing of the request. \\
+    A diagram of the design for the stateful service looks as the following. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for routing of the request. \\
     \vspace{5mm}
     \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
 
-    This implementation contains 2 main codebases. The c\# dotnet web service that acts as a REST API to the reliable collections using 3 controllers for the 2 default data structures implemented in the framework, and a Clojure codebase that contains the test suite as well as an API connector, parsing, connections manager and fault handling..
+    This implementation contains 2 main codebases. The C\# dotnet web services that acts as a API to the reliable collections using 3 controllers for the 3 default data structures implemented in the framework, and a Clojure codebase containing the Jepsen test and a driver for connecting to the Service fabric services.
 
     \subsubsection{Infrastructure}
-    The infrastructure is centered around Azure, using a isolated v-net containing 6 virtual machines all running Linux, in this case Ubuntu was chosen as it's a known distribution that we are familiar with.1 of the 6 nodes is running the Jepsen application while the 5 other notes are running a Service Fabric Cluster.
-    The 5 service fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide} which was the process used doing the development stages of the project.
+    The infrastructure is centered around Azure, using a isolated v-net containing 6 virtual machines all running Linux, Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
+    The 5 service fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide}, The latter was the process used doing the development stages of the project.
 
-    This Jepsenhost is accessed via ssh and scp is used to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins or such a service but due to the goal of the project not being automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
+    The Jepsenhost is accessed via ssh and scp is used to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins but due to the goal of the project not being fully automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
 
-    The topology of the network is simply just arrange such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection to cause issues with the test.
+    The topology of the network is arrange such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection to cause issues with the test.
     \includegraphics[scale=0.3]{images/topology.png}
 
-    All traffic resides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as expected, These endpoint were protected by firewall rules that only allowed connections for the development address to avoid external influence of the results.
+    All traffic resides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as expected, These endpoint were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
 
     \paragraph*{Node Sizes}
 
-    The initial node sizes were 2 CPU cores and 8 GBs of ram along with 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a much more well-behaved cluster, and this node size was kept for the reminder of the test. However the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
+    The initial node sizes was 2 CPU cores and 8 GBs of ram along with 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a more well-behaved cluster, and this node size was kept for the reminder of the project. However the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to OOM errors that could be resolve with wither lowering the search space of the test or increasing the memory of the node itself.
 
 
     \section{Services}
-    As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a restless front-end that provides this data to clients via REST API, a driver that handles the connection to this API and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
+    As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a stateless front-end that provides this data to clients via an API, a driver that handles the connection to this API and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
 
     \subsection{SF services}
-    Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. as well as greatly reducing the time that connections are held open to due RR times as all connections to the data store is kept within the cluster.
+    Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. as well as greatly reducing the time that connections are held open to due round trips times being lower, which should allow for higher throughout.
 
-    \subsubsection{Stateful Reliable collection service}
+    \subsubsection{Statefull Reliable collection service}
 
-    The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{wikihttpstatuscodes}. eg node not primary, accepted, result not found.. etc.
+    The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{wikihttpstatuscodes}. node not primary, accepted, result not found, etc. which should allow for easier dianoses and handling of faults when they are parsed by the Jepsen suite.
 
-    The fronted service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to built additional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
+    The fronted stateless service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to built additional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
 
     \subsection{Jepsen test suite}
-    The Jepsen test suite contains many layers and two main components a connector that connects to the service fabric services, and the test suite itself.
+    
+    The design of the Jepsen test suite aims to use skeleton code from past a Jepsen test to start the project as it gives a template of what functionality should be implemented, these implementations are still custom but it gives a pointer to what the bare minimum is to have a functioning application.
+    \\
+    The first module that is needed is a Driver that allows our test to connect to our stateless API, options here are to either write it in Java or Clojure. an attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.
+    \\
+    The Jepsen suite should use a modular setup that allows interoperability between multiple workloads. a runner that allows for test tuning, db that deploys, configures and operates on the running datastore, a client runs the transactions via the driver, nemesis that induces faults in the cluster and 3 workloads, queue, concurrent queue, and dict. One workload for each of the transactional data types exposed by server fabric.
+    \begin{itemize}
+        \item The runner module is the main class and handles defaults, CLI input and workload selection along with configuration of common behavior shared between workloads, nemesis, db, along with other features that are mutual for all workloads.
+        \item   The db module should handle spinning up and tearing down the services along with functions for stating, stopping, and killing services and workers in the cluster.
 
-    The drive is the simplest service that is based on a raft API that was completely rewritten to interact with the SF API along with a custom fault handler that is able to parse both the result that the reliable collections API provides along with with the http codes in case something doesn't behave as intended.
+  \item  the nemesis modules should contains the functions that kill, partition or in other ways introduce failures in the cluster.
 
-    The Jepsen test component contains 6 classes. a runner, a db class that prepares for the test, a client that interacts with the driver, nemesis that induces faults in the cluster and 3 workloads, queue, cqueue, and dict. testing the 3 separate types provided by service fabric.
+  \item 3 Workers, that act on different data types and each requiring a separate generator, checker and client.
+    \end{itemize}
+    
+    Of the 3 workloads designed only one should be used for the final testing as they should all exhibit the same symptoms if issues exists, but all 3 are initially implemented as to allow for deciding on which type should be focused on.
+    
 
-    The runner type is the main class that handles defaults, CLI input and test selection along with code that handles common behavior between the test. nemesis, db, along with other features that are mutual for all services that run in service fabric.
-
-    the db class that is in charge for spinning up and tearing down the services along with functions for stating and stopping workers in the cluster.
-
-    the nemesis class that contains the functions that kill, partition or otherwise mess and attempt to break the cluster.
-
-    the 3 workloads.
-
-    These each contain client for the test defining what endpoint to reach out to, a generator generating a sequence of transactions to preform on te database, and a checker that checks if our data stored behaved as expected.
-
-    All types are expected to follow the repeatable-read consistently model. where the concurrent queue does best effort to meet the FIFO order of queued items compared the the normal queue following a FIFO ordering.
+  
 
     \subsection{Implementation of the initial design}
 
-    The initial designed first targeted the reliable collection dict datatype. and presented a few issues with the design and implementation details that was not considered.
+    The initial design first targeted the reliable collection dict datatype. and presented a few issues with the design and implementation details that was not considered. One of the biggest hurdle was developing for the service fabric cluster running on a Linux host had some issues due to a non feature parity between it and the windows implementation, This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior. 
+A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks used. it should be noted that the service fabric framework was kept at the same release while .NET and similar aspects where rolled back to older releases.
 
-    The biggest hurdle here was developing code for the service fabric Linux cluster due to a non feature parity between it and the windows cluster which caused non favorable conditions such as no debugging, binary dump files that weren't readable by any tool available.
-
-    Here a great amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks. it should be noted that the service fabric framework was kept at the newest release while .NET and similar aspects where rolled back to older releases.
-
-    All of these attempts were however frugal, after spending newly 2 months deleting all code, starting from scratch using a different skeleton code. trying the implementations via Java, going back to C\# getting a working solution on the windows service fabric implementation i reached out to Mikkel Hegnhøj from Microsoft.
+    All of these attempts were however frugal, after spending newly 2 months deleting all code, starting from scratch using a different approach. trying the implementations via Java, going back to C\# getting a working solution on the windows service fabric implementation i reached out to Mikkel Hegnhøj from Microsoft.
 
     The issue turned out to be 2 fold.
     \begin{itemize}
         \item .NET needing to be rolled back to 3.5
-        \item the entry point having to be defined via .NET and the name of the DLL file. this was something i attempt prior by using a entry point.sh that did the same while his solution was just replacing where the windows version has .exe with .DLL and as a .NET entry point.
-    \end{itemize}
-
-    Finally I had a runnable version on Linux, or rather. I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required a lot of endpoints to be hard coded, which induced as one active replica of a given service per node. Eg. we can only have 1 service running per node which would greatly reduce horizontal scaling of the partitions which would greatly increase the number of partitions required to handling greater workloads. running larger partitions on each node is also an option but from a performance, availability, and reliability it's much effect having lots of smaller nodes instead of one large database instance that require a lot of broadcasting to each partition replica.
-
-
-    This required some changes to the design but was resolved by removing of the layers in the application and accessing the stateful service directly, or rather creating a parallel service in case the other services were required later.
-
-    \subsubsection{Implementation details SF}
-        % The exact implementation of the service fabric services are covered in this section.
-        %TODO this is broken. #cancer package
-        % \lstinputlisting[language=csh, firstline=104, lastline=132, gobble=16, showstringspaces=false]{Jepsen/JepsenAPI/Controllers/ReliableDictionaryController.cs}
+        \item the entry point having to be defined via .NET and the name of the DLL file. this was something i attempt prior by using a entry point via a bash script , as documented in the official doc. 
         
+        \end{itemize}
+
+    Finally I had a working version on Linux, or rather. I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required endpoints to be hard coded. This introduced a limit of 1 replica of a given service per node. this would greatly reduce horizontal scaling as we need an extra node per partitions. Running larger partitions on each node is also an option but from a performance, availability, and reliability it's much more effective having lots of smaller partitions instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
+
+
+\subsubsection{Implementation details SF}
+
+The design uses 2 service, a  stateless service that processes the the incoming request and routes it to the back-end service. the get key endpoint will be used to outline the design,  all the stateless endpoints closely resembles each other, therefor only this will be included in the report.\\
         
-        The design uses a 2 service setup, the initial stateless service that processes the initial request and routes it to the back-end service. the read key call will be explained here but all the stateless endpoints work nearly identical to each other. so only one is included in the report.\\
-        
-        \paragraph{Stateless Service}
-        The first first lines of code simply specify the URI of the function as well as what parts of the URI are parameters.
+\paragraph{Stateless Service}
+The Stateless service is implemented via Model View Controllers (MVC) that expose the website via a kestrel web server. Each endpoint route is defined via flags that define protocol and request type followed by paths and a endpoint name. For a http get request using path variable as a parameter \textbf{"[HttpGet("{key}")]"} is used. this is then followed by a function that follows the MVC design pattern, but this function a Async function that takes the key as a variable and returns a \textbf{"Task<IActionResult>"}. The used return type allows for the return value to be either JSON or predefined methods to return bad request, No Content, or other http response codes without requiring explicit handling of them.
 \begin{lstlisting}[language=csh]
-// GET: uri:https://..../../api/.../key
-[HttpGet("{key}")]
 public async Task<IActionResult> Get(string key)
-{
 \end{lstlisting}   
-Service Fabric reliable collections are very much a datatype in the hands of the developer, This wasn't entirely understood when starting out this project, but the reliable collections only expose a transactional storage engine, This requires of to first query to get a list of partions.
+
+The underlying Service Fabric framework exposes an endpoint to retrieve all partitions of given stateful service, coupled with the internal routing in the transport subsystem any service in the cluster can easily and securely be found and queried much in the same way of how internal services in container Orchestration systems such as Kubernetes. 
 \begin{lstlisting}[language=csh]
     ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 \end{lstlisting}   
-And then enumerate the individual partitions, where some operations might require us to enumerated the values within each partition. 
+This allows us to query the individual partitions, where any aggregate operations are handled in the stateless service.
 \begin{lstlisting}[language=csh]
-    foreach (Partition partition in partitions)
-    {  .. Do something ..  }
-    return this.Json(result);
+    foreach (Partition partition in partitions)    {  .. Do something ..  }
+    return result;
 \end{lstlisting}  
-
 \paragraph{Statefull Service}
 
-The stateful service was implemented with simplicity in mind that where each endpoint did one operation and committed this change to the database after some further consideration this approach was fairly flawed as it treats the system in the same manner that Base handles operations, however this realization wasn't made until much later is the process.
-
+The stateful service was implemented via the MVC patterns as well and followed a design that kept simplicity in mind where each endpoint exposed and preformed one operation and committed this change to the datastore. This allowed for querying the database in a quick and consistent manner even if data split among  partitions.
 \begin{lstlisting}[language=csh]
         [HttpGet("{key}")]
         public async Task<IActionResult> Get(string key){
@@ -1288,37 +1323,37 @@ The stateful service was implemented with simplicity in mind that where each end
     }}}
 \end{lstlisting}   
 
-    \subsubsection{Implementation details Clojure}
-        For the implementation of the first deign for the Jepsen test a lot of things were a mess, due to a lot of considerations not having been made prior to writing the code and not fully understanding many of the underlying systems and learning a new programming language. which resulted in a board array of unintended and weird behavior, resulted from asynchronous distributed systems being complex and concurrent applications handling 100s, or 1000s of threads require planning and considerations where knowledge from concurrency theory should be used. 
+\subsubsection{Implementation details Clojure}
+ 
+ Doing the initial implementation of the jepsen test, quite a few aspect of the program were rather chaotic due to poor programming practices that don't carry well over from object oriented  programming into dynamic and functional programming, as the Clojure programming language was treated as a learn by doing. This resulted in the first implementation of the application functioning, but this definition might require a significant quantity of asterisks.
+ 
+ This caused the whole application to exhibit a broad range of unintended and weird behavior, resulted from asynchronous distributed systems being complex and concurrent applications handling 100s, or 1000s of threads requiring careful planning and considerations.
         
         
-        The Clujure application itself is split into a few different functions and classes. These are a runner, generator, Nemesis, db, client, connector/driver and workloads.
-        \begin{itemize}
-            \item         The runner contains the the majority of the configurations and a CLI interface that exposes options and settings where generalized values for the tests are specified. This is also where a select Workload is chosen for running the test. in total 3 different workloads were implemented that each require a generator, checker, client, and Nemesis.
+The Clojure application itself is split into different modules that expose and classes. the core modules required to make up a jepsen test suite requires a runner, generator, nemesis(a type of Chaos monkey)\cite{Choasmonkey}, db, client, connector/driver and workloads.
+\begin{itemize}
+    \item The \textbf{Runner} contains the the majority of the configurations and a CLI interface that exposes options and settings where generalized values for the tests are specified. This is also where a select Workload is chosen for running the test. in total 3 different workloads were implemented that each require a generator, checker, client, and Nemesis.
         
-        \item  The generator class generate a list of transaction to execute, which can later be used to check the transaction history for any anomalies. this is closely linked with the checker.
+   \item  The \textbf{Generator} class generate a list of transaction to execute, which can later be used to check the transaction history for any anomalies. this is closely linked with the checker.
         
-        \item  The checker checks the transaction history for anomalies.
+   \item  The \textbf{checker} checks for anomalies in the transaction history, This could be by either checking if all committed values exist in the data store after the test, if there are transactional violation in the data store, if odd behavior like the case of Casandra where multiples objects are merged due to conflicts that might lead to unintended outcome. 
         
-        \item  the client interface maps Jepsen operations to API calls for our Service fabric Service and parses the result, and handles any faults that might have occurred doing the transaction.
-        \end{itemize}
+  \item  the \textbf{client} interface maps Jepsen operations to a connector or driver calls for a given data store. This module processes the map generated by our generator into transactions, parses the transaction into a format the driver understands and back into a format jepsen understands as well as handling any errors, exception as well as basic check if the operation failed and succeeded and logs til ot the internal transaction history handled by jepsen.
+\end{itemize}
         
-        
-        For the Clojure application a few supporting libraries has to be written to allow it to interact with the API exposed by the Service Fabric applications. This connector was written in Clojure as well, It preforms a few different tasks mainly the HTTP/HTTPS calls, but also connection management, fault handling of connection, http, and server errors, as well as preparing and parsing information flowing both ways.
-        
+The Jepsen application required a driver to be written for jepsen to be able to interact with the API exposed by the stateless service, This could have been written in either java or Clojure. An attempt was made to implement this in Java with some success but was scrapped and a implementation was done in Clojure instead. The Driver preforms http/https calls to the service fabric cluster and handles some input validation as well as connection management, fault handing of connection, as well as parsing of any faults and results returned by the service into a format compatible with Clojure.
         
 
-    \subsection{resolving issues with the design.}
+\subsection{resolving issues with the design.}
     
-    The initial version of the service fabric has some issues with the stateless service where the connection buffer simply overflew due to handling multiple connections for each incoming connection.
+    
+    The initial version of the service fabric has some issues with the stateless service where the connection buffer simply overflew due to a high number of connections from the jepsen host, which caused issues for connections between the stateless service and the underlying state full services that provided the data.
+    
+    A few considerations on how this issue could be resolved was considered, lowering the latency between nodes in the cluster, removing the stateless layer and connect directly to the state full service. A choice here was made to scrap the initial implementation for Service Fabric and redesign it to only require a stateful service. The transactions would behave the same in a  single partition compared to a cluster with 500 partitions, as each "master" node will behave the same, either way with the implementation that service fabric exposes. The service should therefor have a master node as well as a few active replicas that allow for checking of replication status if this should be required down the line. this resolves and simplifies two things. Routing to the seperate partitions is no longer an issue as the stateless "proxy" node is removed, we no longer need to consider routing data to the correct node from our Clojure connector, where it's possible to route all traffic to the primary or only route writes to the primary while distributing the reads to check for replication issues. This allows for testing of the replication engine in the future.
 
-    The choice for solving this issue was simply to redesign the back-end service from the ground up. This revised service should simply provide a direct API from the stateful service, as the transactions are going to behave the same on a single partition compared to  a cluster with 500 partitions. the service is configured such that all replicas are active. this resolves and simplifies two things.  Routing is no longer an issue as our proxy node is removed, we no longer need to consider routing data to the correct node from our Clojure connector, where it's possible to route all traffic to the primary or only route writes to the primary possibly allowing for higher throughput.
+ \subsection{Implementation of this design}
 
-    For the implementation a solution where all traffic is routed to the primary is simply selected as IO issues haven't yet been an issue.
-
-    \subsection{Implementation of this design}
-
-    The implementation of this revised design was supposed to be fairly straight forward, however the non feature parity poking it ugly head out again. Issues started showing up that was mainly due to a change in the release and forced update of a new version service fabric which change the behavior of some warning codes to instead cause errors. this exposed my inexperience working with the dotnet framework and the service fabric API. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster itself which turned the development cycle upside down as I had no way to execute the code without service fabric but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services and therefor the application where killed. These warnings were however not displayed correctly in the Linux distribution so tweaking code and settings was the only apparent solution for these issues.
+    The implementation of this revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again. Issues started showing up that which were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
 
     \subsubsection{Implementation changes for the SF Application}
     The second iteration of the design remove the stateless layer of the application however this approach was still flawed and was used for a large part of the initial project. it had the limitation that it was threatening the system with the eyes of the Base consistency model, This did show issues with the real tine constraint required by strict serializability or linearizability. \\
@@ -1464,6 +1499,11 @@ The changes to the Jepsen application requiting starting anew and writing more f
 
     \subsection{Deeper issue}
     The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
+    
+    
+    Service Fabric reliable collections behaves a lot like a regular concurrent datatype from the developers side. This wasn't entirely understood when starting this project, but the reliable collections only expose a transactional storage engine, This requires of to first query to get a list of partions.
+    
+    
 
     %TODO Write Discussion Deeper issue
     The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
