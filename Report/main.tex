@@ -10,6 +10,8 @@
 \usepackage{graphicx}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
+\usepackage{tikz}
+\usepackage{pgfplots}
 \usepackage{listings}
 \usepackage{csquotes}
 \usepackage{marvosym}
@@ -1466,6 +1468,23 @@ The changes to the Jepsen application requiting starting anew and writing more f
     \subsection{Rejected transactions}
     
     One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test containing randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed. The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
+
+
+\begin{tikzpicture}
+\begin{axis}
+[
+    xlabel={Transaction lenght}, 
+    ylabel={Abort rate in \%}, 
+    grid, 
+    xmin=0, 
+    xmax=11, 
+    ymin=0, 
+    ymax=100
+]
+\addplot[red, mark=x, smooth] table[col sep=comma]{results/dataresult.csv};
+
+\end{axis}
+\end{tikzpicture}
 
 
     up to 10 operations per txn -> 89.5 \% Abort rate.
