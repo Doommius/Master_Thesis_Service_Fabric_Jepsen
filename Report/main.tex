@@ -1247,7 +1247,7 @@ update accounts set balance = -42 where id = 42;
     \subsection{SF services}
     Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. as well as greatly reducing the time that connections are held open to due round trips times being lower, which should allow for higher throughout.
 
-    \subsubsection{Statefull Reliable collection service}
+    \subsubsection{stateful Reliable collection service}
 
     The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{wikihttpstatuscodes}. node not primary, accepted, result not found, etc. which should allow for easier dianoses and handling of faults when they are parsed by the Jepsen suite.
 
@@ -1310,7 +1310,7 @@ This allows us to query the individual partitions, where any aggregate operation
     foreach (Partition partition in partitions)    {  .. Do something ..  }
     return result;
 \end{lstlisting}  
-\paragraph{Statefull Service}
+\paragraph{stateful Service}
 
 The stateful service was implemented via the MVC patterns as well and followed a design that kept simplicity in mind where each endpoint exposed and preformed one operation and committed this change to the datastore. This allowed for querying the database in a quick and consistent manner even if data split among  partitions.
 \begin{lstlisting}[language=csh]
@@ -1356,32 +1356,44 @@ The Jepsen application required a driver to be written for jepsen to be able to 
     The implementation of this revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again. Issues started showing up that which were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
 
     \subsubsection{Implementation changes for the SF Application}
-    The second iteration of the design remove the stateless layer of the application however this approach was still flawed and was used for a large part of the initial project. it had the limitation that it was threatening the system with the eyes of the Base consistency model, This did show issues with the real tine constraint required by strict serializability or linearizability. \\
+    The second iteration of the Service Fabric application removes the stateless layer of the application, The aim of these changes was to increase the throughput of the service by removing  layer of network traffic and routing. This required moving the handling of request, parsing and verification to the stateless service.   \\
     
-    The code changes to the service fabric aggregated the request handling from the stateless service into the stateful service along with changes to configurations to routing, request handling, and parsing.
-    
-    
+    The changes required here weren't overly complex and only required merging the code together and ensure that only valid data was used in transactions. 
+    \\
 
     \subsubsection{Implementation changes for the Clojure Application}
-        This design iteration didn't have any major changes on the Clojure application as the changes were on the routing side of service fabric. this did result in some changes on the connector that require spoofing to the headers on a internal service fabric application to avoid the request being rejected by the statefull application. Routing was also such that requsets were sent to the primary node by default.
+        This design iteration didn't required any major changes to the Clojure application, the changes were only on the routing side of service fabric. this did require minor changes to the connector such that the headers of the requests such that they were valid as internal service fabric requests. Otherwise  the connections from the clojure application were simply rejected by the stateful application. Routing was defined such that the primary node was connection to by default as was defined in the code itself. This should probably have been implemented as a command line configuration but the direct solution was chosen as that endpoint would have to be defined either way. 
     
 
 \subsection{Final iteration of the design.}
-    In this iteration the way transactions and calls between the client and server was changed, this required significant rewriting of the entire code project. due to the flawed approach in the 2 previous iterations.
-    
-    This required a full redesign of the way the request where handled such that the system used transactions and not just operations. The first design change is a new stateful service which needs to handle transactions containing a arbitrary long ordered list of operations to execute. and trivial compared to designing a new Jepsen test due to the way that the current Jepsen test generates, performs, parses, and checks the transaction history. 
-    
-    A change was also made to the network topology where all nodes were added to a proximity group that should reduce any latency or keep it to a minimal and ensure that outside forces such as bottle necked routing or switching gear aren't affecting the test results.  \\
-    
-    
-    \paragraph{The Stateless service}
+    At this point in the process and major flaw was realized and required major changes to how transactions were handled. in other words, the generator, checker, driver, client had to be rewritten on the Clojure side and most of the code on the Service Fabric side required the same treatment. 
+    \\
+    The prior Designs treated the system as a BASE data-store, where we just preformed single operation transactions, where we required multi operation transactions to test transnational data store, where a transaction can contain a  arbitrary long ordered list of operations to execute. 
+    \\
+    A change was made to the network topology where all nodes were added to a proximity group that should reduce any latency or keep it to a minimal and ensure that outside forces such as bottle necked routing or switching gear isn't affecting the test results.  \\
     
     
-    The first first major change was changing the statefull API to support transactions. this required rebuilding the back-end to support this functionality which was greatly eased by using Postman, dotnetfiddle and curiousconcept json tools. but still extremely time consuming due to the lack of debug tools and generally black box behavior of Service Fabric, where issues weren't reproducible outside the cluster, and the cluster only returning internal server codes. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process.\\
+    \subsubsection{The Stateless service}
+    
+    The changes required for the Service fabric cluster required changing how transactions were passed to the service, before a uri path variables were used, For transactions requiring multiple operations this isn't viable, The API was changed to accepting a transaction stored in JSON via URI parameters. This allows for greater flexibility, and a standardized way to pass information and configuration between the two services if needed. 
+    
+    The way this should be implemented is by first parsing the incoming transaction JSON into iterable format and simply iterate over it preforming the required sub operations of a given transaction and committing afterwards.
+    
+    \subsubsection{Clojure application}
+    
+    The jepsen application requires significant redesign. Centered around generation of transactions instead of sub operations, Starting with the driver where the choice is to add a new interface that requires new code that handles transactions instead of sub operations, On top of the Driver layer the Client module sits, for this a change in design is required that handles the new data type, complexity added by it. where it should parse the incoming transactions, pass this on to the driver, where verification and fault handling should occur when a result or exception is returned. The Generator should generate transaction containing a list of operations, here Jepsen Elle module provides functionality that eases the implementation of both the generator and the checking for the generated ordering.
+    
+    \subsection{Implementation of the final design}
+    
+    \subsubsection{The Stateless service}
+    
+    The changes to the stateless services required designing a new API endpoint which collected all functionaility of the existing endpoints into a single MVC. For the implementation the use of tools such as Postman, dotnetfiddle and curiousconcept json tool were used, This allowed testing concepts and code idea prior to implementing them for the Service Fabric cluster. The implementation was still time consuming due to the lack of debugging tools and generally black box behavior of Service Fabric. stemming from the inability  to run the application locally. and the cluster only returning internal server codes that wasn't usable for debugging of the solution. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process so far.\\
+    
+    Solutions such as implementing application logging or application performance monitoring could have given insight as to why the application didn't behave as expected. Looking at a lot of things in hindsight plenty of poor decisions were made that would be changed and the whole design mythology of the project might be done in a different manner.
+    
     \vspace{5mm}
     
-    
-    The revised backend recieves http calls where the transaction is included as a uri parameter containing json with the transaction in the following format\\
+    The Json data passed to the Jepsen service is of the following format, It's simply parsable into native Json were any desired operation can be preformed on it. There were some issues with formatting where Service Fabric crashed due to non handled characters in the payload, or occasions where some text values where denoted correctly leading to crashes. \\
     \begin{lstlisting}[language=json]
 {  "transaction":[
     {      "operation":"Enqueue",
@@ -1392,7 +1404,7 @@ The Jepsen application required a driver to be written for jepsen to be able to 
     {      "operation":"abort"      }  ]}
     \end{lstlisting}  
     
-    The revised backend unifies that endpoints into a single endpoint that takes a transaction as payload and executes this. 
+    The revised stateless service uses the transaction Json by parsing it into a native Json object in .Net and simply loops over it and checks for operation types and simply executes them according to the type, and ads the result of the operation to a result list.
     \begin{lstlisting}[language=csh]
 [HttpPut]
 public async Task<IActionResult> Put(){
@@ -1406,9 +1418,30 @@ public async Task<IActionResult> Put(){
      return this.Json(result);}
 \end{lstlisting}  
 
+In case of aborts the cases are handling by a try catch that returns the state of the transaction as aborted along with why a given transaction was aborted to allow for analysis of this later.
+
      \subsubsection{Implementation changes to the Jepsen Clojure application.}
 
-The changes to the Jepsen application requiting starting anew and writing more functionality for the Jepsen service. Firstly was redoing the connector to use the new data types, parsing for the transactions to and from json, as well as the use of more complex generators and checkers for multi operation transaction. Elle was used as the underlaying package for some of this functionality with regards to generation and checking. The services such as the Client, db, connector etc required a bit more work code wise but less complex code compared to generation and checking.
+
+The changes to the Jepsen application required starting anew of many of the modules. in places where this was viable these changes were implemented as a parallel execution path in case the older code might be relevant, in other cases the older code was simply discarded in favor of the new implementation.
+\\
+\vspace{5mm}
+A entirely new implementation of the Driver was required. The modules retrieves a Clojure Map that is parses into Json verifying the validity of the transaction, This payload is then packed into a get request where relevant meta data is added. For the returned payload a check if first preformed to handle any exception throw in case of a network issues or error, secondly a check is preformed to check what the commit status of the transaction is. if it's aborted or ended in a different failure, and lastly if the reeturn status is good, the return values are parsed and returned to our Client module.
+\\
+\vspace{5mm}
+The Client Module was started a new that handled multi operation transactions. here a lot of the requirement was implementation the module to handle preparing the map for Json as well as checking and verifying the values returned from the driver. The payload is prepared by parsing the operation map into a json compatible format and for the retrieving data verifying the values, and checking the status of the returned value as well as storing the returned values in our history for later comparison.
+\\
+\vspace{5mm}
+    
+    
+    Generator 
+    
+    Checker
+    
+    
+    
+
+The changes to the Jepsen application requiting starting anew and writing more functionality for the Jepsen service. Firstly was redoing the connector to use the new data types, parsing for the transactions to and from json, as well as the use of more complex generators and checkers for multi operation transaction. Elle was used as the underlying package for some of this functionality with regards to generation and checking. The services such as the Client, db, connector etc required a bit more work code wise but less complex code compared to generation and checking.
 
 
 \subsection{Running the code.}
