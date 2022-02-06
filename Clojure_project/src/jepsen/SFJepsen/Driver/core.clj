@@ -70,7 +70,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   [clientaddress]
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.4:35112/api")
+  (str "http://10.0.0.7:35112/api")
   )
 
 
@@ -80,7 +80,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   []
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.4:35112/api"))
+  (str "http://10.0.0.7:35112/api"))
 
 
 (defn ^String url
@@ -127,13 +127,13 @@
 (defn parse
   "Parse an inputstream or string as JSON"
   [response]
-  (when (= 204 (response :status)) (throw+ {:stutus   204
-                                            :definite? false
-                                            :type     :missing-value
+  (when (= 204 (response :status)) (throw+ {:stutus      204
+                                            :definite?   false
+                                            :type        :missing-value
                                             :description response
                                             }))
-  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type     :missing-body
-                                                                         :definite? false
+  (when (and (= "[]" (response :body)) (= "" (response :body))) (throw+ {:type        :missing-body
+                                                                         :definite?   false
                                                                          :description response
                                                                          }))
   ((first (json/parse-string (response :body) true)) :Value)
@@ -295,57 +295,42 @@
   return value: [{\"Key\" \"thekey\", \"Value\" \"3\"} {\"Key\" \"thekey\", \"Value\" \"3\"} {\"Key\" \"thekey\", \"Value\" \"True\"} {\"Key\" \"thekey\", \"Value\" \"15\"} {\"Key\" \"thekey\", \"Value\" \"True\"}]
 
   "
+  ;(info "parserxn" resultmap)
+  (let [jsonmap (parsejsontotxn (:body resultmap))]
+    (if (clojure.string/includes? (val (first(first jsonmap))) "System.Fabric.FabricNotPrimaryException")
+      (throw+ {:status      602
+               :definite?   true
+               :type        :notprimary
+               :description (val (first(first jsonmap)))
+               })
+      (if (clojure.string/includes? (val (first(first jsonmap))) "System.TimeoutException:")
+        (throw+ {:status      601
+                 :type        :RealiableCollectionslockTimeout
+                 :definite?   false
+                 :description (val (first(first jsonmap)))
+                 })
+        jsonmap
+        ))
 
-  (parsejsontotxn (:body resultmap))
+    )
   )
+
+
+
 
 
 (defn parseresult [r]
 
   (if (= (val (second r)) "False")
     nil
-    (if (clojure.string/includes? (val (second r)) "System.Fabric.FabricNotPrimaryException")
-      (throw+ {:status   602
-               :definite? true
-               :type     :notprimary
-               :description  (val (second r))
-               })
-      (if (clojure.string/includes? (val (second r)) "System.TimeoutException:")
-        (throw+ {:status   601
-                 :type     :RealiableCollectionslockTimeout
-                 :definite? false
-                 :description (val (second r))
-                 })
-        (Long/parseLong (val (second r)))))
-
+    ((Long/parseLong (val (second r))))
     )
-
   )
 
 (defn parseresultlist [r]
   (if (= (val (first r)) "False")
     nil
-    (if (clojure.string/includes? (val (first r)) "System.Fabric.FabricNotPrimaryException")
-      (throw+ {:status   602
-               :type     :notprimary
-               :definite? true
-               :description (val (first r))
-               })
-      (if (clojure.string/includes? (val (first r)) "System.TimeoutException:")
-        (throw+ {:status   601
-                 :type     :RealiableCollectionslockTimeout
-                 :definite? false
-                 :description (val (first r))
-                 })
-        (if (=(val (second r)) "[-1]")
-          (throw+ {:status   603
-                   :type     :unhandledexception
-                   :definite? false
-                   :description (val (first r))
-                   })
-          (val (second r))))
-
-      )
+    (val (second r))
 
     ))
 

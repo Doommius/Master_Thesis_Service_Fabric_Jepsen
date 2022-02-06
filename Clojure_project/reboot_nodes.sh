@@ -1,0 +1,5 @@
+ssh -i /home/jervelund/.ssh/SF_cluster.key 10.0.0.4 "sudo apt install -y ntpdate"
+ssh -i /home/jervelund/.ssh/SF_cluster.key 10.0.0.5 "sudo apt install -y ntpdate"
+ssh -i /home/jervelund/.ssh/SF_cluster.key 10.0.0.6 "sudo apt install -y ntpdate"
+ssh -i /home/jervelund/.ssh/SF_cluster.key 10.0.0.7 "sudo apt install -y ntpdate"
+ssh -i /home/jervelund/.ssh/SF_cluster.key 10.0.0.8 "sudo apt install -y ntpdate"

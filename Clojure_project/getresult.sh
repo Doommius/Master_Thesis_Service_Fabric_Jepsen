@@ -1,1 +1,1 @@
-scp -r jervelund@20.67.241.178:Clojure_project/store /mnt/f/thesis/result
+scp -r jervelund@20.82.138.50:Clojure_project/store /mnt/f/thesis/result

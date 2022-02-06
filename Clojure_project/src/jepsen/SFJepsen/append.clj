@@ -50,10 +50,19 @@
       (catch [:status 204] e
         (assoc op :type :fail, :error :not-found))
       (catch [:status 601] e
-         (assoc op :type :fail, :error e))
+         (assoc op :type :fail, :error :deadlock, :description (:description e)))
       (catch [:status 602] e
         (assoc op :type :fail, :error :notprimary))
-      ) ))
+      (catch Exception e
+        (assoc op :type :fail, :error e)
+        )
+      ;(finally
+        ;(info "OP is " op)
+        ;(info "K is " k))
+      )
+      )
+
+    )
 
   (teardown! [_ test]
     )
@@ -70,7 +79,7 @@
   {
    :generator (append/gen opts)
    :client    (Client. nil)
-   :checker   (append/checker (assoc opts :anomalies [:G0 :G1 :G2 :GSIa :GSIb]))
+   :checker   (append/checker (assoc opts :anomalies [:G0 :G2  :incompatible-order :dirty-update]))
    }
 
   )

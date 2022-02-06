@@ -3,7 +3,7 @@ echo "Setup: Start"
 sudo apt update
 sudo apt upgrade
 
-if [ -f "/home/jervelund/SF_cluster.key" ]; then
+if [ -f "/home/jervelund/.ssh/SF_cluster.key" ]; then
   echo "Setup: Already complete, Skipping"
 else
   echo "Setup: Start"
@@ -12,12 +12,12 @@ else
   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
   curl -sL https://packages.microsoft.com/keys/microsoft.asc |    gpg --dearmor |    sudo tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
   sudo apt update
-  sudo apt upgrade
+  sudo apt upgrade -y
   AZ_REPO=$(lsb_release -cs)
   echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" |    sudo tee /etc/apt/sources.list.d/azure-cli.list
   sudo apt update
-  sudo apt upgrade
-  sudo apt-get install azure-cli
+  sudo apt upgrade -y
+  sudo apt-get install -y azure-cli
   echo "Install: Complete"
   echo "SSH KEYS: Start"
   echo "SSH KEYS: KEY Generating SSH key and installing it to cluster."
@@ -30,9 +30,9 @@ rm -rf target
 lein clean
 lein install
 echo "Jepsen Test: Start reliableAppend"
-lein run test --workload "reliableappend" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 100 --time-limit 3600 -r 100 --ops-per-key 256 --test-count 1 --nemesis pause,clock
+lein run test --workload "reliableappend" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key /home/jervelund/.ssh/SF_cluster.key  --nodes-file resources/nodes --concurrency 200 --time-limit 600 -r 100 --ops-per-key 256 --test-count 1 --nemesis pause,clock
 echo "Jepsen Test: Start reliabledict"
-lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 100 --time-limit 3600 -r 100 --ops-per-key 256 --test-count 1 --nemesis pause,clock
+#lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key /home/jervelund/.ssh/SF_cluster.key --nodes-file resources/nodes --concurrency 100 --time-limit 3600 -r 100 --ops-per-key 256 --test-count 1 --nemesis pause,clock
 echo "Jepsen Test: Start reliablequeue"
-#lein run test --workload "reliablequeue" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 30 -r 100 --ops-per-key 500 --test-count 1 --nemesis pause,clock
+#lein run test --workload "reliablequeue" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key /home/jervelund/.ssh/SF_cluster.key --nodes-file resources/nodes --concurrency 200 --time-limit 30 -r 100 --ops-per-key 500 --test-count 1 --nemesis pause,clock
 echo "Jepsen Test: END"

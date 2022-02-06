@@ -20,7 +20,7 @@
                                     AzureActiveDirectory="true"
                                     ServerCertThumbprint="0123456789012345678901234567890123456789" />
   -->
-  <ClusterConnectionParameters ConnectionEndpoint="jepsen.northeurope.cloudapp.azure.com:19000" X509Credential="true" ServerCertThumbprint="E58AE7E7077522C401927883CFC3E610411134B1" FindType="FindByThumbprint" FindValue="E58AE7E7077522C401927883CFC3E610411134B1" StoreLocation="CurrentUser" StoreName="My" />
+  <ClusterConnectionParameters ConnectionEndpoint="jepsen3.northeurope.cloudapp.azure.com:19000" X509Credential="true" ServerCertThumbprint="E58AE7E7077522C401927883CFC3E610411134B1" FindType="FindByThumbprint" FindValue="E58AE7E7077522C401927883CFC3E610411134B1" StoreLocation="CurrentUser" StoreName="My" />
   <ApplicationParameterFile Path="..\ApplicationParameters\Cloud.xml" />
   <StartupServiceParameterFile Path="..\StartupServiceParameters\Cloud.xml" />
   <CopyPackageParameters CompressPackage="true" />

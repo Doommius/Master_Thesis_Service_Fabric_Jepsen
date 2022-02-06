@@ -167,7 +167,7 @@
                "Faults must be pause, kill, partition, clock, or member, or the special faults all or none."]]
 
    [nil "--max-txn-length NUM" "Maximum number of operations in a transaction."
-    :default 3
+    :default 2
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
 

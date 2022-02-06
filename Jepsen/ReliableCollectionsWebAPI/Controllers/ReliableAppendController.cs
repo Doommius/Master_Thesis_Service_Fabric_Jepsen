@@ -156,6 +156,19 @@ namespace ReliableCollectionsWebAPI.Controllers
                             }
 
                         }
+                        else if (item.operation.Value == "deleteall")
+                        {
+                            v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>)), item.expected.ToObject(typeof(List<long>)));
+                            if (!v)
+                            {
+                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -1 }));
+                            }
+                            else
+                            {
+                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -2 }));
+                            }
+
+                        }
                         else if (item.operation.Value == "abort")
                         {
 
@@ -179,8 +192,9 @@ namespace ReliableCollectionsWebAPI.Controllers
             }
             catch (Exception e)
             {
-                result.Add(new KeyValuePair<string, List<long>>(e.ToString(), new List<long>() { -1 }));
-                return this.Json(result);
+                List<KeyValuePair<string, List<long>>> exceptionresult = new List<KeyValuePair<string, List<long>>>();
+                exceptionresult.Add(new KeyValuePair<string, List<long>>(e.ToString(), new List<long>() { -1 }));
+                return this.Json(exceptionresult);
             }
         }
 
