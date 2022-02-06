@@ -1221,11 +1221,11 @@ update accounts set balance = -42 where id = 42;
 
     \subsection{Initial Design}
 
-    The initial design of the of the testing suite contained two applications.: a service Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure application running the Jepsen testing suite.
+    The initial design of the of the testing suite contained two applications.: a Service Fabric application containing two services. A stateful and a stateless Service. The second application is a Clojure application running the Jepsen testing suite.
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with, these should then be routed to the correct stateful service partition. the initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It should be implemented using C\# as the lack of documentation for Service fabric for java made this this seem the better choice, As of writing this nearly all documentation is for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and had the most documentation and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It should be implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem the better choice, As of writing this nearly all documentation is for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and had the most documentation and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
     A diagram of the design for the stateful service looks as the following. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for routing of the request. \\
     \vspace{5mm}
