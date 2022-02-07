@@ -146,7 +146,7 @@
     \item Poor use available optimizations allowed within the Repeatable Read consistency model. 
     \end{itemize}
     
-    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. No guarantees with scaling beyond a single node, due to the under laying architecture that require an individual  implementation of a transaction manager and query optimizer.
+    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. there is no guarantee with scaling beyond a single node, due to the under laying architecture that require an individual implementation of a transaction manager and query optimizer.
     Within the industry, the classifications and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
     A wide range of papers, outdated standards, and articles are currently used with mixed terminology, definitions, and specifications, which means that users cannot rely on documentation of how a given database or data store behaves.
 
@@ -305,7 +305,7 @@ Structure of the thesis.
 
     \subsubsection{P0 - Dirty Write}
      %TODO fix this section Dirty Write
-        Suppose T1 modifies x and T2 further modifies x before T1 commits or aborts. If either T1 or T2 aborts, it is unclear what the real value of x should be. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. Dirty write can also be defined as a locking mechanism in disguise that requires the locking protocol in the history, that requires long-term locks for write and at least short term locks for read operations.
+        Suppose T1 modifies x and T2 further modifies x before T1 commits or aborts. If either T1 or T2 aborts, it is unclear what the real value of x should be. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. Dirty write can also be defined as a locking mechanism in disguise that requires the locking protocol in the history, that ensures long-term locks for write and at least short term locks for read operations.
 
 
     \subsubsection{P1 - Dirty Read}
@@ -332,7 +332,7 @@ Structure of the thesis.
 
     The third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called Phantom Read because the new records seem to be of phantom origin.
     
-    disallowing P3 requires acquisition of long phantom read-locks
+    Disallowing P3 requires acquisition of long phantom read-locks
 
     %TODO Make example diagram Phantom Read
     
@@ -436,15 +436,20 @@ The network is split into two or more parts where they each believe different tr
 
     \subsubsection{Serializable}
 
-    Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in the ANSI SQL 1999 spec as follows. "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins." \cite{ansisql1999}\\
+    Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in the ANSI SQL 1999 spec as follows.
+    
+    \begin{displayquote}
+    "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
+    \end{displayquote}
     \vspace{5mm}
 
     The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole. This means that in the case of a network partition some or all notes will be stuck until the network is healed. Further, as no real-time constraint is enforced,  we can observe stale reads. This occurs when process A completes a write, then process B begins a read, and the read is not guaranteed to observe the write from process A.
+    \\ \vspace{5mm}
 
     There is a further limitation of Serializable due to having no real-time constraint; SR allows pathological orderings. This allows a serializable database to discard, write, and increment operations that are never observed by executing them at the very end of the history. Furthermore, read operations can always return an empty state by placing the transaction at the beginning of the history. It should however be noted that most implementation does not take advantage of this.
-
+\\ \vspace{5mm}
     SR follows closely to S-SR regarding partition tolerance and availability doing partition and is therefore considered a CA database.
-
+\\ \vspace{5mm}
     \begin{table}[h]
         \begin{tabular}{l|l|l|l}
             T1   & T2   & T3   & T4   \\
@@ -467,9 +472,9 @@ The network is split into two or more parts where they each believe different tr
     \subsubsection{Repeatable Read}
 
     Repeatable Read (RR) closely resembles the Serializable consistency model, however in RR we allow phantoms. This implies that if T1 reads a predicate like "select all from alarms with the newest timestamp," another transaction T2 is able to create or modify values within the predicate before T1 commits. So if the transaction T1 performs the read again, this predicate might not be stable.
-
+\\ \vspace{5mm}
     RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, repeatable read doesn't guarantee repeatable reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
-
+\\ \vspace{5mm}
     It should also be noted that RR allows for the same pathological ordering of operations as a Serializable database.
 
     \begin{table}[h]
@@ -524,17 +529,20 @@ The network is split into two or more parts where they each believe different tr
 
 
     Snapshot Isolation behaves differently to any of the systems. It can be considered more as a \textbf{try: commit() catch: abort()} . We perform our transaction in an independent branch and commit/merge to the database on commit; if there are any conflicts with an already committed transaction, the transaction is simply aborted.
-
+\\ \vspace{5mm}
     Snapshot Isolation, like Readable Read, operates on an object level and allows for the same behavior. Items are stable once read; however, the predicate again isn't. We can fail to observe a previously committed transaction and place operations in arbitrary places in the transaction due to no Linearizability constraint. It also allows sub-operations to interleave. This can result in write skews, which allow transactions to read overlapping states, modify disjoint sets of objects, then commit; and a read-only transaction anomaly involving partially disjointing write sets.
-
+\\ \vspace{5mm}
 
     It should also be noted that there exist multiple versions of Snapshot Isolation, one being prefix-consistent snapshot isolation that enforces process-level transaction ordering, which prevents a given process from failing to observe a previous transaction; and another being parallel snapshot isolation that allows for total availability but this allows for long fork anomalies, as each node has its own transaction ordering.
-
+\\ \vspace{5mm}
     Formally Snapshot Isolation is defined by Berenson et al.\cite{Berensonetal}. as:
 
-    \textit{… each transaction reads data from a snapshot of the (committed) data as of the time the transaction started, called its Start-Timestamp. This time may be any time before the transaction's first Read. A transaction running in Snapshot Isolation is never blocked attempting a read as long as the snapshot data from its Start-Timestamp can be maintained. The transaction's writes (updates, inserts, and deletes) will also be reflected in this snapshot, to be read again if the transaction accesses (i.e., reads or updates) the data a second time. Updates by other transactions active after the transaction Start-Timestamp are invisible to the transaction.
+    \begin{displayquote}
+    … each transaction reads data from a snapshot of the (committed) data as of the time the transaction started, called its Start-Timestamp. This time may be any time before the transaction's first Read. A transaction running in Snapshot Isolation is never blocked attempting a read as long as the snapshot data from its Start-Timestamp can be maintained. The transaction's writes (updates, inserts, and deletes) will also be reflected in this snapshot, to be read again if the transaction accesses (i.e., reads or updates) the data a second time. Updates by other transactions active after the transaction Start-Timestamp are invisible to the transaction.
     \\
-    When the transaction T1 is ready to commit, it gets a Commit-Timestamp, larger than any existing Start-Timestamp or Commit-Timestamp. The transaction successfully commits only if no other transaction T2 with a Commit-Timestamp in T1's execution interval [StartTimestamp, Commit-Timestamp] wrote data that T1 also wrote. Otherwise, T1 will abort. This feature, called First-committer-wins prevents lost updates (phenomenon P4). When T1 commits, its changes become visible to all transactions whose Start-Timestamps are larger than T1's Commit-Timestamp.}
+    When the transaction T1 is ready to commit, it gets a Commit-Timestamp, larger than any existing Start-Timestamp or Commit-Timestamp. The transaction successfully commits only if no other transaction T2 with a Commit-Timestamp in T1's execution interval [StartTimestamp, Commit-Timestamp] wrote data that T1 also wrote. Otherwise, T1 will abort. This feature, called First-committer-wins prevents lost updates (phenomenon P4). When T1 commits, its changes become visible to all transactions whose Start-Timestamps are larger than T1's Commit-Timestamp.
+    \end{displayquote}
+   
 
     There also exist multiple other definitions from \cite{CeroneBernardiGotsman} and \cite{CrooksPuAlvisiClement}
 
@@ -574,11 +582,11 @@ The network is split into two or more parts where they each believe different tr
 
     \subsection{Read Committed}
     The Read Committed transaction model is the first non-atomic transaction model where partial visibility of committed transactions is permitted. This however might lead to foreign key constraint issues, among other problems where required data joins are performed due to not yet visible values.
-
+\\ \vspace{5mm}
 
     Formally it is defined in ANSISQL1999\cite{ansisql1999} by disallowing P1
     \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
-
+\\ \vspace{5mm}
 
     %TODO Make Diagram Read committed
 
@@ -614,8 +622,8 @@ The network is split into two or more parts where they each believe different tr
     %TODO Make Diagram Linearizable
 
     \subsubsection{Sequential Consistency}
-    Sequential Consistency (SC) is a relaxation of Linearizability. Unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However, since a Total order is required, the model is unable to tolerate partitions and some or all nodes will be unable to make progress. \\
-
+    Sequential Consistency (SC) is a relaxation of Linearizability. Unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However, since a Total order is required, the model is unable to tolerate partitions and some or all nodes will be unable to make progress. 
+\\ \vspace{5mm}
     One of the phenomena SC allows is stale reads. All processes have to follow the same total order but as there isn't a strong constraint concerning how far a process may be behind or ahead and it may return an arbitrarily stale state. However, once a given node A observes some operations from a separate node B, A may never observe a state prior to B.
 
     Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formalized it into three requirements:
@@ -999,14 +1007,14 @@ update accounts set balance = -42 where id = 42;
 
     \subsection{Introduction}
 
-    Service Fabric (SF) is a presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers. One of the key points presented by on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.\\
+    Service Fabric (SF) is presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers. One of the key points presented by Microsoft on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.\\
     \vspace{5mm}
 
     \includegraphics[scale=0.5]{images/service-fabric-architecture.png}
 
     \subsection{System Architecture}
 
-    The architecture behind Service Fabric is built via a layered approach, that by Microsoft's words allows developers to write applications that are highly available, saleable, manageable and testable. These layers are built on 5 Core and 2 supporting subsystems. Our main interest lies within the reliable collection so I will only be investigating the layers and services that lay below this.\\
+    The architecture behind Service Fabric is built via a layered approach, by Microsoft's words this allows developers to write applications that are highly available, scalable, manageable and testable. These layers are built on 5 Core and 2 supporting subsystems. Our main interest lies within the reliable collection so I will only be investigating the layers and services that lay below this.\\
     \vspace{5mm}
 
     \subsubsection{Transport subsystem}
@@ -1016,50 +1024,50 @@ update accounts set balance = -42 where id = 42;
 
     \subsubsection{Federation subsystem}
 
-    The next subsystem in the stack is the Federation subsystem that uses the communication channels provided by the transport subsystem to gather the nodes in the system into a unified service fabric cluster, and provides system primitives that allow for Failure detection, leader Election and consistent routing within the distributed system.\\
+    The next subsystem in the stack is the Federation subsystem, this uses the communication channels provided by the transport subsystem to gather the nodes in the system into a unified service fabric cluster, as well as providing system primitives that allow for Failure detection, leader Election and consistent routing within the cluster.\\
     \vspace{5mm}
 
-    The core of the subsystem is built around an SF-ring that was developed internally at Microsoft in the early 2000s, where both keys and nodes are mapped to a point in the ring, with keys being owned by the node closest to it in the ring. where each node also uses this ring to keep track of its immediate successor and predecessor nodes that it stores in a Neighborhood set, this set is then used by the Federation layer to run consistent membership and failure detection. Nodes also maintain long distance routing partners that are used for consistent routing.\\
+    The core of the subsystem is built around an SF-ring that was developed internally at Microsoft in the early 2000s, where both keys and nodes are mapped to a point in the ring, with keys being owned by the node closest to it in the ring. Each node also uses this ring to keep track of its immediate successor and predecessor nodes that it stores in a Neighborhood set, this set is then used by the Federation layer to run consistent membership and failure detection. Nodes also maintain long distance routing partners that are used for consistent routing.\\
     \vspace{5mm}
 
-    The membership and Failure detection is doing using tow key design principles.\\
+    The membership and Failure detection is done using tow key design principles.\\
     \vspace{5mm}
 
     Strongly Consistent membership and Decoupling Failure Detection from Failure Decision\\
     \vspace{5mm}
 
     \begin{itemize}
-        \item \textbf{Strongly Consistent membership} All nodes must monitoring a given nodes status must agree on weather the node is up or down. for use in the SF ring this means that the all nodes on the node's Neighborhood set must agree on its status.
+        \item \textbf{Strongly Consistent membership} All nodes monitoring a given nodes status must agree on weather the node is up or down. For use in the SF ring this means that the all nodes on the node's Neighborhood set must agree on its status.
         \item \textbf{Decoupling Failure Detection from Failure Decision}: Failure detection protocols can lead to conflicting states, therefore the decision is decoupled from detection.
     \end{itemize}
     \vspace{5mm}
 
-    To solve the issues of decoupling the failure detection and decision that is used need distribute all decisions to the responsible nodes and ensure that these decisions are all done in a consistent and reliable manner. For the monitoring aspect of this s distributed monitoring and leasing solution is implemented by SF. This implementation solves this via Lease Renewal Request(LR) and LRack. A node is simply required to maintain valid leases from all of its monitors and these leases have to be renewed every lease period, this leasing period is calculated based on round trip times but is typically around 30 s. If a node fails to renew any of these leases it considers moving itself from the set, and if a monitor misses a request from It it considers marked the monitor as failed. Both these decisions need to be approved by an Arbitrator group. If a node fails to receive an LRack within a timeout based on round trip time, it repeats the LR until it receives an LRack. Due to the nature of the SF-ring these monitor relations are symmetrical, but this Lease protocol is still run independently, there are however other cases. If a node fails the renewal process, it stops renewing leases to any other nodes, or if a node detects another node as having failed, it stops sending renewal request to it. These 2 cases have the potential to cause inconsistencies if they were operating alone, however decision of deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
+    To solve the issues of decoupling the failure detection and decision making, there is a need to distribute all decisions to a set responsible nodes and ensure that these decisions are all done in a consistent and reliable manner. For the monitoring aspect of this a distributed monitoring and leasing solution is implemented by SF. This implementation solves this via Lease Renewal Request(LR) and LRack. A node is simply required to maintain valid leases from all of its monitors and these leases have to be renewed every lease period. This leasing period is calculated based on round trip times but is typically around 30 s. If a node fails to renew any of these leases it considers removing itself from the set, and if a monitor misses a request to a node, it in turn considers marking the monitor as failed. Both these decisions need to be approved by an Arbitrator group. If a node fails to receive an LRack within a timeout based on round trip time, it repeats the LR until it receives an LRack. Due to the nature of the SF-ring these monitor relations are symmetrical, but this Lease protocol is still run independently, there are however other cases. If a node fails the renewal process, it stops renewing leases to any other nodes, or if a node detects another node as having failed, it stops sending renewal request to it. These 2 cases have the potential to cause inconsistencies if they were operating alone, however decision of deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
     \vspace{5mm}
 
-    The decision of deciding on failures is preformed by the Arbitrator group. This is separate from the neighborhood set. They operate independently and have two it has two ways of deciding if a given node has failed. The way that the groups stay consistent when members join or leave the group is that when an Arbitrator joins the set, it initially rejects all requests in the first t seconds, this is done to prevent new Arbitrator making conflicting decisions with the excising nodes, and to prevent failed nodes to exist in the distributed membership protocol. This ensures that detected nodes leave before being forgotten.\\
+    The decision of deciding on failures is preformed by the Arbitrator group. This is separate from the neighborhood set. They operate independently and it has two ways of deciding if a given node has failed. The way that the groups stay consistent when members join or leave the group is that when an Arbitrator joins the set, it initially rejects all requests in the first T seconds. This is done to prevent new Arbitrator making conflicting decisions with the excising nodes, and to prevent failed nodes to exist in the distributed membership protocol. This ensures that detected nodes leave before being forgotten.\\
     \vspace{5mm}
 
     \begin{enumerate}
         \item X detects Y as failed and sends fail(Y) to the arbitrator
-        \item The arbitrator Ads Y to a recently failed list and sends ack(fail(y)) containing a timeout for Y to X, if The arbitrator already marked X as having failed and ignores the request,
+        \item The arbitrator adds Y to a recently failed list and sends ack(fail(y)) containing a timeout for Y to X. If The arbitrator already marked X as having failed and ignores the request,
         \item If X receives this request it waits for the TO to claim Y's area of the ring. and if re receives no response within the timeout it leaves itself.
     \end{enumerate}
 
-    If a node is already in the recently failed list, it returns the same response as the the first reporter except it calculates in time since first detection so the portion of the ring is claimed by the neighbors at the same time. This also means that the routing can continue after to with a laxity added. As all routing request for a node are added to a queued if a node is marked a failed. and the queue is released after TO+laxity that allows a neighboring node to claim that part of the ring and allows to these routing request to be preform when by its successors.\\
+    If a node is already in the recently failed list, it returns the same response as to the first reporter except it calculates the time since first detection so the portion of the ring it own is claimed by the neighbors at the same time. This also means that the routing can continue after Time out with a laxity added. As all routing request for a node are added to a queue if a node is marked as failed. The queue is then released after Timeout+laxity that allows all neighboring nodes to claim that part of the ring and allows to these routing request to be preformed by its successors.\\
     \vspace{5mm}
 
-    If the case of two nodes report each other as failed, the conflict is resolved either by majority, such that node that was reported first to the most Arbitrators leave or an alternate variant that heals the membership if both nodes are healthy and allows both to stay. In cases of network congestion or partitions that result in multiple nodes detection each other as failed, in traditional distributed hash tables this can result in inconsistencies in the membership lists or ring. \\
-    \vspace{5mm}
-
-    The implementation in SF is presented as being failure tolerant towards cascade failures as the decision isn't made by the detectors themselves but by arbitrators. An example is used that if a given node is only dependent by its neighbors and ½ of them fails to renew its lease it will leave itself. No mention here is written about how the node handles being fragmented into two partitions and rejoined later, but mentions that this approach scales to entire data centers, no mentioned about how it scales across regions or outside of data centers.\\
+    If the case of two nodes reporting each other as failed, the conflict is resolved either by majority. The node that was reported first to the most Arbitrators leaves the ring. A second option is to heal the membership if both nodes are healthy and can therefor be allowed to stay. \\   \vspace{5mm}
+    
+    The implementation in SF is presented as being failure tolerant towards cascade failures as the decision isn't made by the detectors themselves but by arbitrators.
+    This can be in cases of network congestion or partitions that result in multiple nodes detecting each other as failed. where traditional distributed hash tables this can result in inconsistencies in the membership lists or ring.\\ 
     \vspace{5mm}
 
     \includegraphics[scale=0.3]{images/servicefabric-fig-ring-topology.jpeg}
 
     SF-Ring and consistent routing.(need to rewrite/reword this to a more coherent sentence.)
 
-    The Distributed Hash table used for service fabric routing is a evolution of SF-ring that was developed within Microsoft in the 2000s. The routing used offers symmetry and due to this it allows bidirectional routing that allow for lookup and routing via binary search, this allows SF to in practice routes message around the ring in a fast manner, with multiple routing options in that there always exist 2 routing partners on either side of the destination that both helps distributed the load and is able to route even with stale routing tables. Initially all packages were routed using this method however this has changed over the years, today the hash table is used to build a routing table and maintain it when a new node is added to the cluster, and ti route message to virtual addresses. After discovery a direct route is used via the destination IP address. \\
+    The Distributed Hash table used for service fabric routing is a evolution of SF-ring that was developed within Microsoft in the 2000s. The routing used offers symmetry and due to this it allows bidirectional routing that allow for lookup and routing via binary search. This allows SF to route message around the ring in a fast manner, with multiple routing options in that there always exist 2 routing partners on either side of the destination that both helps distribute the load and is able to route even with stale routing tables. Initially all packages were routed using this method, this has changed over the years. Today the hash table is used to build a routing table and maintain it when a new node is added to the cluster. After discovery a direct route is used via the destination IP address. \\
     \vspace{5mm}
 
     Routing tables work differently depending on the size of the cluster. However it is able to route in two ways. If the size of the routing table is smaller than the number of nodes a direct route is used, if there exist more nodes in the cluster than the routing tables it stitches to routing via routing tables to reduce memory consummation but causing an increase in time complexity to O(Log(n)) from O(1)\\
@@ -1225,7 +1233,7 @@ update accounts set balance = -42 where id = 42;
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It should be implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem the better choice, As of writing this nearly all documentation is for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and had the most documentation and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It should be implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice. As of writing, nearly all this documentation is for the C\# language. Both services will expose these endpoints via the Kestrel web server as it is the native implementation already integrated into SF and had the most documentation and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
     A diagram of the design for the stateful service looks as the following. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for routing of the request. \\
     \vspace{5mm}
@@ -1234,46 +1242,46 @@ update accounts set balance = -42 where id = 42;
     This implementation contains 2 main codebases. The C\# dotnet web services that acts as a API to the reliable collections using 3 controllers for the 3 default data structures implemented in the framework, and a Clojure codebase containing the Jepsen test and a driver for connecting to the Service fabric services.
 
     \subsubsection{Infrastructure}
-    The infrastructure is centered around Azure, using a isolated v-net containing 6 virtual machines all running Linux, Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
-    The 5 service fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide}, The latter was the process used doing the development stages of the project.
+    The infrastructure is centered around Azure, using an isolated v-net containing 6 virtual machines all running Linux. Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
+    The 5 Service Fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide}. The latter was the process used doing the development stages of the project.
 
-    The Jepsenhost is accessed via ssh and scp is used to deploy the newest version of the test code. Here a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins but due to the goal of the project not being fully automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
+    The Jepsenhost is accessed via ssh and scp is used to deploy the newest version of the test code. Here, a deployment pipeline could have been used to handle all of this by fetching, building and deploying via Jenkins but due to the goal of the project not being fully automated testing of Service Fabric, a bash script instead used that deployed code, started applications, ran the test and retrieve results.
 
     The topology of the network is arrange such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection to cause issues with the test.\\
     \includegraphics[scale=0.3]{images/topology.png}
     \\
 
-    All traffic resides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as expected, These endpoint were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
+    All traffic resides within the cluster and the load balancer is only there for testing of the application and check if all endpoints work as expected. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
 
     \paragraph*{Node Sizes}
 
-    The initial node sizes was 2 CPU cores and 8 GBs of ram along with 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment, this was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a more well-behaved cluster, and this node size was kept for the reminder of the project. However the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to out of memory errors that could be resolve with with lowering the search space of the test or increasing the memory of the node itself.
+    The initial node sizes was 2 CPU cores and 8 GBs of ram along with 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment. This was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a more well-behaved cluster, and this node size was kept for the reminder of the project. However, the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to out of memory errors that could be resolve with with lowering the search space of the test or increasing the memory of the node itself.
 
 
     \section{Services}
     As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a stateless front-end that provides this data to clients via an API, a driver that handles the connection to this API and finally the Jepsen test suite itself consisting of both test suite and checker of the transactions and fault induced of the end system.
 
     \subsection{SF services}
-    Using the 2 services approach as recommended from Microsoft provides multiple benefits but also a few negatives. the prime benefit it abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. as well as greatly reducing the time that connections are held open to due round trips times being lower, which should allow for higher throughout.
+    Using the 2 services approach, as recommended from Microsoft, provides multiple benefits but also a few negatives. The prime benefit it abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. As well as greatly reducing the time that connections are held open to due round trips times being lower, which should allow for higher throughout.
 
-    \subsubsection{stateful Reliable collection service}
+    \subsubsection{Stateful Reliable collection service}
 
-    The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by service fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{wikihttpstatuscodes}. node not primary, accepted, result not found, etc. which should allow for easier diagnoses and handling of faults when they are parsed by the Jepsen suite.
+    The stateful services provides 3 separate controllers that each provides one of the built in reliable collection types provided by Service Fabric. Reliable dictionary, reliable queue, and reliable concurrent queue. Fault handling is also handled at this stage where any fault stemming from the transactional issues is returned to the client via http status codes\cite{wikihttpstatuscodes}. node not primary, accepted, result not found, etc. which should allow for easier diagnoses and handling of faults when they are parsed by the Jepsen suite.
 
-    The fronted stateless service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to built additional features but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
+    The fronted stateless service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to build additional features, but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
 
     \subsection{Jepsen test suite}
     
-    The design of the Jepsen test suite aims to use skeleton code from past a Jepsen test to start the project as it gives a template of what functionality should be implemented, these implementations are still custom but it gives a pointer to what the bare minimum is to have a functioning application.
+    The design of the Jepsen test suite aims to use skeleton code from past a Jepsen test to start the project as it gives a template of what functionality should be implemented. These implementations are still custom but it gives a pointer to what the bare minimum is to have a functioning application.
     \\
-    The first module that is needed is a Driver that allows our test to connect to our stateless API, options here are to either write it in Java or Clojure. an attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.
+    The first module that is needed is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.
     \\
-    The Jepsen suite should use a modular setup that allows interoperability between multiple workloads. a runner that allows for test tuning, db that deploys, configures and operates on the running datastore, a client runs the transactions via the driver, nemesis that induces faults in the cluster and 3 workloads, queue, concurrent queue, and dict. One workload for each of the transactional data types exposed by server fabric.
+    The Jepsen suite should use a modular setup that allows interoperability between multiple workloads, a runner that allows for test tuning, db that deploys, configures and operates on the running datastore, a client runs the transactions via the driver, nemesis that induces faults in the cluster and 3 workloads, queue, concurrent queue, and dict. One workload for each of the transactional data types exposed by server fabric.
     \begin{itemize}
         \item The runner module is the main class and handles defaults, CLI input and workload selection along with configuration of common behavior shared between workloads, nemesis, db, along with other features that are mutual for all workloads.
         \item   The db module should handle spinning up and tearing down the services along with functions for stating, stopping, and killing services and workers in the cluster.
 
-  \item  the nemesis modules should contains the functions that kill, partition or in other ways introduce failures in the cluster.
+  \item  The nemesis modules should contain the functions that kill, partition or in other ways introduce failures in the cluster.
 
   \item 3 Workers, that act on different data types and each requiring a separate generator, checker and client.
     \end{itemize}
@@ -1285,27 +1293,27 @@ update accounts set balance = -42 where id = 42;
 
     \subsection{Implementation of the initial design}
 
-    The initial design first targeted the reliable collection dict datatype. and presented a few issues with the design and implementation details that was not considered. One of the biggest hurdle was developing for the service fabric cluster running on a Linux host had some issues due to a non feature parity between it and the windows implementation, This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior. 
-A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks used. it should be noted that the service fabric framework was kept at the same release while .NET and similar aspects where rolled back to older releases.
+    The initial design first targeted the reliable collection dict datatype, and presented a few issues with the design and implementation details that were not considered. One of the biggest hurdle was developing for the Service Fabric cluster running on a Linux host had some issues due to a non feature parity between it and the windows implementation. This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior. 
+A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks used. It should be noted that the Service Fabric framework was kept at the same release while .NET and similar aspects where rolled back to older releases.
 
     All of these attempts were however frugal, after spending newly 2 months deleting all code, starting from scratch using a different approach. trying the implementations via Java, going back to C\# getting a working solution on the windows service fabric implementation i reached out to Mikkel Hegnhøj from Microsoft.
 
     The issue turned out to be 2 fold.
     \begin{itemize}
         \item .NET needing to be rolled back to 3.5
-        \item the entry point having to be defined via .NET and the name of the DLL file. this was something i attempt prior by using a entry point via a bash script , as documented in the official doc. 
+        \item The entry point having to be defined via .NET and the name of the DLL file. This was something I attempted prior by using an entry point via a bash script, as documented in the official doc. 
         
         \end{itemize}
 
-    Finally I had a working version on Linux, or rather. I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required endpoints to be hard coded. This introduced a limit of 1 replica of a given service per node. this would greatly reduce horizontal scaling as we need an extra node per partitions. Running larger partitions on each node is also an option but from a performance, availability, and reliability it's much more effective having lots of smaller partitions instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
+    Finally I had a working version on Linux, or rather, I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required endpoints to be hard coded. This introduced a limit of 1 replica of a given service per node. This would greatly reduce horizontal scaling as we need an extra node per partitions. Running larger partitions on each node is also an option but from a performance, availability, and reliability it's much more effective having lots of smaller partitions instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
 
 
 \subsubsection{Implementation details SF}
 
-The design uses 2 service, a  stateless service that processes the the incoming request and routes it to the back-end service. the get key endpoint will be used to outline the design,  all the stateless endpoints closely resembles each other, therefor only this will be included in the report.\\
+The design uses 2 service, a  stateless service that processes the the incoming request and routes it to the back-end service. The get key endpoint will be used to outline the design,  all the stateless endpoints closely resemble each other, therefore only this will be included in the report.\\
         
 \paragraph{Stateless Service}
-The Stateless service is implemented via Model View Controllers (MVC) that expose the website via a kestrel web server. Each endpoint route is defined via flags that define protocol and request type followed by paths and a endpoint name. For a http get request using path variable as a parameter \textbf{"[HttpGet("{key}")]"} is used. this is then followed by a function that follows the MVC design pattern, but this function a Async function that takes the key as a variable and returns a \textbf{"Task<IActionResult>"}. The used return type allows for the return value to be either JSON or predefined methods to return bad request, No Content, or other http response codes without requiring explicit handling of them.
+The Stateless service is implemented via Model View Controllers (MVC) that expose the website via a kestrel web server. Each endpoint route is defined via flags that define protocol and request type followed by paths and an endpoint name. For an http get request using path variable as a parameter \textbf{"[HttpGet("{key}")]"} is used. This is then followed by a function that allows the MVC design pattern, but this function a Async function that takes the key as a variable and returns a \textbf{"Task<IActionResult>"}. The used return type allows for the return value to be either JSON or predefined methods to return bad request, No Content, or other http response codes without requiring explicit handling of them.
 \begin{lstlisting}[language=csh]
 public async Task<IActionResult> Get(string key)
 \end{lstlisting}   
@@ -1686,7 +1694,7 @@ With 100 concurrent connections the following abort rates were found..
 \begin{tikzpicture}
 \begin{axis}
 [
-    xlabel={Transaction lenght}, 
+    xlabel={Transaction length}, 
     ylabel={Abort rate in \%}, 
     grid, 
     xmin=0, 
@@ -1710,6 +1718,7 @@ With 100 concurrent connections the following abort rates were found..
 \includegraphics[scale=0.5]{Report/results/latency-quantiles.png}
 
 \newpage
+
 \section{Discussion}
 \subsection{Violations of promised consistency level}
 
