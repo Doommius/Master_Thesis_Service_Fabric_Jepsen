@@ -359,7 +359,7 @@ Suppose T1 modifies x by appending [2] and T2 further modifies x by adding [3] p
 \vspace{2mm}
 
 \subsection{P1 - Dirty Read}
-The Dirty Read phenomena occurs when a transaction T2 Reads a object that has been modified by a concurrent transaction T1 prior to T1 committing or aborting. this results in t2 returning a object that might never have existed in the transaction history. The preventative interpretation for P1 uses the same locking of the history via long-term and short-term locks as P0, such that P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock
+The Dirty Read phenomena occurs when a transaction T2 Reads a object that has been modified by a concurrent transaction T1 prior to T1 committing or aborting. this results in t2 returning a object that might never have existed in the transaction history. The preventative interpretation for P1 uses the same locking of the history via long-term and short-term locks as P0, such that P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock.
 
 \subsubsection{Example of violation}
 Suppose transaction T1 modifies a x by appending [2]. Transaction T2 then reads that x before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read x = [1,2] a object that was never committed and that may thus be considered to have never existed.\\
@@ -1302,24 +1302,13 @@ update accounts set balance = -42 where id = 42;
 
     \section{Programming for Service Fabric}
     
-    Implementing services for SF is written in ether Java or .Net. The documentation for Java is highly lacking so .Net was chosen. 
-        ...
-    It was discovered that the documentation for .Net was also highly lacking, outdated, in other ways, had issues so a lot of those issues was figuring it out from the ground up. Implementation features, 
-    ...
-    testing how they behaved and learning from there. This also meant that a lot of time was spent learning .Net and the specific frameworks used in the implementations.
-    ...
-    The .Net code was fairly straight forward to learn while the Service fabric and other libraries where more of a challenge to decipher and implement. 
-    ..
-    This was further escalated by poor support for development on non Windows platforms that require manual everything and no feedback loop from deployment. 
-    ...
-    Web application in SF are programming using Model View Controllers (MVC) and the SF framework for the under laying reliable collections 
+    Development for the Service Fabric Framework is done closely resembles the Development flow for Dotnet Web applications and Kubernetes service Development, There are however tighter constraints where the application is only executable in azure as no local development environment exist for Linux. \\
     
+    Writing the code itself is possible via either Java or c# however documentation only really exist for C#, however this documentation also seem to be outdated and lack quite a bit of information. Generally a MVC application is the best choice for architecture of the service itself where stateless or stateful variants are available.\\
     
-    
-    Dotnet, lack of debugging tools, non features parity between platforms. etc
-%TODO write Programming for Service Fabric
-
-
+    Debugging and testing code on the Linux implementation is highly lacking with no debug tooling available such as remote executing with a debugger or support for dump files to analyse crashes and issues within the application. This caused development to be slow paced, trail\&error and draining. i would recommend creating a working application, prior to integrating the Service Fabric functionality. On top of this using heavy logging from the application to an external store that allows for insight.
+   \\
+   A careful note here should also be taken as there isn't features parity between platforms which causes core functionality to be unavailable on Linux. 
 
     \section{Comparison}
 %TODO write Comparison between the 3 datastores
