@@ -166,10 +166,11 @@
 
     \vspace{5mm}
     How do we test and verify a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
-    
-    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed. The results show that contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.
-    
-Structure of the thesis.
+    \vspace{5mm}
+    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed. The results show that contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.\\
+    \vspace{5mm}
+    \newpage
+\section{Structure of the thesis.}
 
     In Chapter 1, I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
     \vspace{5mm}
@@ -234,68 +235,79 @@ Structure of the thesis.
     CAP states we can only have two of the three properties in any given data-share system. The three different options will be explained below.
 
 
-    \begin{itemize}
-        \item Consistency and Partition tolerance (CP) \\ A system that delivers consistency and partition tolerance but the trade-off here is availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the primary becomes unavailable, the Replicate with the most recent transaction log becomes the new master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability. \\
-
-        \item Availability and Partition tolerance (AP) \\ If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency isn't guaranteed as nodes are always available. In case of partitioning, the nodes will diverge while partitioned due to its Last Write Wins model and will first regain consistency once the network is healed. \\
-
-        \item Availability and Consistency (CA) \\ Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it covers single-node/Cluster databases and file systems. In practice having a distributed system that doesn't allow for partitioning isn't unusable. An example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication, by becoming a CP style database, having some asterisks may apply as the system may not behave or be consistent\cite{aphyrpostgres} as expected. \\
-    \end{itemize}
+\begin{itemize}
+    \item Consistency and Partition tolerance (CP) \\ 
+    \begin{quote}
+         A system that delivers consistency and partition tolerance but the trade-off here is availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the primary becomes unavailable, the Replicate with the most recent transaction log becomes the new master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.
+    \end{quote}
 
 
-    \newpage
+    \item Availability and Partition tolerance (AP) \\ 
+    \begin{quote}
+    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency isn't guaranteed as nodes are always available. In case of partitioning, the nodes will diverge while partitioned due to its Last Write Wins model and will first regain consistency once the network is healed. 
+    \end{quote}
 
+    \item Availability and Consistency (CA) \\ 
+    \begin{quote}Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it covers single-node/Cluster databases and file systems. In practice having a distributed system that doesn't allow for partitioning isn't unusable. An example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication, by becoming a CP style database, having some asterisks may apply as the system may not behave or be consistent\cite{aphyrpostgres} as expected. \end{quote}
+\end{itemize}
 
-    \section{Pretext to Consistency models.}
+\section{Availability}
 
-    \subsection{Availability}
+Availability refers to the guarantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
 
-    Availability refers to the guarantee a system promises doing the presence of network partitions.\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+\begin{itemize}
+   \item Totally Available: 
+   \begin{quote}
+       A totally available system can be considered fully distributed and leaderless, such that any non-faulty node accepts traffic even doing a full partitioning. No guarantee can be given on staleness as data can only be read from the node it was written to until the network is healed. If strict node persistence is maintained, "Read your Writes" can be maintained doing a network partitioning. Otherwise, there is no guarantee provided that we can observe our own writes. 
+   \end{quote}
+   
+    \item High Availability:
+    \begin{quote}
+        "Highly available algorithms ensure "always-on" operation and guarantee low latency as a side effect. If users of a highly available system are able to contact a (set of) server(s) in a system, they are guaranteed a response; (....) a system provides high availability if every user that can contact a correct (non-failing) server eventually receives a response from that server, even in the presence of arbitrary, indefinitely long network partitions between servers." \cite{CAP, HighlyAvailableTransactionsVirtuesandLimitations}
+    \end{quote} 
+    \item Sticky Available: 
+    \begin{quote}
+    "We say that a system provides sticky availability if, whenever a client's transactions are executed against a copy of database state that reflects all of the client's prior operations, it eventually receives a response, even in the presence of indefinitely long partitions (where "reflects" is dependent on semantics). (....) Any guarantee achievable in a highly available system is achievable in a sticky high availability system but not vice-versa."\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+    \end{quote} 
+    \item Unavailable: 
+    \begin{quote}
+    A consistency model is considered unavailable if it is unable to make progress on any nodes doing a network partition, due to constraints within it's consistency mode. These systems, therefore, have reduced scale-ability in the sense that they are limited to running on a single node or cluster where any broader distribution would induce network issues that would pause the system or induce a brain split with subsequent data losses.
+\end{quote}
+ 
+\end{itemize}
 
-    \begin{itemize}
-        \item High Availability:
-        \textit{
-            Informally, highly available algorithms ensure "always-on" operation and guarantee low latency as a side effect. If users of a highly available system are able to contact a (set of) server(s) in a system, they are guaranteed a response; this means servers will not need to communicate with others synchronously. If servers are partitioned from one another, they do not need to stall in order to provide clients with a "safe" response to operations. This lack of fast path coordination also means that a highly available system also offers low latency; in a wide-area setting, clients of a highly available system need not wait for cross-data center communication. To adequately describe whether a transactional system is highly available, we need to describe what servers a client must contact as well as what kinds of responses a server can provide, especially given the possibility of aborts. Traditionally, a system provides high availability if every user that can contact a correct (non-failing) server eventually receives a response from that server, even in the presence of arbitrary, indefinitely long network partitions between servers \cite{CAP}. As in a standard distributed database, designated servers might perform operations for different data items. A server that can handle an operation for a given data item is called a replica for that item.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
-        \item Sticky Available: \textit{In addition to high availability, which allows operations on any replica, distributed algorithms often assume a model in which clients always contact the same logical replica(s) across subsequent operations, whereby each of the client's prior operations (but not necessarily other clients' operations) are reflected in the database state that they observe. As we will discuss in Section 5, clients can ensure continuity between operations (e.g., reading their prior updates to a data item) by maintaining affinity or "stickiness" with a server or set of servers. In a fully replicated system, where all servers are replicas for all data items, stickiness is simple: a client can maintain stickiness by contacting the same server for each request. However, to stay "sticky" in a partially-replicated system,    where servers are replicas for subsets of the set of data items (which we consider in this paper), a client must maintain stickiness with a single logical copy of the database, which may consist of multiple physical servers. We say that a system provides sticky availability if, whenever a client's transactions are executed against a copy of database state that reflects all of the client's prior operations, it eventually receives a response, even in the presence of indefinitely long partitions (where "reflects" is dependent on semantics). A client may choose to become sticky available by acting as a server itself; for example, a client might cache its reads and writes. Any guarantee achievable in a highly available system is achievable in a sticky high availability system but not vice-versa.}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
-        \item Transactional Availability: \textit{Until now, we have considered single-object, single-operation availability. This is standard in the distributed systems literature    (e.g., distributed register models such as linearizability all concern single objects [41]), yet the database literature largely focuses on transactions: groups of multiple operations over multiple objects. Accordingly, by itself, traditional definitions of high availability are insufficient to describe availability guarantees for transactions. Additionally, given a choice to commit and abort responses — which signal transaction success or failure to a client — we must define transactional availability. We say that a transaction has replica availability if it can contact at least one replica for every item it attempts to access; this may result in "lower availability" than a non-transactional availability requirement (e.g., single-item availability). Additionally, given the possibility of system-initiated aborts, we need to ensure useful forward progress: a system can trivially guarantee clients a response by always aborting all transactions. However, this is an unsatisfactory system because nothing good (transaction commit) ever happens; we should require a liveness property.
-        \vspace*{4mm}\\
-        A system cannot guarantee that every transaction will commit—transactions may choose to abort themselves—but we need to ensure that the system will not indefinitely abort transactions of its own volition. We call a transaction abort due to a transaction's own choosing (e.g., as an operation of the transaction itself or due to a would-be violation of a declared integrity constraint) an internal abort and an abort due to system implementation or operation of an external abort. We say that a system provides transactional availability if, given replica availability for every data item in a transaction, the transaction eventually commits (possibly after multiple client retries) or internally aborts [9]. A system provides sticky transactional availability if, given sticky availability, a transaction eventually commits or internally aborts}\cite{HighlyAvailableTransactionsVirtuesandLimitations}
+\newpage
+\section{Transaction Anomalies \& Phenomena}
 
-        \item Unavailable: A consistency model is considered unavailable if it is unable to make progress on any nodes doing a network partition, as it would break the consistency constraints required by a given model. These systems, therefore, have reduced scale-ability as they are often limited to running on a single node or cluster as any form of broader distribution would induce network issues that would pause the system or quit a brain split with subsequent data losses.
+Consistency models are defined by what Phenomena they allow or prohibit, What lies is this in what behavior expected doing use. There are however issues the definitions of these Phenomena where loose definitions allow for interpretation leading to different interpretations of consistency models and Phenomena, or simply the lack of a definition for some properties.\\
 
-        \item Totally Available: A totally available system can be considered fully distributed and leaderless, such that any non-faulty node accepts traffic even doing a full partitioning. No guarantee  can be given on staleness as data can only be read from the node it was written to until the network is healed. If strict node persistence is maintained, "Read your Writes" can be maintained doing a network partitioning. Otherwise, there's is no guarantee provider that we can observe our own writes. 
+The most common standard for these definitions is ANSISQL99\cite{ansisql1999}, within it three phenomena  are used to describe the different transactional consistency models These are defined as follows:
+\begin{itemize}
+    \item "P1: Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed."
+    \item "P2: Fuzzy or Non-repeatable Read — Transaction T1 reads x, then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted."
+    \item "P3: Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read."
+\end{itemize}
 
-    \end{itemize}
+There are however issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation, This lead to the Berenson et al\cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include further definition for "Read and Write Skew", This phenomena defined data item constraint violations, where the ANSI models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations was defined.. The exact definition is below: \\
+\begin{quote}
+    (Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation
+\begin{itemize}
+\item A5A: Read skew — Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If T1 reads y now, it may see an inconsistent state and produce an inconsistent state as output.
+In terms of histories, we have the anomaly:   \\
+ r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
+ 
+\item A5B Write Skew — Suppose T1 reads x and y, which are
+consistent with C(), and then a T2 reads x and y, writes x,
+    and commits. Then T1 writes y. If there were a constraint
+    between x and y, it might be violated. In terms of histories: \\
+r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
+    
+\end{itemize}
+\end{quote}
 
-    \subsection{Transaction Anomalies \& Phenomena}
-    Most consistency models are defined by what Phenomena they allow or prohibit. However, due to poor or loose definitions, there often exist multiple different definitions on each consistency model, as well as on many of the Phenomena, or simply the lack of a definition on some properties. Therefore an explanation of the different definitions and additions will be given below.\\
+This work was later used in Adya et al\cite{Adya99weakconsistency} where the Dirty Write phenomenon is introduced to prevent non-serializable histories. This paper is a solid part of the foundation of modern day definitions of phenomena and consistency models defined by them. This is also what will be used to describe the Transnational consistency models.\\
 
-   ANSISQL99\cite{ansisql1999} defines three phenomena that are used to describe the different consistency models with transactional models. These are defined as follows:
-    \begin{itemize}
-        \item P1: Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed.
-        \item P2: Fuzzy or Non-repeatable Read — Transaction T1 reads x, then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted.
-        \item P3: Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read.
-    \end{itemize}
-
-
-    However, these three Phenomena leave a lot of behavior of the models up to interpretation; therefore, Berenson et al\cite{Berensonetal}. from Microsoft wrote a paper on "A Critique of ANSI SQL Isolation Levels" in 1995 to include Read and Write Skew that defines data item constraint violations, where the ANSI models admit non-serializable histories. To resolve these issues, they wrote about a 4th phenomenon that describes item constraint violations. The exact definition is below: \\
-
-\textit{(Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation}\\
-    \begin{itemize}
-        \item \textit{A5A: Read skew — Suppose transaction T1 reads x, and then a second transaction T2 updates x and y to new values and commits. If T1 reads y now, it may see an inconsistent state and produce an inconsistent state as output.
-        In terms of histories, we have the anomaly:  } \\
-         r1[x]...w2[x]...w2[y]...c2...r1[y]...(c1 or a1)
-        \item \textit{A5B Write Skew — Suppose T1 reads x and y, which are
-        consistent with C(), and then a T2 reads x and y, writes x,
-            and commits. Then T1 writes y. If there were a constraint
-            between x and y, it might be violated. In terms of histories:} \\
-        r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
-    \end{itemize}
-    This definition was later revised in Adya, \cite{Adya99weakconsistency} where the Dirty Write phenomenon is introduced to prevent non-serializable histories.
-
-
-\subsection{Informal definition}
-
+These 4 phenomena are defined by the following Read/Write conflicts.
 \begin{itemize}
     \item P0 (Dirty Write): w1(x) … w2(x)
     \item P1 (Dirty Read): w1(x) … r2(x)
@@ -303,44 +315,190 @@ Structure of the thesis.
     \item P3 (Phantom): r1(P) … w2(y in P)
 \end{itemize}
 
-    \subsubsection{P0 - Dirty Write}
-     %TODO fix this section Dirty Write
-        Suppose T1 modifies x and T2 further modifies x before T1 commits or aborts. If either T1 or T2 aborts, it is unclear what the real value of x should be. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. Dirty write can also be defined as a locking mechanism in disguise that requires the locking protocol in the history, that ensures long-term locks for write and at least short term locks for read operations.
+Explications follows.
+\subsection{P0 - Dirty Write}
+The Dirty Write phenomena occurs when a given object x is modified by concurrent transactions, prior to commit or abort. Following such a violation symptoms such as aborted operations persisting to the history or cases where a committed value might be overwritten by a process and are lost. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. The prevention is often defined as a locking mechanism working on the transaction history, by reacquiring long-term locks for write and at least short term locks for read operations.\\
+\vspace{5mm}
+\subsubsection{Example of violation}
+Suppose T1 modifies x by appending [2] and T2 further modifies x by adding [3] prior to T1 commit or abort. If either T1 or T2 aborts, it is unclear what the value of x should be. \\
+
+\vspace{2mm}
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (62.56,29) -- (270.56,30) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (60.56,90) -- (269.56,90) ;
+%Straight Lines [id:da7329480179958066] 
+\draw    (317.56,96) -- (361.56,95.04) ;
+\draw [shift={(363.56,95)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (16,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
+% Text Node
+\draw (16,84) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
+% Text Node
+\draw (61,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(2 to x)};
+% Text Node
+\draw (50,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(3 to x)};
+% Text Node
+\draw (209,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort/commit?};
+% Text Node
+\draw (207,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort/commit?};
+% Text Node
+\draw (317.56,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
+% Text Node
+\draw (143,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {Now};
+% Text Node
+\draw (12.5,47) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
+% Text Node
+\draw (296,25) node [anchor=north west][inner sep=0.75pt]   [align=left] {$x? \begin{array}{@{\,}c@{\,}}    [1,2,3]\\    \hline    [1,2]\\    \hline    [1,3]  \end{array} $};
+\end{tikzpicture}
+\vspace{2mm}
+
+\subsection{P1 - Dirty Read}
+The Dirty Read phenomena occurs when a transaction T2 Reads a object that has been modified by a concurrent transaction T1 prior to T1 committing or aborting. this results in t2 returning a object that might never have existed in the transaction history. The preventative interpretation for P1 uses the same locking of the history via long-term and short-term locks as P0, such that P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock
+
+\subsubsection{Example of violation}
+Suppose transaction T1 modifies a x by appending [2]. Transaction T2 then reads that x before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read x = [1,2] a object that was never committed and that may thus be considered to have never existed.\\
+\vspace{5mm}
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (62.56,29) -- (270.56,30) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (60.56,90) -- (269.56,90) ;
+%Straight Lines [id:da7329480179958066] 
+\draw    (241.56,108) -- (285.56,107.04) ;
+\draw [shift={(287.56,107)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (16,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
+% Text Node
+\draw (16,84) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
+% Text Node
+\draw (61,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(2 to x)};
+% Text Node
+\draw (118,90) node [anchor=north west][inner sep=0.75pt]   [align=left] {r(x)};
+% Text Node
+\draw (222,5) node [anchor=north west][inner sep=0.75pt]   [align=left] {Rollback};
+% Text Node
+\draw (148,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {commit};
+% Text Node
+\draw (243.56,108) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
+% Text Node
+\draw (12.5,47) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
+% Text Node
+\draw (148,113) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1,2]};
+
+\end{tikzpicture}
+\newpage
+\subsubsection{P2 - Non-repeatable/Fuzzy Read}
+The occurrence of the P2 violation occurs when a given transaction T1 reads the same object multiple times and a given transaction T2 modifies this object in-between any of these reads causing T1 to see different versions of a object in the same transaction without modifying it itself. the preventative implementation for P2 requires the use of long read and write-locks; 
+
+\subsubsection{Example of violation}
+Suppose transaction T1 reads x as [1], transaction T2 then modifies x by appending 2 and commits. T1 then reads x as [1, 2].
+\vspace{5mm}
+ 
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (63.56,64) -- (271.56,65) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (60.56,125) -- (269.56,125) ;
+%Straight Lines [id:da7329480179958066] 
+\draw    (241.56,143) -- (285.56,142.04) ;
+\draw [shift={(287.56,142)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (12.5,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
+% Text Node
+\draw (12.5,119) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
+% Text Node
+\draw (85.56,128) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(2 to x)};
+% Text Node
+\draw (56,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {r(x)};
+% Text Node
+\draw (244,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
+% Text Node
+\draw (155,128) node [anchor=north west][inner sep=0.75pt]   [align=left] {commit};
+% Text Node
+\draw (243.56,143) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
+% Text Node
+\draw (12.5,82) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
+% Text Node
+\draw (66,22) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
+% Text Node
+\draw (178,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {r(x)};
+% Text Node
+\draw (188,22) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1,2]};
+% Text Node
+\draw (262,79) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1,2]};
 
 
-    \subsubsection{P1 - Dirty Read}
-    %TODO fix this section Dirty Read.
-        The preventative interpretation, P1, is more restrictive and requires that a transaction T2 must not read any object from an uncommitted transaction T1 (there is no abort or commit action for T1 between w1(x) and r2(x)); the lack of an abort or commit action in the condition simply means that all combinations of aborts and commits after r2(x) are disallowed.
+\end{tikzpicture}
 
+\subsubsection{P3 - Phantom Read}
 
-    \textit{P1 ("Dirty Read"): suppose transaction T1 modifies a row. Transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al\cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here \cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the ambiguous ANSI specification, that adds the Dirty Write constraint defined by Berenson et al\cite{Berensonetal}.:
-    
-     P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock,
+The Phantom Read violation occurs when Transaction T1 preforms a conditional read operation. Following this initial read, a second transaction T2 either inserts or modifies objects such that they meet the conditional requirement of T1, T2 then commits this change. T1 then performs the same conditional read operation containing additional objects It is called Phantom Read because the new records seem to be of phantom origin. the preventative interpretation of P3 requires acquisition of long-term Phantom read-locks
 
+\subsubsection{Example of violation}
+Suppose Transaction T1 selects all values >= 2, Transaction T2 then writes 3 to key x and commits. T1 then selects all values >= 2. the object x now matches this predicate and is included in the read operation. \\
+\vspace{5mm}
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
 
-    %TODO {Make example diagram}
-    \subsubsection{P2 - Non-repeatable/Fuzzy Read}
+%Straight Lines [id:da9500410641573396] 
+\draw    (63.56,64) -- (271.56,65) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (65.56,160) -- (274.56,160) ;
+%Straight Lines [id:da7329480179958066] 
+\draw    (246.56,178) -- (290.56,177.04) ;
+\draw [shift={(292.56,177)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
 
-   
-    The second case of 'Non-repeatable read' is when S1 reads data that is changed by S2 and committed. So if S1 rereads the same data, it will have changed. This results in two equal, select statements returning different results.
-    %TODO {Make example diagram}
-    
-     P2 requires the use of long read and write-locks; 
+% Text Node
+\draw (21.5,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
+% Text Node
+\draw (21.5,154) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
+% Text Node
+\draw (101.56,163) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(x=3)};
+% Text Node
+\draw (63,39) node [anchor=north west][inner sep=0.75pt]   [align=left] {r($\forall \geq 2$)};
+% Text Node
+\draw (257,39) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
+% Text Node
+\draw (156,163) node [anchor=north west][inner sep=0.75pt]   [align=left] {commit};
+% Text Node
+\draw (248.56,178) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
+% Text Node
+\draw (21.5,77) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=1\\y=2\\z=5};
+% Text Node
+\draw (193,15) node [anchor=north west][inner sep=0.75pt]   [align=left] {x,y,z};
+% Text Node
+\draw (63,15) node [anchor=north west][inner sep=0.75pt]   [align=left] {z,y};
+% Text Node
+\draw (193,39) node [anchor=north west][inner sep=0.75pt]   [align=left] {r($\forall \geq 2$)};
+% Text Node
+\draw (272,77) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=3\\y=2\\z=5};
 
-
-    \subsubsection{P3 - Phantom Read}
-
-    The third and last type is phantom read which is a special case of non-repeatable read that occurs when S1 reads data where a where condition is used to specify what data we want. After this initial read, a second session S2 inserts data that meets S1's where condition and commits the data. When S1 issues a select statement with the same where condition, it finds new records. It is called Phantom Read because the new records seem to be of phantom origin.
-    
-    Disallowing P3 requires acquisition of long phantom read-locks
-
-    %TODO Make example diagram Phantom Read
+\end{tikzpicture}
     
 \newpage
-\subsection{The harsh reality}
+\subsection{The harsh reality of anomalies}
+
+
+
+Following the more traditional 
     
     However in reality the above doesn't cover a lot of issues that can exist in DBMS systems. In Haixiang Li et al on COO\cite{li2021coo} 18 definitions on anomalies is brought 
-\begin{table}[]
+\begin{table}[h]
     \begin{tabular}{l|l|l}
         No & Anomaly, reference, year                        & Formal definition  \\ \hline
         1  & Dirty Write {[}1{]} 1992                        & $W_1 [x_1 ]...W_2 [x_2 ]...((C_1 or A_1) and (C_2 or A_2) in any order) $  \\
@@ -1721,22 +1879,16 @@ With 100 concurrent connections the following abort rates were found..
 
 \chapter{Discussion}
 
-Doing this project a surprising amount of discoveries were made, Both in general and in 
+
+Doing this These a surprising amount of discoveries were made, Both for databases in general and for Service Fabric.
 
 
 
 
-\subsection{Violations of promised consistency level}
-
-Initially violation but was maybe due to network queue or other network issues?
-
-%TODO write introduction
-
-\subsection{Deeper issue}
 The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
 
 
-Service Fabric reliable collections behaves a lot like a regular concurrent datatype from the developers side. This wasn't entirely understood when starting this project, but the reliable collections only expose a transactional storage engine, This requires of to first query to get a list of partions.
+Service Fabric reliable collections behaves a lot like a regular concurrent datatype from the developers side. This wasn't entirely understood when starting this project, but the reliable collections only expose a transactional storage engine, This requires of to first query to get a list of partitions.
     
     
 
@@ -1780,6 +1932,7 @@ Whats next, Defining a standard for testing and certifying database systems towa
 
 This could be done via automated testing and verification of a given system in it's different transactional configurations.
 
+%TODO Email JACOPO when done!
 
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
