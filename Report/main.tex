@@ -684,7 +684,7 @@ When the transaction T1 is ready to commit, it gets a Commit-Timestamp, larger t
 \end{displayquote}
 
 
-There also exist multiple other definitions from \cite{CeroneBernardiGotsman} and \cite{CrooksPuAlvisiClement}
+There also exist multiple other definitions from Cerone et al \cite{CeroneBernardiGotsman} and Crooks et al\cite{CrooksPuAlvisiClement}
 
 
 \begin{table}[h]
@@ -909,29 +909,21 @@ update accounts set balance = -42 where id = 42;
         
 \newpage
 
-\chapter{Database Consistency testing}
+\chapter{Consistency Model testing}
 
 \section{Introduction}
-%TODO Write introduction Database Consistency testing
-
-
-\section{Modern Database systems, and the trade offs they make.}
-%TODO Write Modern Database systems  and the trade offs they make.
-
-Atomicity, and Isolation as we often write the data to an arbitrary node, that first accepts the data after it has been distributed outside of it's rack, availability zone or region. The newest timestamp then overrules all other written data without care of data on other nodes which can breaks Atomicity, and Isolation, as a check and set(CAS), or update statement might uses stale data and due to it's newer timestamp any data written in the meantime gets discarded. Solutions here might require waiting for full distribution of any data prior to the query executing, but this would drastically slow down the entire system. This does not factor in issues related to system faults though.
-"""
-
+Consistency model testing is the process of verifying if a given system meet the requirement for a given consistency model. The way consistency models are defined is by which anomalies they prohibit. Therefor a straight forward method for testing whether a given system meets the requirements for a model can be done by analysing the transaction history for anomalies.\\
+\vspace{5mm}
+The reason for doing these test is to ensure both that a system behaves in an expected manner and to verify that they behave according to how they're presented and defined by their creators. If a system doesn't behave as expected, situations can occur where information is lost and harm can be done either bodily, financially or materially. \\ \vspace{5mm}
+These situations occur as Databases often sacrifice consistency to gain performance or higher availability. In context older style transactional databases might only allow for the execution of one transaction at the time where either the whole database or tables are locked by this transaction. Other implementations allow for transactions to execute concurrently to allow for higher performance and better scalability. however it often occurs that these optimizations have side effects due to either poor implementations, understanding or simply intentionally to gain performance. These side effects might range from sometimes returning a stale value to the dirty reads and writes that allow for uncommitted data to persist 
 
 \section{Historically}
 
-Historically this was done with using a manually defined hand-coded set of patterns to check how a system behaves with regards to the isolation levels above like if some proven invariant hold, or if an anomaly is present in parallel  by inserting record x and y in two separate transactions and in two more transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handle long forks and snapshot isolation, and more importantly if it supports it at all.
+Historically, this was done using manually defined sets of transactions. They required careful consideration and were time consuming to design, and often only able to check for simple patterns.  These tests were run on a given system checking if a proven invariant hold for a given consistency model, or if an anomaly is present in concurrent execution, This was done by inserting 2 records,  x and y in two separate transactions and in two following transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handle long forks and snapshot isolation, and more importantly if it supports them at all.
 
-These checks are generally quite efficient and run in polynomial time, but they only check for certain patterns and therefore don't give us the larger picture of where issues are present.  only cover a fairly limited set of configurations and isolation levels, and are defined on a system to system basis and no interchangeability is supporter.
+These tests are generally quite efficient, but only check for certain patterns and therefore don't allow for the larger picture of where issues might be present. they are also highly limited in what they can check and which models they can check for. Furthermore due to the hard-coded and highly custom design they are implemented on a system to system basis with interchangeability is supported.
 
-This means that this has been a giant scope project where case by case tests are predefined and where we only test for certain scopes, which more importantly mean that tests have been done but the test coverage haven't been perfect and a lot of anomalies are never detected.
-
-%TODO write more on the Historically {Need to add some more to this section, add examples of past test, diagrams, papers etc}
-
+This also means that the scope of these testing projects are normally huge and defined case by case with predefined transactions that only test a limited scope. The test might have been done previously but were very limited in test coverage and most anomalies were are never detected,
 
 \section{Jepsen}
 "
@@ -940,20 +932,19 @@ Jepsen is an effort to improve the safety of distributed databases, queues, cons
 \\
 \vspace{5mm}
 
-Going from the above quite Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given, and in a world where distributed, hyper scale or even planetary scale systems are becoming the norm the way data storage is done is required to behave in an expected manner, the reason that expected manner is used rather than correct manner is that we may allow certain faults to occur and eventual consistency to allow for higher throughput applications and that some data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. \\
+Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given by their creators. In a world where distributed, hyper scale or even planetary scale systems are becoming the more common, this requires data storages to behave in an expected manner. The reason that expected manner is used rather than correct manner is that we may allow certain faults to occur, and allow for eventual consistency as this allows for higher throughput applications. There are case where data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. \\
 \vspace{5mm}
-Two different examples of this is the YouTube 301 views that happened around 2015, where the number of views weren't globally distributed the right away, while comments and likes were. This meant two things. \\
 
-Comments were available globally in real time, while views would also commit globally doing low load times, or off hours to maximize utilization of resources.\\
-\vspace{5mm}
-Another more modern scenario where the real time data distribution and correctness is of the utmost importance is within transactions in the finance industry,  where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is no longer available, otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.\\
+A scenario where real time data distribution and correctness is of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is no longer available. Otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.\\
+
+Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post this comment might not necessary be available to users instantly and it's of no concern if it take a few seconds or minutes for it to be distributed to all nodes. Users generally don't notice these delays and it allows for better scaling within these huge applications with mullions or billions of request per second.
 
 
-\section{State of the art.}
+\section{State of the art}
 
 The state of the art is Jepsen, or rather one of the state of the Art projects.
 
-The Jepsen client is build up in a modular fashion such that the different modules needed for a test can be defined independently and a given project might not require all modules. A jepsen test suite generally consist of a 5 modules. Database automation, a client, Generator, correctness checkers, and a fault introduce. on top of these test you have a test runner that glues the modules together.
+The Jepsen client is build up in a modular fashion such that the different modules needed for a test can be defined independently and a given project might not require all modules. A jepsen test suite generally consist of a 5 modules. Database automation, client, generator, correctness checkers, and a fault introduce. On top of these modules a test runner is required that glues the modules together.
 
 The goal of Jepsen was to have a framework that allows 
 
@@ -1061,8 +1052,6 @@ https://aphyr.com/posts/294-call-me-maybe-cassandra
 
 
 \subsection{Postgres}
-
-
 
 \begin{itemize}
     \item \textit{Users should be aware that PostgreSQL’s “repeatable read” is in fact snapshot isolation — a fact long-understood in the PostgreSQL community and previously reported by Kleppmann. Since G2-item is prohibited under common formalizations of repeatable read, users may have designed applications assuming this held true for PostgreSQL. In this case, users may wish to run selected transactions under serializable isolation instead, add explicit locking, or redesign those transactions such that they are no longer sensitive to G2-item.}
@@ -1556,7 +1545,7 @@ The changes for the Generator and checker shifted a lot of the heavy lifting fro
 
 \subsubsection{Running the test}
 
-The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time screws, and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with futher tools or manually checked for issues that aren't covered by automatic testing.
+The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time screws, and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with further tools or manually checked for issues that aren't covered by automatic testing.
 
 
 \subsubsection{Issues doing the Design and implementation stages.}
@@ -1811,48 +1800,28 @@ With 100 concurrent connections the following abort rates were found..
 
 \chapter{Discussion}
 
+Doing this thesis a surprising amount of information was found in existing papers, both concerning databases in general. The lack of precise and unambiguous definitions surrounding them, coupled with the number of database system that violate the consistency models they are presented to follow. This point also applies to service fabric were violations occur with aborted transactions persisting and deadlocks cause a high number of aborts due to the lack of query optimizations within Service Fabric.\\ \vspace{5mm}
 
-Doing this These a surprising amount of discoveries were made, Both for databases in general and for Service Fabric.
+\section{Consistency model Standards or the lack thereof}
 
+Doing my time studying prior to this thesis databases were always presented as a fairly strict adhering to strict behavior with predictable results. This turned out to lack a few asterisks where the definitions for databases behavior is ambiguous and often many databases also fail these requirements when they are put under some workloads. Some of the more worrying findings is how often Nosql databases loose data and how often SQL databases violate their set consistency model. This is also not a new discovery either. looking at papers over the past 10 years it is a topic that is being investigated more and more but it also appears that changes are first being made and issues are first resolved often a third party in the open source community brings these issues to light, The paper from Haixiang et al\cite{li2021coo} is one of the more recent papers collecting existing literature on the topics and proposes like many papers prior of defining the Consistency models not in terms of things they prohibit but in unambiguous mathematically notation that cleanly defines what can and can't be expected.\\
+\vspace{5mm}
+This unambiguous definition would prevent the current situation where databases are presented in the different light compared to how they behave in reality. Currently mislabeling and mis-classification of databases is the norm and when there is no standardized way to classify or test them this issue will persist like aborted reads in Service Fabric, or the other issues discovered while working on the thesis. \\\vspace{5mm}
+\begin{itemize}
+    \item postgres concerning it's implementation of repeatable read or it's replication functionality.
+    \item MongoDB dropping data
+    \item Casandra last-write wins issues, %and a attempt at a solution via Atomic clocks
+    \item Elastic search issues.
+\end{itemize}
+%TODO add some more information to the above points
 
-The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
+All of these issues can have huge implications in the real world if the behavior isn't well understood. Just here in Odense MongoDB is used by the City to gather data from intersections, water usage, water height levels, temperatures, pollution, and many many other things around the city, This implementation might only annoy a few city planners and other city officials but if such a system is used in a place where data is more important such as healthcare or other environment where no data loss is acceptable but due to poor understanding journal data is stored where data critical to human life is lost due to not under the correct understand and information about the system in use.
+%TODO add more to the above concerns.
 
+\section{How can this be improved going forward}
 
-Service Fabric reliable collections behaves a lot like a regular concurrent datatype from the developers side. This wasn't entirely understood when starting this project, but the reliable collections only expose a transactional storage engine, This requires of to first query to get a list of partitions.
-    
-    
-
-%TODO Write Discussion Deeper issue
-The topic of understanding transactional models possibly stems for the teaching of database systems and a lack of understanding what the different consistency models define, what they allow and how they behave in practice,
-
-....
-
-Going from this and other Jepsen tests on database it appears it's the issue is a board mislabeling and mis-classification of database systems and what they can and can't do.
-...
-PostgresSQL replication and serializable,
-...
-
-Going from this and other Jepsen tests on database it appears it's the issue is a board mislabeling and misclassification of database systems and what they can and can't do.
-...
-PostgresSQL replication and serializable,
-...
-
-MongoDB dropping data
-...
-
-Casandra last-write wins, issues, and a attempt at a solution via Atomic clocks
-...
-
-Elastic search issues.
-...
-
-Some of the implications this can have on real world use cases,
-
-...
 
 How to resolve these issues that aeries from mislabeled and misunderstood consistency models.
-
-...
 
 Enable better understanding of databases, transaction models, and use cases doing teaching of database courses where behavior is better explained, This should not in depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have a lot of unintended behavior, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
 
@@ -1861,6 +1830,9 @@ Enable better understanding of databases, transaction models, and use cases doin
 Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labelling and allows user and developers to choose the current system for their use case and avoid the headaches of phantom behavior.
 
 This could be done via automated testing and verification of a given system in it's different transactional configurations.
+
+
+\section{Results from Service Fabric}
 
 %TODO Email JACOPO when done!
 
