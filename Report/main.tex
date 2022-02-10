@@ -1313,7 +1313,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service contains the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. The service is implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server. This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service contains operation our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. The service is implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server. This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
     A flow diagram for the design of the stateful service contains the following functionality. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for use in routing of the request. \\
     \vspace{5mm}
@@ -1334,7 +1334,7 @@ https://jepsen.io/analyses/postgresql-12.3
     \\
     \todo{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
 
-    All traffic resides within the cluster. The load balancer is part of the stadnard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
+    All traffic resides within the cluster. The load balancer is part of the standard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
 
     \subsubsection*{Node Sizes}
 
