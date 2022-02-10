@@ -1095,6 +1095,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
 
     \section{Introduction}
+    \todo{jac: remove all this introductions. They are useless at beginning of chapter if you use the chapter structure}
 
     The thesis will primacy focus on Service Fabrics but investigation into other data stores is also done to allow comparisons and investigation into what different models affect the behavior of the database systems.
 
@@ -1300,12 +1301,13 @@ https://jepsen.io/analyses/postgresql-12.3
     \chapter{Jepsen Test on Service Fabric Reliable collections}
 
 
-    \section{Introduction}
-
-    One of the goals of the thesis was to attempt to perform a Jepsen test on Service Fabric Reliable Collections subsystem. Reliable Collections powers services in Azure and being the target of this endeavor. 
+    One of the goals of the thesis was to attempt to perform a Jepsen test on Service Fabric Reliable Collections subsystem. Reliable Collections powers services in Azure and is the target of this endeavor. 
     In this chapter we will present the design, implementation and revisions of the testing suite. \\
     \vspace{5mm}
     To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore, a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
+    
+    
+    \todo{jac: following list not relevant. Move in discussion and conclusion to summarize what you did in the thesis}
     \begin{itemize}
         \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
         \item Understanding the problem, requirement, topology, architectures and how we want to test these things.
@@ -1318,7 +1320,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
    
     \section{Design \& implementation}
-    The Design of the services required for preforming the Jepsen test were revised multiple times as no prior experience was had with Service Fabric, Jepsen, C\# or Clojure, and a learn by doing methodology was chosen. 
+    The Design of the services required for preforming the Jepsen test were revised multiple times following a a learn by doing methodology as I did have no prior experience with Service Fabric, Jepsen, C\# or Clojure. 
 
     \subsection{Initial Design}
 
@@ -1326,41 +1328,43 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service should contain the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It should be implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice. As of writing, nearly all this documentation is for the C\# language. Both services will expose these endpoints via the Kestrel web server, This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service should \todo{jac: why should. If it contains write contains. Check occurrences of should also later} contain the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It\todo{jac: it?} should be implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server,\todo{jac:pay attention to commas and punctuation. It is sloppy to leave a comma when you should have use a dot} This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
     A flow diagram for the design of the stateful service contains the following functionality. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for use in routing of the request. \\
     \vspace{5mm}
     \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
+    \todo{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
 
     This implementation contains 2 main codebases. The C\# dotnet web services that acts as a API to the reliable collections using 3 controllers for the 3 default data structures implemented in the framework, and a Clojure codebase containing the Jepsen test and a driver for connecting to the Service fabric services.
 
     \subsection{Infrastructure}
     The infrastructure is centered around Azure, using an isolated v-net containing 6 virtual machines all running Linux. Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
-    The 5 Service Fabric nodes are mostly self managing. Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli} or via Visual Studio\cite{servicefabricguide}. The latter was the process used during the development stages of the project.
+    The 5 Service Fabric nodes are mostly self managing.\todo{what does it mean mostly self managing?} Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli}\todo{jac: space before citation. usually you use a tilde ~ in between} or via Visual Studio\cite{servicefabricguide}. The latter was the process used during the development stages of the project.
 
-    The Jepsenhost is manged and accessed via ssh. For deployment a deployment pipeline was considered but was decided against due to development overhead .a solution using scp was chosen instead due to the quicker development cycles and the fact that only a single machine required access to the deployment. 
+    The Jepsenhost \todo{jac:no space?} is manged and accessed via ssh. For deployment a deployment pipeline was considered but was decided against due to development overhead .a \todo{jac: again. if you leave these typos in the final version you will send the message of writing a sloppy thesis} solution using scp was chosen instead due to the quicker development cycles and the fact that only a single machine required access to the deployment. 
     
 
     The topology of the network is arranged such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection from causing issues with the test.\\
     \includegraphics[scale=0.3]{images/topology.png}
     \\
+    \todo{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
 
-    All traffic resides within the cluster. The load balancer is part of the stadnard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts.. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
+    All traffic resides within the cluster. The load balancer is part of the stadnard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts..\todo{jac: last comment on punctuation types. This should be fixed} These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
 
     \subsubsection*{Node Sizes}
 
-    The initial node size contained 2vcpu, 8 GBs of ram and 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment. This was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a more well-behaved cluster. This node size was kept for the reminder of the project. However, the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to out of memory errors that could be solved by lowering the search space of the test or increasing the memory of the node itself.
+    The initial node size contained 2vcpu, 8 GBs of ram and 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment. This problem was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a more well-behaved cluster. This node size was kept for the reminder of the project. However, the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to out of memory errors that could be solved by lowering the search space of the test or increasing the memory of the node itself.
 
 
     \subsection{Services}
     As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a stateless front-end that provides this data to clients via an API, a driver that handles the connection to this API and finally the Jepsen test suite itself consisting of workloads, generator, checker and Nemesis module..
 
     \subsubsection{SF services}
-    Using the 2 services approach, as recommended from Microsoft, provides multiple benefits but also a few negatives. The prime benefit is abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. Time connections are held open should also be reduced to due round trips times being lower, which should allow for higher throughout.
+    Using the 2 services approach\todo{???}, as recommended from Microsoft, provides multiple benefits but also a few negatives. The prime benefit is abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. Time connections are held open should also be reduced to due round trips times being lower, which should allow for higher throughout.
 
     \paragraph*{Stateful Reliable collection service}
 
-    The stateful services provides 3 separate controllers that each expose one of the built in reliable collection data types, These 3 being: Reliable dictionary, reliable queue, and reliable concurrent queue. Faults are also handled at this stage where faults caused by transactional issues are returned to the client via http status codes\cite{wikihttpstatuscodes}: node not primary, accepted, result not found, etc. This should allow for easier diagnoses and handling of faults when they are parsed by the Clojure application.
+    The stateful services provides 3 separate controllers that each expose one of the built in reliable collection data types, These 3 being: Reliable\todo{jac: all capital or none capital letter} dictionary, reliable queue, and reliable concurrent queue. Faults are also handled at this stage where faults caused by transactional issues are returned to the client via http status codes\cite{wikihttpstatuscodes}: node not primary, accepted, result not found, etc. This should allow for easier diagnoses and handling of faults when they are parsed by the Clojure application.
 
     The fronted stateless service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to build additional features, but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
 
@@ -1368,7 +1372,7 @@ https://jepsen.io/analyses/postgresql-12.3
     
     The design of the Jepsen test suite aims to use skeleton code from a past Jepsen test to start the project as it gives a template of what functionality should be implemented. These implementations are still custom but it gives a pointer to what the bare minimum is to have a functioning application.
     \\
-    The first module is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.
+    The first module is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.\todo{did you use Java or Clojure. Here write the final result, not speculation.}
     \\
     The Jepsen suite should use a modular setup that allows interoperability between multiple workloads, a runner that allows for test tuning, db that deploys, configures and operates on the running datastore, a client runs the transactions via the driver, nemesis that induces faults in the cluster and 3 workloads, queue, concurrent queue, and dictionary. One workload for each of the transactional data types exposed by Service Fabric.
     \begin{itemize}
@@ -1387,7 +1391,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
 \subsubsection{Implementation of the initial design}
 
-The initial design targeted the reliable collection dictionary datatype. It presented a few issues with the design and implementational details that were not considered. The biggest obstacles when developing for Service Fabric the non feature parity between Linux and the windows implementation. This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior as local code execution wasn't possible. 
+The initial design targeted the reliable collection dictionary datatype. It presented a few issues with the design and implementational details that were not considered. The biggest obstacles when developing for Service Fabric the non feature parity between Linux and the windows implementation.\todo{jac: no idea of what that means. Try to explain better} This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior as local code execution wasn't possible. 
 A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks used. It should be noted that the Service Fabric framework was kept at the same release while .NET and similar aspects where rolled back to older releases.
 
 All of these attempts were however frugal, after spending newly 2 months deleting all code, restarting from scratch using a different approach. An attempt at the implementations via Java, which was also unsuccessful, and finally going back to C\#. After getting a working solution of the project on a Service Fabric Cluster running on a windows host, i reached out to Mikkel Hegnhøj from Microsoft for assistance.
@@ -1398,7 +1402,7 @@ The issue turned out to be 2 fold.
     \item The entry point having to be defined via .NET and the name of the DLL file. This was something I attempted prior by using an entry point via a bash script, as documented in the official doc. 
     \end{itemize}
 
-Finally I had a working version on Linux, or rather, I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required endpoints to be hard coded. This introduced a limit of 1 replica of a given service per node. This would greatly reduce horizontal scaling as we need an extra node per partitions. Running larger partitions on each node is also an option but from a performance, availability, and reliability it's much more effective having lots of smaller partitions instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
+Finally I had a working version on Linux, or rather, I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required endpoints to be hard coded. This introduced a limit of 1 replica of a given service per node. \todo{jac: the chain of consequences is not clear at all. Explain thinking a reviewer that does not know how things work} This would greatly reduce horizontal scaling as we need an extra node per partitions. Running larger partitions on each node is also an option but from a performance, availability, and reliability it's much more effective having lots of smaller partitions instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
 
 
 \paragraph*{Implementation details SF}
@@ -1435,7 +1439,7 @@ The stateful service was implemented via the MVC patterns as well and followed a
 
 \paragraph*{Implementation details Clojure}
  
- Doing the initial implementation of the jepsen test, quite a few aspect of the program were rather chaotic due to poor programming practices that don't carry well over from object oriented  programming into dynamic and functional programming, as the Clojure programming language was treated as a learn by doing. This resulted in the first implementation of the application functioning, but this definition might require a significant quantity of asterisks.
+ Doing the initial implementation of the jepsen test, quite a few aspect of the program were rather chaotic due to poor programming practices that don't carry well over from object oriented  programming into dynamic and functional programming, as the Clojure programming language was treated as a learn by doing.\todo{difficult to parse this phrase. Split and simplify} This resulted in the first implementation of the application functioning, but this definition might require a significant quantity of asterisks.\todo{jac: to colloquial language for a thesis. If it does not work explain in what conditions it does not work}
  
  This caused the whole application to exhibit a broad range of unintended and weird behavior, resulted from asynchronous distributed systems being complex and concurrent applications handling 100s, or 1000s of threads requiring careful planning and considerations.
         
@@ -1463,7 +1467,7 @@ A few considerations on how this issue could be resolved was considered, lowerin
 
  \subsubsection{Implementation of the revised design}
 
-The implementation of this revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again. Issues started showing up that which were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
+The implementation of this \todo{I lost it. what is this revised design? The structure of this chapter is not clear. You jump taking about designs. You should make more clear that you are talking about the initial design early and then move to the final design. Now is very confusing.} revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again.\todo{too colloquial. You are writing a thesis, not talking to friends} Issues started showing up that which\todo{not English} were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so\todo{so?} tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
 
 \paragraph*{Implementation changes for the SF Application}
 The second iteration of the Service Fabric application removes the stateless layer of the application, The aim of these changes was to increase the throughput of the service by removing  layer of network traffic and routing. This required moving the handling of request, parsing and verification to the stateless service.   \\
@@ -1472,7 +1476,7 @@ The changes required here weren't overly complex and only required merging the c
 \\
 
 \paragraph*{Implementation changes for the Clojure Application}
-This design iteration didn't required any major changes to the Clojure application, the changes were only on the routing side of service fabric. this did require minor changes to the connector such that the headers of the requests such that they were valid as internal service fabric requests. Otherwise  the connections from the Clojure application were simply rejected by the stateful application. Routing was defined such that the primary node was connection to by default as was defined in the code itself. This should probably have been implemented as a command line configuration but the direct solution was chosen as that endpoint would have to be defined either way. 
+This design iteration didn't required any major changes to the Clojure application, the changes were only on the routing side of service fabric. this did require minor changes to the connector such that the headers of the requests such that\todo{such that such that (and as always dots not followed by capital letter} they were valid as internal service fabric requests. Otherwise  the connections from the Clojure application were simply rejected by the stateful application. Routing was defined such that the primary node was connection to by default as was defined in the code itself. This should probably have been implemented as a command line configuration but the direct solution was chosen as that endpoint would have to be defined either way. 
 
 
 \subsubsection{Final iteration of the design.}
@@ -1497,9 +1501,9 @@ The jepsen application requires significant redesign. Centered around generation
 
 \paragraph*{The Stateless service}
 
-The changes to the stateless services required designing a new API endpoint which collected all functionaility of the existing endpoints into a single MVC. For the implementation the use of tools such as Postman, dotnetfiddle and curiousconcept JSON tool were used, This allowed testing concepts and code idea prior to implementing them for the Service Fabric cluster. The implementation was still time consuming due to the lack of debugging tools and generally black box behavior of Service Fabric. stemming from the inability  to run the application locally. and the cluster only returning internal server codes that wasn't usable for debugging of the solution. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process so far.\\
+The changes to the stateless services required designing a new API endpoint which collected all functionaility of the existing endpoints into a single MVC. For the implementation the use of tools such as Postman, dotnetfiddle and curiousconcept JSON tool were used, This allowed testing concepts and code idea prior to implementing them for the Service Fabric cluster. The implementation was still time consuming due to the lack of debugging tools and generally black box behavior of Service Fabric. stemming from the inability  to run the application locally. and the cluster only returning internal server codes that wasn't usable for debugging of the solution. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process so far.\\ \todo{ be aware that this can be read also as "I can not read the documentation good enough. Note that often the failures are hidden in the final work. Here you chose to describe the failures in every step but this can give also the image to the external reviewer of someone that can not do the job properly"}
 
-Solutions such as implementing application logging or application performance monitoring could have given insight as to why the application didn't behave as expected. Looking at a lot of things in hindsight plenty of poor decisions were made that would be changed and the whole design mythology of the project might be done in a different manner.
+Solutions such as implementing application logging or application performance monitoring could have given insight as to why the application didn't behave as expected. Looking at a lot of things in hindsight plenty of poor decisions were made that would be changed and the whole design mythology of the project might be done in a different manner.\todo{this are consideration better to do in the conclusion}
 
 \vspace{5mm}
 
@@ -1549,12 +1553,14 @@ The changes for the Generator and checker shifted a lot of the heavy lifting fro
 
 \subsubsection{Running the test}
 
-The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time screws, and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with further tools or manually checked for issues that aren't covered by automatic testing.
+The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time screws \todo{screws?}, and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with further tools or manually checked for issues that aren't covered by automatic testing.
+
+\todo{how long do they run, how many times have you repeated them. If someone has to reproduce what you did he or she will have hard time understanding what to do with such a scarce description}
 
 
 \subsubsection{Issues doing the Design and implementation stages.}
 
-For Service Fabric Linux and windows versions of the framework is far from interchangeable, This results in applications and services that function on one version to fail on the other. This especially presented issues as the local development environment provided by Microsoft might right an application, but the same application would fail to run or crash on cluster, this issue was further concatenated by visual studio being unable to load dump files that would allow a debugger to trace why the applications from the cluster weren't functioning as intended. other debugging options such as the remote debugger feature wasn't compatible with the Linux cluster either which meant that doing the development we were often flying blind. There was also some minor issues with the Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required a entire new deployment of the cluster and any data that might have been in the cluster to be lost. this was not an issue for this experiment but could have been a significant issues in a production scenario with data that wasn't redundantly stored on a different data store.
+For Service Fabric Linux and windows versions of the framework is far from interchangeable,\todo{english!} This results in applications and services that function on one version to fail on the other. This especially presented issues as the local development environment provided by Microsoft might right an application, but the same application would fail to run or crash on cluster, this issue was further concatenated by visual studio being unable to load dump files that would allow a debugger to trace why the applications from the cluster weren't functioning as intended. other debugging options such as the remote debugger feature wasn't compatible with the Linux cluster either which meant that doing the development we were often flying blind. There was also some minor issues with the Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required a entire new deployment of the cluster and any data that might have been in the cluster to be lost. this was not an issue for this experiment but could have been a significant issues in a production scenario with data that wasn't redundantly stored on a different data store.
 
 \newpage
 \section{Results}
