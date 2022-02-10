@@ -1652,7 +1652,7 @@ Dirty updates are quite common as soon as any conflicts occur within Service Fab
 \subsubsection{G1a: Aborted Reads (cascaded aborts)}
 Aborted reads are common as they share the same underlying issues as Dirty Update, These occur when a transaction commits that it has read the updates of an aborted transaction.\\
 
-The the below example. Transaction 336 wrote to key 2 and afterwards aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754 which shouldn't have been possible.
+The the\todo{the the. Use a grammar checker like grammarly. Errors like this are easy to spot and fix} below example. Transaction 336 wrote to key 2 and afterwards aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754 which shouldn't have been possible.
 
 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
@@ -1777,7 +1777,7 @@ Transaction 490 writes a change to key 32. this change is then read, and this re
 \newpage
 \subsection{Rejected transactions}
 
-One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test parameters of 200 concurrent clients and randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed. The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
+One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test parameters of 200 concurrent clients and randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed.\todo{phrase too long} The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
 
 With 100 concurrent connections the following abort rates were found.. 
 
@@ -1799,6 +1799,9 @@ With 100 concurrent connections the following abort rates were found..
 
 \newpage                      
 \subsection{Statistical data from the test.}
+
+\todo{why are you including this data? what are we supposed to look?
+Without any description than better to remove them}
 \includegraphics[scale=0.5]{results/clock-skew.png}
 \\
 \includegraphics[scale=0.5]{results/rate.png}
