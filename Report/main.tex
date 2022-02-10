@@ -155,20 +155,23 @@
 
 
     \chapter{Introduction}
-    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost. How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
-    \vspace{5mm}
+    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost.
+    However, often this expectations are not met.
+    
+%     How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
+%     \vspace{5mm}
 
     Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present.
-    For example the YouTube video counter that got stuck at around 300 views and didn't update for a while. It was a side effect of a anti botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people don't notice a few seconds to a minute delay when dealing with comments, views or likes.
+    For example the YouTube video counter that got stuck at around 300 views and didn't update for a while. This problem was a side effect of a anti botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people don't notice a few seconds to a minute delay when dealing with comments, views or likes.
     \\
-    Many user-facing services aren't required to be fully consistent; however, there are use cases where not being consistent can have a severe impact. Strongly consistent transactions are of utmost importance when dealing with data that has a real-time constraint, such as financial data, automated or autonomous systems, and other areas where out of sync states might lead to issues or loss of life..
+    Many user-facing services aren't required to be fully consistent; however, there are use cases where not being consistent can have a severe impact. Strongly consistent transactions are of utmost importance when dealing with data that has a real-time constraint, such as financial data, automated or autonomous systems, and other areas where out of sync states might lead to issues or loss of life.
 
     In these cases a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
 
     \vspace{5mm}
     How do we test and verify a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
     \vspace{5mm}
-    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed. The results show that contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.\\
+    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed.\todo{jac. ,i.e., "few words to define what azure service fabric is} The results show that Azure Service Fabric contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.\\
     \vspace{5mm}
     \newpage
 \section{Structure of the thesis.}
@@ -179,16 +182,16 @@
     In Chapter 2, I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
     \vspace{5mm}
 
-    Next, I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
+    \todo{jac: In Chapter X}Next, I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
     \vspace{5mm}
 
-    Afterwards, I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
+    \todo{jac: In Chapter X}Afterwards, I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
     \vspace{5mm}
 
-    Subsequently,  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
+    \todo{jac: In Chapter X}Subsequently,  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
     \vspace{5mm}
 
-    Finally, I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
+    Finally, \todo{jac: In Chapter X}I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
 
 
     \chapter{Database transaction models}
