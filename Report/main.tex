@@ -135,19 +135,19 @@
     Databases allow modern society to store, manage, distribute, and receive data at a previously unprecedented scale. Working with data is standard practice for most businesses. Still, it is often done monotonically on a single node, where modern systems require more storage, lower latency, higher availability, and better performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of testing these properties and investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
     \vspace{5mm}
 
-    Within the thesis framework, I will present methods of testing \todo{jac. You talk about verifying and I change to testing. Test is what you do. Verification is another thing} the ACID properties, how they were solved in the past compared to how they are solved today, and what trade-offs some systems have made. I will also analyze modern database use cases and whether they require the ACID properties to satisfy their design goals.\\
+    Within the thesis framework, I will present methods of testing the ACID properties, how they were solved in the past compared to how they are solved today, and what trade-offs some systems have made. I will also analyze modern database use cases and whether they require the ACID properties to satisfy their design goals.\\
     \vspace{5mm}
 
 
     The Thesis findings discover issues both within Service Fabric reliable Collections and within specifications of consistency Models. 
     Within Service Fabrics Reliable Collections, there are three issues: 
     \begin{itemize}
-    \item G1a:\todo{jac: not clear what g1a and G0 means. Delete or explain} Aborted reads caused by cascade aborts.
-    \item G0: Dirty Update Violations
+    \item Aborted reads caused by cascade aborts.
+    \item Dirty Update Violations
     \item Poor use available optimizations allowed within the Repeatable Read consistency model. 
     \end{itemize}
     
-    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. There is no guarantee\todo{jac: of what?} with scaling beyond a single node, due to the under laying architecture that requires an individual implementation of a transaction manager and query optimizer.
+    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. There is no guarantee of consistency with scaling beyond a single node, due to the under laying architecture that requires an individual implementation of a transaction manager and query optimizer.
     Within the industry, the classifications and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
     A wide range of papers, outdated standards, and articles are currently used with mixed terminology, definitions, and specifications, which means that users cannot rely on documentation of how a given database or data store behaves.
 
@@ -169,29 +169,29 @@
     In these cases a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
 
     \vspace{5mm}
-    How do we test and verify a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
+    How do we test a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
     \vspace{5mm}
-    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed.\todo{jac. ,i.e., "few words to define what azure service fabric is} The results show that Azure Service Fabric contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.\\
+    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed, i.e. A distributed systems platform. The results show that Azure Service Fabric contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.\\
     \vspace{5mm}
     \newpage
 \section{Structure of the thesis.}
 
-    In Chapter 1, I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
+    In Chapter 2. I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
     \vspace{5mm}
 
-    In Chapter 2, I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
+    In Chapter 3. I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
     \vspace{5mm}
 
-    \todo{jac: In Chapter X}Next, I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
+    In Chapter 4. I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
     \vspace{5mm}
 
-    \todo{jac: In Chapter X}Afterwards, I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
+    In Chapter 5. I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
     \vspace{5mm}
 
-    \todo{jac: In Chapter X}Subsequently,  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
+    In Chapter 6.  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
     \vspace{5mm}
 
-    Finally, \todo{jac: In Chapter X}I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
+    Finally, in Chapter 7. I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
 
 
     \chapter{Database transaction models}
@@ -916,9 +916,9 @@ update accounts set balance = -42 where id = 42;
 \chapter{Consistency Model testing}
 
 \section{Introduction}
-Consistency model testing is the process of verifying if a given system meet the requirement for a given consistency model. The way consistency models are defined is by which anomalies they prohibit. Therefor a straight forward method for testing whether a given system meets the requirements for a model can be done by analysing the transaction history for anomalies.\\
+Consistency model testing is the process of testing if a given system meet the requirement for a given consistency model. The way consistency models are defined is by which anomalies they prohibit. Therefor a straight forward method for testing whether a given system meets the requirements for a model can be done by analysing the transaction history for anomalies.\\
 \vspace{5mm}
-The reason for doing these test is to ensure both that a system behaves in an expected manner and to verify that they behave according to how they're presented and defined by their creators. If a system doesn't behave as expected, situations can occur where information is lost and harm can be done either bodily, financially or materially. \\ \vspace{5mm}
+The reason for doing these tests is to ensure both that a system behaves in an expected manner and to verify that they behave according to how they're presented and defined by their creators. If a system doesn't behave as expected, situations can occur where information is lost and harm can be done either bodily, financially or materially. \\ \vspace{5mm}
 These situations occur as Databases often sacrifice consistency to gain performance or higher availability. In context older style transactional databases might only allow for the execution of one transaction at the time where either the whole database or tables are locked by this transaction. Other implementations allow for transactions to execute concurrently to allow for higher performance and better scalability. however it often occurs that these optimizations have side effects due to either poor implementations, understanding or simply intentionally to gain performance. These side effects might range from sometimes returning a stale value to the dirty reads and writes that allow for uncommitted data to persist 
 
 \section{Historically}
@@ -1092,10 +1092,6 @@ https://jepsen.io/analyses/postgresql-12.3
 
 
     \chapter{Modern Datastores}
-
-
-    \section{Introduction}
-    \todo{jac: remove all this introductions. They are useless at beginning of chapter if you use the chapter structure}
 
     The thesis will primacy focus on Service Fabrics but investigation into other data stores is also done to allow comparisons and investigation into what different models affect the behavior of the database systems.
 
@@ -1307,17 +1303,6 @@ https://jepsen.io/analyses/postgresql-12.3
     To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore, a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
     
     
-    \todo{jac: following list not relevant. Move in discussion and conclusion to summarize what you did in the thesis}
-    \begin{itemize}
-        \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
-        \item Understanding the problem, requirement, topology, architectures and how we want to test these things.
-        \item Designing the Services, Libraries, APIs, testing suite, the infrastructure and networking of the cluster and azure.
-        \item Implement the Services, Libraries, APIs and testing suite required for things to talk to each other.
-        \item Test all the code and configurations and ensure things work as intended.
-        \item Execute the test itself.
-        \item Analyse the data from the test.
-    \end{itemize}
-
    
     \section{Design \& implementation}
     The Design of the services required for preforming the Jepsen test were revised multiple times following a a learn by doing methodology as I did have no prior experience with Service Fabric, Jepsen, C\# or Clojure. 
@@ -1328,7 +1313,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service should \todo{jac: why should. If it contains write contains. Check occurrences of should also later} contain the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. It\todo{jac: it?} should be implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server,\todo{jac:pay attention to commas and punctuation. It is sloppy to leave a comma when you should have use a dot} This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service contains the desired operation that our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. The service is implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server. This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
     A flow diagram for the design of the stateful service contains the following functionality. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for use in routing of the request. \\
     \vspace{5mm}
@@ -1339,9 +1324,9 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \subsection{Infrastructure}
     The infrastructure is centered around Azure, using an isolated v-net containing 6 virtual machines all running Linux. Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
-    The 5 Service Fabric nodes are mostly self managing.\todo{what does it mean mostly self managing?} Applications can be deployed via either the Azure Service Fabric CLI\cite{servicefabriccli}\todo{jac: space before citation. usually you use a tilde ~ in between} or via Visual Studio\cite{servicefabricguide}. The latter was the process used during the development stages of the project.
+    The 5 Service Fabric nodes are mostly self managing.\todo{what does it mean mostly self managing?} Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
 
-    The Jepsenhost \todo{jac:no space?} is manged and accessed via ssh. For deployment a deployment pipeline was considered but was decided against due to development overhead .a \todo{jac: again. if you leave these typos in the final version you will send the message of writing a sloppy thesis} solution using scp was chosen instead due to the quicker development cycles and the fact that only a single machine required access to the deployment. 
+    The Jepsen host is manged and accessed via ssh. For deployment a deployment pipeline was considered but was decided against due to development overhead. A solution using scp was chosen instead due to the quicker development cycles and the fact that only a single machine required access to the deployment. 
     
 
     The topology of the network is arranged such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection from causing issues with the test.\\
@@ -1349,7 +1334,7 @@ https://jepsen.io/analyses/postgresql-12.3
     \\
     \todo{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
 
-    All traffic resides within the cluster. The load balancer is part of the stadnard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts..\todo{jac: last comment on punctuation types. This should be fixed} These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
+    All traffic resides within the cluster. The load balancer is part of the stadnard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
 
     \subsubsection*{Node Sizes}
 
@@ -1360,11 +1345,11 @@ https://jepsen.io/analyses/postgresql-12.3
     As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a stateless front-end that provides this data to clients via an API, a driver that handles the connection to this API and finally the Jepsen test suite itself consisting of workloads, generator, checker and Nemesis module..
 
     \subsubsection{SF services}
-    Using the 2 services approach\todo{???}, as recommended from Microsoft, provides multiple benefits but also a few negatives. The prime benefit is abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. Time connections are held open should also be reduced to due round trips times being lower, which should allow for higher throughout.
+    Microsoft recommends using two services, such that a Statefull service is never directly exposed to the internet but where a stateless services acts a proxy. This provides multiple benefits but also a few negatives. The prime benefit is abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. Time connections are held open should also be reduced to due round trips times being lower, which should allow for higher throughout.
 
     \paragraph*{Stateful Reliable collection service}
 
-    The stateful services provides 3 separate controllers that each expose one of the built in reliable collection data types, These 3 being: Reliable\todo{jac: all capital or none capital letter} dictionary, reliable queue, and reliable concurrent queue. Faults are also handled at this stage where faults caused by transactional issues are returned to the client via http status codes\cite{wikihttpstatuscodes}: node not primary, accepted, result not found, etc. This should allow for easier diagnoses and handling of faults when they are parsed by the Clojure application.
+    The stateful services provides 3 separate controllers that each expose one of the built in reliable collection data types, These 3 being: Reliable Dictionary, Reliable Queue, and Reliable Concurrent Queue. Faults are also handled at this stage where faults caused by transactional issues are returned to the client via http status codes\cite{wikihttpstatuscodes}: node not primary, accepted, result not found, etc. This should allow for easier diagnoses and handling of faults when they are parsed by the Clojure application.
 
     The fronted stateless service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to build additional features, but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
 
@@ -1391,7 +1376,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
 \subsubsection{Implementation of the initial design}
 
-The initial design targeted the reliable collection dictionary datatype. It presented a few issues with the design and implementational details that were not considered. The biggest obstacles when developing for Service Fabric the non feature parity between Linux and the windows implementation.\todo{jac: no idea of what that means. Try to explain better} This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior as local code execution wasn't possible. 
+The initial design targeted the reliable collection dictionary datatype. It presented a few issues with the design and implementational details that were not considered. The biggest obstacles when developing for Service Fabric the non feature parity between Linux and the windows implementation, this is caused by two parallel implementations where some core functionality isn't yet available in the Linux implementation. This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior as local code execution wasn't possible. \\ \vspace{5mm}
 A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks used. It should be noted that the Service Fabric framework was kept at the same release while .NET and similar aspects where rolled back to older releases.
 
 All of these attempts were however frugal, after spending newly 2 months deleting all code, restarting from scratch using a different approach. An attempt at the implementations via Java, which was also unsuccessful, and finally going back to C\#. After getting a working solution of the project on a Service Fabric Cluster running on a windows host, i reached out to Mikkel Hegnhøj from Microsoft for assistance.
@@ -1400,9 +1385,9 @@ The issue turned out to be 2 fold.
 \begin{itemize}
     \item .NET needing to be rolled back to 3.5
     \item The entry point having to be defined via .NET and the name of the DLL file. This was something I attempted prior by using an entry point via a bash script, as documented in the official doc. 
-    \end{itemize}
+\end{itemize}
 
-Finally I had a working version on Linux, or rather, I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS was still missing, this required endpoints to be hard coded. This introduced a limit of 1 replica of a given service per node. \todo{jac: the chain of consequences is not clear at all. Explain thinking a reviewer that does not know how things work} This would greatly reduce horizontal scaling as we need an extra node per partitions. Running larger partitions on each node is also an option but from a performance, availability, and reliability it's much more effective having lots of smaller partitions instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
+Finally I had a working version on Linux, or rather, I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS routing service is missing from the Linux implementation, this required endpoints to be hard coded, where each service was bound to a given port. This introduced a limit of 1 replica of a given service per node. This greatly reduce horizontal scaling as we need an extra node per partition. Running larger partitions on each node is also an option, but from a performance, availability, and reliability perspective it's much more effective having lots of smaller partitions, instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
 
 
 \paragraph*{Implementation details SF}
@@ -1439,7 +1424,7 @@ The stateful service was implemented via the MVC patterns as well and followed a
 
 \paragraph*{Implementation details Clojure}
  
- Doing the initial implementation of the jepsen test, quite a few aspect of the program were rather chaotic due to poor programming practices that don't carry well over from object oriented  programming into dynamic and functional programming, as the Clojure programming language was treated as a learn by doing.\todo{difficult to parse this phrase. Split and simplify} This resulted in the first implementation of the application functioning, but this definition might require a significant quantity of asterisks.\todo{jac: to colloquial language for a thesis. If it does not work explain in what conditions it does not work}
+ Doing the initial implementation of the jepsen test, quite a few aspect of the program were rather chaotic. Poor programming practices that don't carry well over from object oriented  programming, into dynamic and functional programming. The Clojure programming language was treated as a learn by doing. This resulted in the first implementation of the application functioning, but not without issues. most of these were a cause of not fully understanding the language i was using and how the information flow was handled. this caused issues with HTTP requests being handled incorrectly and responses not being parsed correctly into the history such that transactions with a status of failed were considered valid in the history used to check the consistency of the model.
  
  This caused the whole application to exhibit a broad range of unintended and weird behavior, resulted from asynchronous distributed systems being complex and concurrent applications handling 100s, or 1000s of threads requiring careful planning and considerations.
         
@@ -1814,6 +1799,17 @@ Without any description than better to remove them}
 \chapter{Discussion}
 
 Doing this thesis a surprising amount of information was found in existing papers, both concerning databases in general. The lack of precise and unambiguous definitions surrounding them, coupled with the number of database system that violate the consistency models they are presented to follow. This point also applies to service fabric were violations occur with aborted transactions persisting and deadlocks cause a high number of aborts due to the lack of query optimizations within Service Fabric.\\ \vspace{5mm}
+
+    \begin{itemize}
+        \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
+        \item Understanding the problem, requirement, topology, architectures and how we want to test these things.
+        \item Designing the Services, Libraries, APIs, testing suite, the infrastructure and networking of the cluster and azure.
+        \item Implement the Services, Libraries, APIs and testing suite required for things to talk to each other.
+        \item Test all the code and configurations and ensure things work as intended.
+        \item Execute the test itself.
+        \item Analyse the data from the test.
+    \end{itemize}
+    
 
 \section{Consistency model Standards or the lack thereof}
 
