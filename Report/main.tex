@@ -32,6 +32,7 @@
     style=numeric,
     sorting=ynt
 ]{biblatex}
+\usepackage{todonotes}
 
 \newtheorem{theorem}{Theorem}
 
@@ -131,22 +132,22 @@
 
 
     \section*{Abstract}
-    Databases allow modern society to store, manage, distribute, and receive data at a previously unprecedented scale. Working with data is standard practice for most businesses. Still, it is often done monotonically on a single node, where modern systems require more storage, lower latency, higher availability, and better performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of verifying these properties and investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
+    Databases allow modern society to store, manage, distribute, and receive data at a previously unprecedented scale. Working with data is standard practice for most businesses. Still, it is often done monotonically on a single node, where modern systems require more storage, lower latency, higher availability, and better performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of testing these properties and investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
     \vspace{5mm}
 
-    Within the thesis framework, I will present methods of verifying the ACID properties, how they were solved in the past compared to how they are solved today, and what trade-offs some systems have made. I will also analyze modern database use cases and whether they require the ACID properties to satisfy their design goals.\\
+    Within the thesis framework, I will present methods of testing \todo{jac. You talk about verifying and I change to testing. Test is what you do. Verification is another thing} the ACID properties, how they were solved in the past compared to how they are solved today, and what trade-offs some systems have made. I will also analyze modern database use cases and whether they require the ACID properties to satisfy their design goals.\\
     \vspace{5mm}
 
 
     The Thesis findings discover issues both within Service Fabric reliable Collections and within specifications of consistency Models. 
     Within Service Fabrics Reliable Collections, there are three issues: 
     \begin{itemize}
-    \item G1a: Aborted reads caused by cascade aborts.
+    \item G1a:\todo{jac: not clear what g1a and G0 means. Delete or explain} Aborted reads caused by cascade aborts.
     \item G0: Dirty Update Violations
     \item Poor use available optimizations allowed within the Repeatable Read consistency model. 
     \end{itemize}
     
-    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. there is no guarantee with scaling beyond a single node, due to the under laying architecture that require an individual implementation of a transaction manager and query optimizer.
+    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. There is no guarantee\todo{jac: of what?} with scaling beyond a single node, due to the under laying architecture that requires an individual implementation of a transaction manager and query optimizer.
     Within the industry, the classifications and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
     A wide range of papers, outdated standards, and articles are currently used with mixed terminology, definitions, and specifications, which means that users cannot rely on documentation of how a given database or data store behaves.
 
