@@ -142,8 +142,8 @@
     The Thesis findings discover issues both within Service Fabric reliable Collections and within specifications of consistency Models. 
     Within Service Fabrics Reliable Collections, there are three issues: 
     \begin{itemize}
-    \item Aborted reads caused by cascade aborts.
-    \item Dirty Update Violations
+    \item Aborted reads caused by cascade aborts;
+    \item Dirty Update Violations;
     \item Poor use available optimizations allowed within the Repeatable Read consistency model. 
     \end{itemize}
     
@@ -157,9 +157,8 @@
     \chapter{Introduction}
     Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost.
     However, often this expectations are not met.
-    
-%     How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?\\
-%     \vspace{5mm}
+\todo[author=Mark]{    
+     How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?}
 
     Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present.
     For example the YouTube video counter that got stuck at around 300 views and didn't update for a while. This problem was a side effect of a anti botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people don't notice a few seconds to a minute delay when dealing with comments, views or likes.
@@ -171,27 +170,27 @@
     \vspace{5mm}
     How do we test a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
     \vspace{5mm}
-    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed, i.e. A distributed systems platform. The results show that Azure Service Fabric contains some major issues when it comes the Consistency model where the implementation used also has it's drawbacks that highly limit the performance of the system.\\
+    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed, i.e. a distributed systems platform. The results show that Azure Service Fabric contains some major issues when it comes the Consistency model where the implementation used also has its drawbacks that highly limit the performance of the system.\\
     \vspace{5mm}
     \newpage
 \section{Structure of the thesis.}
 
-    In Chapter 2. I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
+    In Chapter 2 I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
     \vspace{5mm}
 
-    In Chapter 3. I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
+    In Chapter 3 I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
     \vspace{5mm}
 
-    In Chapter 4. I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
+    In Chapter 4 I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
     \vspace{5mm}
 
-    In Chapter 5. I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
+    In Chapter 5 I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
     \vspace{5mm}
 
-    In Chapter 6.  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
+    In Chapter 6  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
     \vspace{5mm}
 
-    Finally, in Chapter 7. I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
+    Finally, in Chapter 7 I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
 
 
     \chapter{Database transaction models}
@@ -495,7 +494,7 @@ Suppose Transaction T1 selects all values >= 2, Transaction T2 then writes 3 to 
 \end{tikzpicture}
     
 \newpage
-\subsection{Currently Described Anomalies} %TODO Unsure what to name this.
+\subsection{Currently Described Anomalies} \todo[author=Mark]{ Unsure what to name this.}
 
 Following the ANSI standard and Adya et al\cite{Adya99weakconsistency} a significant amount of discoveries have been made that describes anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang Li et al\cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years, The paper mentions that all these definitions are defined Case by case and not in a rigours mathematically manner. The paper includes the following sentence: 
 \begin{quote}
@@ -668,7 +667,7 @@ but allows:
 \end{itemize}
 
 
-%TODO Make diagram Cursor Stability
+\todo[author=Mark]{Make diagram Cursor Stability}
 
 \subsection{Snapshot Isolation}
 
@@ -732,7 +731,7 @@ Formally it is defined in ANSISQL1999\cite{ansisql1999} by disallowing P1
 \textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
 \\ \vspace{5mm}
 
-%TODO Make Diagram Read committed
+\todo[author=Mark]{TODO Make Diagram Read committed}
 
 \subsection{Read Uncommitted}
 Read Uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al\cite{Berensonetal} where they argue that Read Uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al \cite{Adya99weakconsistency} which again provides a better definition based, on what can be interpreted from the loose definition in ANSISQL99\cite{ansisql1999}. It should be noted that due to the loose specification in ANSI, multiple mainstream interpretations exist.\\
@@ -774,13 +773,14 @@ Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti a
     \item RVal (the order must be consistent with the semantics of the datatype)
 \end{itemize}
 
-% Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
+\todo[author=Mark]{Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.}
 
 
 
-\section{Directed Serialization graphs(DSG)}
-\subsection{Transaction conflicts}
+\section{Directed Serialization graphs}
 
+Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction, such that each node represents a node and edges represent different types of direct conflicts. \\ using these conflicts we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
+\subsection{Transaction conflicts relations}
 \subsubsection{Read-dependency}
 
 The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$, this relation is also called Write-Read (wr) as one transaction writes a object and a second transaction depends on this prior write.
@@ -810,12 +810,11 @@ The Read-dependency is when a Transaction $T_j$ directly depends on a write from
 
 \end{tikzpicture}
 
-This set formulation for this would be:
-
 We have a history H. as follows.
 \begin{equation}
-    History H: [T_i(W(x)), T_j(R(x))]
+    History\ H: [T_1(W(x_0)), T_2(R(x_0))]
 \end{equation}
+
 This history contains two transactions $T_i$ followed by $T_j$. $T_i$ writes version $x_0$, which is later read by $T_j$, thus item-read-depends on $T_i$. this wr is also denoted by the red arrow in the above illustration.
     
 A SQL example of this relation would be the below script
@@ -853,14 +852,19 @@ This case of WR dependency gives the symptom of objects appearing or disappearin
 % Text Node
 \draw (162.67,58) node [anchor=north west][inner sep=0.75pt]   [align=left] {W($x_1$)};
 % Text Node
-\draw (224.33,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(P:Vset(p),x_0\notin Vset(p)$)};
+\draw (224,123) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(P:Vset(p),x_0\notin Vset(p)$)};
 % Text Node
-\draw (37,97.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R( P:x_0 \in Vset(p))$};
+\draw (37,123) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R( P:x_0 \in Vset(p))$};
 
 
 \end{tikzpicture}
 
 Transaction $T_2$ sees $x_0$ in it's first predicate read, however in the second read nothing is observed as $x_0$ was overwritten by $x_1$ via $T_1$. \\
+
+We have a history H. as follows.
+\begin{equation}
+    History\ H: [T_1(W(x_1)), T_2(R(x_0),R(\emptyset))]
+\end{equation}
 
 A SQL example of this relation would be the below script
 
@@ -893,13 +897,16 @@ A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T
 % Text Node
 \draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
 % Text Node
-\draw (58,57.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x\_1)$};
+\draw (58,57.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_1)$};
 % Text Node
-\draw (125,122.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x\_2)$};
+\draw (125,122.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
 \end{tikzpicture}
 
-
 Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-depends on $T_1$, The dependency is denoted by the red arrow in the graph. \\
+
+\begin{equation}
+    History\ H: [T_1(W(x_1)), T_2(W(x_2))]
+\end{equation}
 
 A SQL example of this relation would be the below script
 
@@ -909,8 +916,214 @@ update accounts set balance = -42 where id = 42;
 \end{lstlisting}
 
 \subsubsection{Anti-dependency (rw)}
-%TODO
-        
+An read-write-dependency, or formally known as a anti-dependency occurs when a transaction overwrites a version observed by some other transaction. i.e. transaction T1 reads an object x, x is then modified by transaction T2.
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (50.56,42) -- (258.56,43) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (47.56,101) -- (256.56,101) ;
+%Straight Lines [id:da9563274467788809] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (98,46) -- (159.99,94.76) ;
+\draw [shift={(161.56,96)}, rotate = 218.19] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (157.56,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
+% Text Node
+\draw (77,16) node [anchor=north west][inner sep=0.75pt]   [align=left] {$r(x_1)$};
+
+
+\end{tikzpicture}
+
+Transaction $T_1$ reads $X_1$, this object is then modified by $T_2$ and therefor anti-depends on $T_1$, i,e $T_2$ occurred after $T_1$ in the history.
+\begin{equation}
+    History\ H: [T_1(r(x_0)), T_2(W(x_1))]
+\end{equation}
+
+
+A SQL example of this relation would be the below script:
+\begin{lstlisting}
+  select * from accounts where id = 42;
+  update accounts set balance = 2022 where id = 42;
+\end{lstlisting}
+
+\subsection{phenomena defined via cycles and conflicts}
+
+\subsection{G0: dirty writes}
+A history exhibits phenomenon G0 if the DSG contains a directed cycle consisting entirely of write-dependency edges.
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (50.56,42) -- (258.56,43) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (47.56,101) -- (256.56,101) ;
+%Straight Lines [id:da9563274467788809] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (68,46) -- (85.86,94.13) ;
+\draw [shift={(86.56,96)}, rotate = 249.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9159237520413861] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (152.56,96) -- (228.88,47.08) ;
+\draw [shift={(230.56,46)}, rotate = 147.34] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (51.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_1)$};
+% Text Node
+\draw (203.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(y_2)$};
+% Text Node
+\draw (260,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$C_1$};
+
+
+% Text Node
+\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (64.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
+% Text Node
+\draw (128.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(y_1)$};
+% Text Node
+\draw (187,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$C_2$};
+\end{tikzpicture}
+
+\begin{equation}
+    History\ H: [W_1(x_1),W_2(x_2),W_3(y_1),C_2,W_3(y_2),C_1]
+\end{equation}
+In the above example $T_1$ writes $x_1, y_2$, and $T_2$ writes $x_2, y_1$, The outcome of this transaction is $x_2, y_2$ which is incompatible with any of the executed transactions.
+
+
+\subsection{G1: dirty reads}
+Phenomenon G1 captures the essence of no-dirty-reads, and consists of g1a, g1b, g1c.
+
+\begin{itemize}
+    \item G1a: Aborted Reads (cascaded aborts). \\
+        A history exhibits G1a if it contains a aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (49.17,42) -- (216.56,43) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (47.56,101) -- (215.76,101) ;
+%Straight Lines [id:da9563274467788809] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (68,46) -- (85.86,94.13) ;
+\draw [shift={(86.56,96)}, rotate = 249.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9159237520413861] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (105.56,96) -- (156.08,50.34) ;
+\draw [shift={(157.56,49)}, rotate = 137.89] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9009499956012581] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (168.56,48) -- (194.58,94.26) ;
+\draw [shift={(195.56,96)}, rotate = 240.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
+% Text Node
+\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
+% Text Node
+\draw (64.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(x\_1)};
+% Text Node
+\draw (51.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(x\_1)};
+% Text Node
+\draw (194,99) node [anchor=north west][inner sep=0.75pt]   [align=left] {?};
+% Text Node
+\draw (156,19) node [anchor=north west][inner sep=0.75pt]   [align=left] {A1};
+
+
+\end{tikzpicture}\\
+To prevent this: If a transaction has preformed a read on a object modified by a aborted transaction, It itself has to abort.
+    \item G1b: Intermediate Reads (dirty reads)
+    A history exhibits G1b if it contains a committed transaction containing a read of an intermediary modification by another transaction. i.e. a read of a non final modification was preformed and committed to the history. 
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (49.17,42) -- (216.56,43) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (47.56,101) -- (215.76,101) ;
+%Straight Lines [id:da9563274467788809] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (68,46) -- (85.86,94.13) ;
+\draw [shift={(86.56,96)}, rotate = 249.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9159237520413861] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (105.56,96) -- (156.08,50.34) ;
+\draw [shift={(157.56,49)}, rotate = 137.89] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
+% Text Node
+\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
+% Text Node
+\draw (64.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(x_1)$};
+% Text Node
+\draw (51.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_1)$};
+% Text Node
+\draw (166,100) node [anchor=north west][inner sep=0.75pt]   [align=left] {$C_2$};
+% Text Node
+\draw (156,19) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
+
+
+\end{tikzpicture} \\
+To prevent this a: If a transaction has read a intermediate state of an object it must be aborted, or a exclusive lock should be held to prevent other transaction from accessing a intermediate state.
+
+
+    \item G1c: Circular Information Flow\\
+A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist 3 possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depends on each others writes.
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da9500410641573396] 
+\draw    (61.45,42) -- (257.56,43) ;
+%Straight Lines [id:da7796185686481738] 
+\draw    (59.56,101) -- (256.62,101) ;
+%Straight Lines [id:da05192673528173475] 
+\draw [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ] [dash pattern={on 0.84pt off 2.51pt}]  (89.56,100) -- (180.85,45.03) ;
+\draw [shift={(182.56,44)}, rotate = 148.95] [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da10349511339666284] 
+\draw [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ] [dash pattern={on 0.84pt off 2.51pt}]  (89.56,44) -- (180.85,98.97) ;
+\draw [shift={(182.56,100)}, rotate = 211.05] [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (26.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
+% Text Node
+\draw (26.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
+% Text Node
+\draw (165.56,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(x\_?,y\_1)};
+% Text Node
+\draw (63.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(x\_1)};
+% Text Node
+\draw (68,102) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(y\_1)};
+% Text Node
+\draw (164.56,15) node [anchor=north west][inner sep=0.75pt]   [align=left] {R1(x\_1,y\_?)};
+% Text Node
+\draw (0,49) node [anchor=north west][inner sep=0.75pt]   [align=left] {x\_0\\y\_0};
+\end{tikzpicture}\\
+The above example has x and y in the initial state of 0, $T_1$ writes $x_1$ and $T_1$ writes $y_1$. They then read x,y. $T_1$ sees $x_1,y_0$ and $T_1$ sees $X_0,y_1$ while the actual state of the system is $x_1,y_1$
+\end{itemize}
+
+\subsection{G-cursor: Lost Update}
+
+\todo[author=Mark]{Finish section}
 \newpage
 
 \chapter{Consistency Model testing}
@@ -929,21 +1142,6 @@ These tests are generally quite efficient, but only check for certain patterns a
 
 This also means that the scope of these testing projects are normally huge and defined case by case with predefined transactions that only test a limited scope. The test might have been done previously but were very limited in test coverage and most anomalies were are never detected,
 
-\section{Jepsen}
-"
-Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems' failure modes. In each analysis we explore whether the system lives up to its documentation's claims.
-"\cite{jepsonio}
-\\
-\vspace{5mm}
-
-Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given by their creators. In a world where distributed, hyper scale or even planetary scale systems are becoming the more common, this requires data storages to behave in an expected manner. The reason that expected manner is used rather than correct manner is that we may allow certain faults to occur, and allow for eventual consistency as this allows for higher throughput applications. There are case where data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. \\
-\vspace{5mm}
-
-A scenario where real time data distribution and correctness is of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is no longer available. Otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.\\
-
-Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post this comment might not necessary be available to users instantly and it's of no concern if it take a few seconds or minutes for it to be distributed to all nodes. Users generally don't notice these delays and it allows for better scaling within these huge applications with mullions or billions of request per second.
-
-
 \section{State of the art}
 
 The state of the art is Jepsen, or rather one of the state of the Art projects.
@@ -952,7 +1150,24 @@ The Jepsen client is build up in a modular fashion such that the different modul
 
 The goal of Jepsen was to have a framework that allows 
 
-The more inner workings of Jepsen consist of a Host node, and tentacles going connecting to the nodes in the test cluster to preform of the tasks such as database automation and the introduction of faults.
+The more inner workings of Jepsen consist of a Host node, and tentacles going connecting to the nodes in the test cluster to preform of\todo[author=Daniela]{preform of the tasks?} the tasks such as database automation and the introduction of faults.
+
+
+\section{Jepsen}
+"
+Jepsen is an effort to improve the safety of distributed databases, queues, consensus systems  (...) exploring particular systems' failure modes. In each analysis we explore whether the system lives up to its documentation's claims.
+"\cite{jepsonio}
+\\
+\vspace{5mm}
+
+Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given by their creators. In a world where distributed, hyper scale or even planetary scale systems are becoming the more common, this requires data storage to behave in an expected manner. The reason that expected manner is used rather than correct manner is that we may allow certain faults to occur, and allow for eventual consistency as this allows for higher throughput applications. There are case where data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. \\
+\vspace{5mm}
+
+A scenario where real time data distribution and correctness is of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is no longer available. Otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.\\
+
+Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post this comment might not necessary be available to users instantly and it's of no concern if it take a few seconds or minutes for it to be distributed to all nodes. Users generally don't notice these delays and it allows for better scaling within these huge applications with mullions or billions of request per second.
+
+
 
 \subsection{Runner}
 
@@ -998,24 +1213,24 @@ The way this works is by inferring a dependency graph between client side observ
 \vspace{5mm}
 This means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.\\
 
-
+\todo[author=Mark]{Finish Subsection on Elle}
 Elle is a consistency checker and generator available in Jepsen. It supports a few different methods 
-
+\\
 Elle is the one of the Jepsen Consistency checkers available in jepsen, other exist but for all intents and purposes Elle should always to used. 
 Introduction to Elle
-...
+... \\
 What it aims to solve
-...
+...\\
 
-...
+...\\
 Checker
-...
+...\\
 Generators
-...
+...\\
 TXN
-...
+...\\
 
-    %TODO move these to BIB file and write this section
+% move these to BIB file and write this section
 % K. Kingsbury. Knossos.
 % https://github.com/jepsen-io/knossos, 2013-2019.
 
@@ -1065,7 +1280,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
 \section{related work to Jepsen}
 
-%TODO move these to BIB file and write this section
+\todo[author=Mark]{ move these to BIB file and write this section}
 % K. Kingsbury. Knossos.
 % https://github.com/jepsen-io/knossos, 2013-2019.
 
@@ -1084,7 +1299,6 @@ https://jepsen.io/analyses/postgresql-12.3
 % Line-up: A Complete and Automatic Linearizability
 % Checker. PLDI '10, 2010.
 
-%TODO write introduction to writing jepsen test
 
 
 
@@ -1115,7 +1329,7 @@ https://jepsen.io/analyses/postgresql-12.3
     \vspace{5mm}
 
     \subsubsection{Transport subsystem}
-    %TODO these might be serving the same purpose and the documentation might just be odd.
+    \todo[author=Mark]{these might be serving the same purpose and the documentation might just be odd.}
     The lowest layer in the core stack that provides secure communication within the cluster itself and between the cluster and clients. This functionality is provided via point to point communication channels that support one way and request reply patterns, in other terms UDP and TCP. This also provides basis for broadcast and multicast within the cluster. Security is handled via wither windows security or x509 certificates. \\
     \vspace{5mm}
 
@@ -1171,7 +1385,7 @@ https://jepsen.io/analyses/postgresql-12.3
     \vspace{5mm}
 
     Routing Tokens.
-    %TODO I was unable to find information on this precisely is handled however from the wording in the paper the initially split would be 50/50 and a third node would be 50/25/25? is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done
+    \todo[author=Mark]{I was unable to find information on this precisely is handled however from the wording in the paper the initially split would be 50/50 and a third node would be 50/25/25? is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done}
     Each node owns a token that includes a portion of the routing token it is responsible for. The SF-ring protocol ensures two properties:
     \begin{itemize}
         \item Each token is only owned by one node at any given time;
@@ -1253,13 +1467,12 @@ https://jepsen.io/analyses/postgresql-12.3
 
 
     \section{Comparison}
-%TODO write Comparison between the 3 datastores
-    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Dynamo. Therefore, comparisons will be made to two of these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
+    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Dynamo. Therefore, a introduction will be made to two of these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but a investigation of consistency and failure modes will be be done.
     
     
     
-    \subsection{Cassadra}
-    %TODO
+    \subsection{Cassandra}
+\todo[author=Mark]{Finish subsection}
     Facebook database product made opensource,
     
     Ring via hash table
@@ -1283,14 +1496,14 @@ https://jepsen.io/analyses/postgresql-12.3
     
 
     \subsection{Redis}
-%TODO write section on Redis
+\todo[author=Mark]{write section on Redis}
 
     \subsection{Dynamo}
-%TODO write section on Dynamo
+\todo[author=Mark]{write section on Dynamo}
 
 
     \section{Comparison}
-%TODO write Comparison between the 3 datastores
+\todo[author=Mark]{write Comparison between the 3 datastores}
     In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Redis. Therefore, comparisons will be made to these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
 
 
@@ -1318,13 +1531,13 @@ https://jepsen.io/analyses/postgresql-12.3
     A flow diagram for the design of the stateful service contains the following functionality. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for use in routing of the request. \\
     \vspace{5mm}
     \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
-    \todo{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
+    \todo[author=Jacopo]{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
 
     This implementation contains 2 main codebases. The C\# dotnet web services that acts as a API to the reliable collections using 3 controllers for the 3 default data structures implemented in the framework, and a Clojure codebase containing the Jepsen test and a driver for connecting to the Service fabric services.
 
     \subsection{Infrastructure}
     The infrastructure is centered around Azure, using an isolated v-net containing 6 virtual machines all running Linux. Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
-    The 5 Service Fabric nodes are mostly self managing.\todo{what does it mean mostly self managing?} Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
+    The 5 Service Fabric nodes are mostly self managing.\todo[author=Jacopo]{what does it mean mostly self managing?} Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
 
     The Jepsen host is manged and accessed via ssh. For deployment a deployment pipeline was considered but was decided against due to development overhead. A solution using scp was chosen instead due to the quicker development cycles and the fact that only a single machine required access to the deployment. 
     
@@ -1332,7 +1545,7 @@ https://jepsen.io/analyses/postgresql-12.3
     The topology of the network is arranged such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection from causing issues with the test.\\
     \includegraphics[scale=0.3]{images/topology.png}
     \\
-    \todo{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
+    \todo[author=Jacopo]{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
 
     All traffic resides within the cluster. The load balancer is part of the standard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
 
@@ -1357,7 +1570,7 @@ https://jepsen.io/analyses/postgresql-12.3
     
     The design of the Jepsen test suite aims to use skeleton code from a past Jepsen test to start the project as it gives a template of what functionality should be implemented. These implementations are still custom but it gives a pointer to what the bare minimum is to have a functioning application.
     \\
-    The first module is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.\todo{did you use Java or Clojure. Here write the final result, not speculation.}
+    The first module is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.\todo[author=Jacopo]{did you use Java or Clojure. Here write the final result, not speculation.}
     \\
     The Jepsen suite should use a modular setup that allows interoperability between multiple workloads, a runner that allows for test tuning, db that deploys, configures and operates on the running datastore, a client runs the transactions via the driver, nemesis that induces faults in the cluster and 3 workloads, queue, concurrent queue, and dictionary. One workload for each of the transactional data types exposed by Service Fabric.
     \begin{itemize}
@@ -1452,7 +1665,7 @@ A few considerations on how this issue could be resolved was considered, lowerin
 
  \subsubsection{Implementation of the revised design}
 
-The implementation of this \todo{I lost it. what is this revised design? The structure of this chapter is not clear. You jump taking about designs. You should make more clear that you are talking about the initial design early and then move to the final design. Now is very confusing.} revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again.\todo{too colloquial. You are writing a thesis, not talking to friends} Issues started showing up that which\todo{not English} were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so\todo{so?} tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
+The implementation of this \todo[author=Jacopo]{I lost it. what is this revised design? The structure of this chapter is not clear. You jump taking about designs. You should make more clear that you are talking about the initial design early and then move to the final design. Now is very confusing.} revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again.\todo[author=Jacopo]{too colloquial. You are writing a thesis, not talking to friends} Issues started showing up that which\todo[author=Jacopo]{not English} were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so\todo[author=Jacopo]{so?} tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
 
 \paragraph*{Implementation changes for the SF Application}
 The second iteration of the Service Fabric application removes the stateless layer of the application, The aim of these changes was to increase the throughput of the service by removing  layer of network traffic and routing. This required moving the handling of request, parsing and verification to the stateless service.   \\
@@ -1461,7 +1674,7 @@ The changes required here weren't overly complex and only required merging the c
 \\
 
 \paragraph*{Implementation changes for the Clojure Application}
-This design iteration didn't required any major changes to the Clojure application, the changes were only on the routing side of service fabric. this did require minor changes to the connector such that the headers of the requests such that\todo{such that such that (and as always dots not followed by capital letter} they were valid as internal service fabric requests. Otherwise  the connections from the Clojure application were simply rejected by the stateful application. Routing was defined such that the primary node was connection to by default as was defined in the code itself. This should probably have been implemented as a command line configuration but the direct solution was chosen as that endpoint would have to be defined either way. 
+This design iteration didn't required any major changes to the Clojure application, the changes were only on the routing side of service fabric. this did require minor changes to the connector such that the headers of the requests such that\todo[author=Jacopo]{such that such that (and as always dots not followed by capital letter} they were valid as internal service fabric requests. Otherwise  the connections from the Clojure application were simply rejected by the stateful application. Routing was defined such that the primary node was connection to by default as was defined in the code itself. This should probably have been implemented as a command line configuration but the direct solution was chosen as that endpoint would have to be defined either way. 
 
 
 \subsubsection{Final iteration of the design.}
@@ -1486,9 +1699,9 @@ The jepsen application requires significant redesign. Centered around generation
 
 \paragraph*{The Stateless service}
 
-The changes to the stateless services required designing a new API endpoint which collected all functionaility of the existing endpoints into a single MVC. For the implementation the use of tools such as Postman, dotnetfiddle and curiousconcept JSON tool were used, This allowed testing concepts and code idea prior to implementing them for the Service Fabric cluster. The implementation was still time consuming due to the lack of debugging tools and generally black box behavior of Service Fabric. stemming from the inability  to run the application locally. and the cluster only returning internal server codes that wasn't usable for debugging of the solution. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process so far.\\ \todo{ be aware that this can be read also as "I can not read the documentation good enough. Note that often the failures are hidden in the final work. Here you chose to describe the failures in every step but this can give also the image to the external reviewer of someone that can not do the job properly"}
+The changes to the stateless services required designing a new API endpoint which collected all functionaility of the existing endpoints into a single MVC. For the implementation the use of tools such as Postman, dotnetfiddle and curiousconcept JSON tool were used, This allowed testing concepts and code idea prior to implementing them for the Service Fabric cluster. The implementation was still time consuming due to the lack of debugging tools and generally black box behavior of Service Fabric. stemming from the inability  to run the application locally. and the cluster only returning internal server codes that wasn't usable for debugging of the solution. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process so far.\\ \todo[author=Jacopo]{ be aware that this can be read also as "I can not read the documentation good enough. Note that often the failures are hidden in the final work. Here you chose to describe the failures in every step but this can give also the image to the external reviewer of someone that can not do the job properly"}
 
-Solutions such as implementing application logging or application performance monitoring could have given insight as to why the application didn't behave as expected. Looking at a lot of things in hindsight plenty of poor decisions were made that would be changed and the whole design mythology of the project might be done in a different manner.\todo{this are consideration better to do in the conclusion}
+Solutions such as implementing application logging or application performance monitoring could have given insight as to why the application didn't behave as expected. Looking at a lot of things in hindsight plenty of poor decisions were made that would be changed and the whole design mythology of the project might be done in a different manner.\todo[author=Jacopo]{this are consideration better to do in the conclusion}
 
 \vspace{5mm}
 
@@ -1538,14 +1751,14 @@ The changes for the Generator and checker shifted a lot of the heavy lifting fro
 
 \subsubsection{Running the test}
 
-The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time screws \todo{screws?}, and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with further tools or manually checked for issues that aren't covered by automatic testing.
+The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time skew , and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with further tools or manually checked for issues that aren't covered by automatic testing.
 
-\todo{how long do they run, how many times have you repeated them. If someone has to reproduce what you did he or she will have hard time understanding what to do with such a scarce description}
+\todo[author=Jacopo]{how long do they run, how many times have you repeated them. If someone has to reproduce what you did he or she will have hard time understanding what to do with such a scarce description}
 
 
 \subsubsection{Issues doing the Design and implementation stages.}
 
-For Service Fabric Linux and windows versions of the framework is far from interchangeable,\todo{english!} This results in applications and services that function on one version to fail on the other. This especially presented issues as the local development environment provided by Microsoft might right an application, but the same application would fail to run or crash on cluster, this issue was further concatenated by visual studio being unable to load dump files that would allow a debugger to trace why the applications from the cluster weren't functioning as intended. other debugging options such as the remote debugger feature wasn't compatible with the Linux cluster either which meant that doing the development we were often flying blind. There was also some minor issues with the Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required a entire new deployment of the cluster and any data that might have been in the cluster to be lost. this was not an issue for this experiment but could have been a significant issues in a production scenario with data that wasn't redundantly stored on a different data store.
+For Service Fabric Linux and windows versions of the framework is far from interchangeable,\todo[author=Jacopo]{english!} This results in applications and services that function on one version to fail on the other. This especially presented issues as the local development environment provided by Microsoft might right an application, but the same application would fail to run or crash on cluster, this issue was further concatenated by visual studio being unable to load dump files that would allow a debugger to trace why the applications from the cluster weren't functioning as intended. other debugging options such as the remote debugger feature wasn't compatible with the Linux cluster either which meant that doing the development we were often flying blind. There was also some minor issues with the Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required a entire new deployment of the cluster and any data that might have been in the cluster to be lost. this was not an issue for this experiment but could have been a significant issues in a production scenario with data that wasn't redundantly stored on a different data store.
 
 \newpage
 \section{Results}
@@ -1637,7 +1850,7 @@ Dirty updates are quite common as soon as any conflicts occur within Service Fab
 \subsubsection{G1a: Aborted Reads (cascaded aborts)}
 Aborted reads are common as they share the same underlying issues as Dirty Update, These occur when a transaction commits that it has read the updates of an aborted transaction.\\
 
-The the\todo{the the. Use a grammar checker like grammarly. Errors like this are easy to spot and fix} below example. Transaction 336 wrote to key 2 and afterwards aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754 which shouldn't have been possible.
+The the\todo[author=Jacopo]{the the. Use a grammar checker like grammarly. Errors like this are easy to spot and fix} below example. Transaction 336 wrote to key 2 and afterwards aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754 which shouldn't have been possible.
 
 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
@@ -1725,7 +1938,7 @@ Transaction 490 writes a change to key 32. this change is then read, and this re
 % Text Node
 \draw (298,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(append 20 15)};
 % Text Node
-\draw (354,7) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort due to timeout on key 30};
+\draw (354,7) node [anchor=north west][inner sep=0.75pt]   [align=left] {Timeout on key 30};
 % Text Node
 \draw (531,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
 % Text Node
@@ -1762,7 +1975,7 @@ Transaction 490 writes a change to key 32. this change is then read, and this re
 \newpage
 \subsection{Rejected transactions}
 
-One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test parameters of 200 concurrent clients and randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed.\todo{phrase too long} The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
+One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test parameters of 200 concurrent clients and randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed.\todo[author=Jacopo]{phrase too long} The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
 
 With 100 concurrent connections the following abort rates were found.. 
 
@@ -1781,11 +1994,10 @@ With 100 concurrent connections the following abort rates were found..
 
 \end{axis}
 \end{tikzpicture}
-
-\newpage                      
 \subsection{Statistical data from the test.}
 
-\todo{why are you including this data? what are we supposed to look?
+Doing the tests some metrics data is gathered. 
+\todo[author=Jacopo]{why are you including this data? what are we supposed to look?
 Without any description than better to remove them}
 \includegraphics[scale=0.5]{results/clock-skew.png}
 \\
@@ -1822,10 +2034,10 @@ This unambiguous definition would prevent the current situation where databases 
     \item Casandra last-write wins issues, %and a attempt at a solution via Atomic clocks
     \item Elastic search issues.
 \end{itemize}
-%TODO add some more information to the above points
+\todo[author=Mark]{add some more information to the above points}
 
 All of these issues can have huge implications in the real world if the behavior isn't well understood. Just here in Odense MongoDB is used by the City to gather data from intersections, water usage, water height levels, temperatures, pollution, and many many other things around the city, This implementation might only annoy a few city planners and other city officials but if such a system is used in a place where data is more important such as healthcare or other environment where no data loss is acceptable but due to poor understanding journal data is stored where data critical to human life is lost due to not under the correct understand and information about the system in use.
-%TODO add more to the above concerns.
+\todo[author=Mark]{add more to the above concerns.}
 
 \section{How can this be improved going forward}
 
@@ -1843,11 +2055,11 @@ This could be done via automated testing and verification of a given system in i
 
 \section{Results from Service Fabric}
 
-%TODO Email JACOPO when done!
+\todo[author=Mark]{Email JACOPO when done!}
 
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
-%TODO write Conclusion
+\todo[author=Mark]{write Conclusion}
 
  I will only write deeper about designing, implementing, testing, executing and analysing the results. However this does not mean that the learning and understanding phase of the project was any smaller, quite the contrary. Learning 2 new programming languages that I've never interacted with before isn't an easy task; adding in the complexity of write code for cloud framework that I had no prior experience working on didn't help either. Spicing it with up with outdated documentation, incompatibility between versions of the framework and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute forcing solutions to a lot of issues due to lacking features on the Linux version of the cluster.\\
  
@@ -1857,11 +2069,12 @@ Whats next, Defining a standard for testing and certifying database systems towa
 This could be done via automated testing and verification of a given system in it's different transactional configurations.
 
 \section*{Outlook}
-%TODO write Outlook
+\todo[author=Mark]{write Outlook}
+
 
 
 \section{Future Work}
-%TODO write Future Work
+\todo[author=Mark]{write Future Work}
 Future work could include implementing a deeper testing suite that checks for more types of invariant and issues that might occur in the system.
 
 
@@ -1879,6 +2092,10 @@ Future work could include implementing a deeper testing suite that checks for mo
 
 \section{Proposal}
 \input{Proposal}
+
+\section{TODO}
+\todototoc
+\listoftodos
 
 
     % \section{Schedule}
