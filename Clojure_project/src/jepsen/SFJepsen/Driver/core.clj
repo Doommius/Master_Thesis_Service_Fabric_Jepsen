@@ -70,9 +70,8 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   [clientaddress]
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.7:35112/api")
+  (str "http://10.0.0.5:35112/api")
   )
-
 
 (defn primarybase-url
   "Constructs the base URL for all etcd requests. Example:
@@ -80,7 +79,7 @@
   (base-url client) ; => \"http://127.0.0.1:4001/v2\""
   []
   ;(str "http://" (:endpoint clientaddress) ":35112/api")
-  (str "http://10.0.0.7:35112/api"))
+  (str "http://10.0.0.5:35112/api"))
 
 
 (defn ^String url

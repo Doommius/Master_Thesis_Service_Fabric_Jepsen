@@ -134,7 +134,7 @@
 
 
    ["-i" "--isolation LEVEL" "What level of isolation we should set: serializable, repeatable-read, etc."
-    :default :repeatable-read
+    :default :strict-serializable
     :parse-fn keyword
     :validate [#{:read-uncommitted
                  :read-committed

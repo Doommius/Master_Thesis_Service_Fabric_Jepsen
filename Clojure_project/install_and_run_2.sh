@@ -30,7 +30,7 @@ rm -rf target
 lein clean
 lein install
 echo "Jepsen Test: Start reliableAppend"
-lein run test --workload "reliableappend" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key /home/jervelund/.ssh/SF_cluster.key  --nodes-file resources/nodes --concurrency 200 --time-limit 600 -r 100 --ops-per-key 256 --test-count 1 --nemesis pause,clock
+lein run test --workload "reliableappend" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key ../SF_cluster.key  --nodes-file resources/nodes --concurrency 200 --time-limit 7200 -r 100 --ops-per-key 256 --test-count 1 --max-txn-length 5 --nemesis pause,clock,kill
 echo "Jepsen Test: Start reliabledict"
 #lein run test --workload "reliabledict" --username jervelund --password "P&g68KTBG9&eHxY347sO2^eHa" --ssh-private-key /home/jervelund/.ssh/SF_cluster.key --nodes-file resources/nodes --concurrency 100 --time-limit 3600 -r 100 --ops-per-key 256 --test-count 1 --nemesis pause,clock
 echo "Jepsen Test: Start reliablequeue"
