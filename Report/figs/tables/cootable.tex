@@ -1,0 +1,23 @@
+\begin{table}[h]
+    \begin{tabular}{l|l|l}
+        No & Anomaly, reference, year                        & Formal definition  \\ \hline
+        1  & Dirty Write {[}1{]} 1992                        & $W_1 [x_1 ]...W_2 [x_2 ]...((C_1 or A_1) and (C_2 or A_2) in any order) $  \\
+        2  & Lost Update {[}6{]} 1995                        & $  R_1 [x_0 ]...W_2 [x_1 ]...C_2...W_1 [x_2 ] $ \\
+        3  & Dirty Read {[}1{]} 1992                         & $ W_1 [x ]...R_2 [x ]...(A_1 and C_2 in either order) $ \\
+        4  & Aborted Reads {[}45{]} 2015, {[}2{]} 2000       & $ W_1 [x : i]...R_2 [x : i]...(A_1 and C_2 in any order) $  \\
+        5  & Fuzzy/Non-repeatable Read {[}1{]} 1992          & $ R_1 [x ]...W_2 [x ]...C_2...R_1 [x ]...C_1 $  \\
+        6  & Phantom {[}1{]} 1992                            & $ R_1 [P ]...W_2[y in P]...C_2...R_1 [P ]...C_1 $  \\
+        7  & Intermediate Reads {[}45{]} 2015, {[}2{]} 2000  & $ W_1 [x : i]...R_2 [x : i]...W_1 [x : j]...C_2  $  \\
+        8  & Read Skew {[}6{]} 1995                          & $ R_1 [x_0 ]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1] $ \\
+        9  & Unnamed Anomaly {[}38{]} 2000                   & \begin{tabular}[c]{@{}l@{}}$ R_1 [y]...R_2 [x ]...W_2 [x ]...R_2 [y]...W_2 [y]...C_2...R_3 [x ]...W_3 [x ]$\\$...R_3 [z]...W_3 [z]...C_3...R_1 [z]...C_1 $\end{tabular}      \\
+        10 & Fractured Reads {[}16{]} 2017, {[}5{]} 2014     & $ R_1 [x_0]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1 ] $ \\
+        11 & Serial-Concurrent-phenomenon {[}12{]} 2014      & $ R_1 [x_0 ]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1 ] $  \\
+        12 & Cross-phenomenon {[}12{]} 2014                  & $ R_1 [x_0 ]...R_2 [y_0 ]...W_3 [x_1 ]...C_3...W_4 [y_1 ]...C_4...R_2 [x_1 ]...R_1 [y_1 ] $ \\
+        13 & Long Fork Anomaly {[}16{]} 2017                 & $ R_1 [x_0 ]...R_2 [y_0 ]...W_3 [x_1 ]...C_3...W_4 [y_1 ]...C_4...R_2 [x_1 ]...R_1 [y_1 ] $ \\
+        14 & Causality Violation Anomaly {[}16{]} 2017       & $ R_1 [x_0 ]...W_2 [x_1 ]...C_2...R_3 [x_1 ]...W_3 [y_1 ]...C_3...R_1 [y_1 ] $  \\
+        15 & Read-only Transaction Anomaly {[}26, 43{]} 2004 & \begin{tabular}[c]{@{}l@{}}$ R_1 [x_0, 0]...R_1 [y_0, 0]...R_2 [y_0, 0]...W_2 [y_1, 20]...C_2$\\$...R_3 [x_0,0]...R_3 [y_1, 20]...C_3...W_1 [x_2, -11]...C_1 $\end{tabular} \\
+        16 & Write Skew {[}6{]} 1995                         & $ R_1 [x_0 ]...R_2 [y_0 ]...W_1 [y_1 ]...W_2 [x_1 ] $   \\
+        17 & Predicate-based Write Skew {[}27{]} 2005        & $ R_1 [P ]...R_2 [P ]...W_1 [y_1 in P]...W_2[x_1 in P] $  \\
+        18 & Read Partial-Committed {[}44{]} 2019            & $ R_1[x] W_2[x] W_2[y] C_2 R_1[Y] C_1 $ 
+    \end{tabular}
+\end{table}

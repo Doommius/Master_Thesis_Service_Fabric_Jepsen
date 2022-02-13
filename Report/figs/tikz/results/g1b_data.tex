@@ -1,0 +1,23 @@
+\begin{lstlisting}
+  :G1b ({:op {:type :ok,
+        :f :txn,
+        :value [[:r 32 [1 2]] 
+                [:append 20 15] 
+                [:r 30 [5]]],
+        :time 18957901065,
+        :process 71,
+        :index 553},
+   :mop [:r 32 [1 2]],
+   :writer {:type :fail,
+            :f :txn,
+            :value [[:append 32 2] 
+                    [:append 30 9] 
+                    [:r 16 nil] 
+                    [:append 30 10] 
+                    [:append 32 3]],
+            :time 14930759485,
+            :process 84,
+            :error "System.TimeoutException: Timed out waiting for Exclusive lock on key",
+            :index 490},
+   :element 2})},
+\end{lstlisting}

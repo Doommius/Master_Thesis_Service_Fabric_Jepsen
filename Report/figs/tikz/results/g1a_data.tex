@@ -1,0 +1,19 @@
+\begin{lstlisting}
+    {:op {:type :ok,
+        :f :txn,
+        :value [[:r 23 [4 5]]
+                [:r 22 [1 2 4 3 5 30 32]]],
+        :time 10926481665,
+        :process 180,
+        :index 754},
+   :mop [:r 22 [1 2 4 3 5 30 32]],
+   :writer {:type :fail,
+            :f :txn,
+            :value [[:append 22 3]
+                    [:append 24 7]],
+            :time 6857604069,
+            :process 8,
+            :error "Timed out waiting for Exclusive lock on key",
+            :index 336},
+   :element 3}
+\end{lstlisting}
