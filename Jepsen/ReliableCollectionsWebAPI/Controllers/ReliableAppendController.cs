@@ -99,96 +99,106 @@ namespace ReliableCollectionsWebAPI.Controllers
                 {
                     return NoContent();
                 }
-                
+
                 dynamic operationlist;
 
                 operationlist = Newtonsoft.Json.JsonConvert.DeserializeObject(transactionquery);
 
                 using (ITransaction tx = this.stateManager.CreateTransaction())
                 {
-                    ConditionalValue<List<long>> conditionalValue;
-                    Boolean v;
-                    foreach (var item in operationlist.transaction)
+                    try
                     {
-
-                        if (item.operation.Value == "r")
+                        ConditionalValue<List<long>> conditionalValue;
+                        Boolean v;
+                        foreach (var item in operationlist.transaction)
                         {
-                            conditionalValue = await votesDictionary.TryGetValueAsync(tx, item.key.Value);
-                            if (conditionalValue.HasValue)
-                            {
-                                List<long> value = conditionalValue.Value;
-                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(value)));
 
+                            if (item.operation.Value == "r")
+                            {
+                                conditionalValue = await votesDictionary.TryGetValueAsync(tx, item.key.Value);
+                                if (conditionalValue.HasValue)
+                                {
+                                    List<long> value = conditionalValue.Value;
+                                    result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(value)));
+
+                                }
+                                else
+                                {
+                                    result.Add(new KeyValuePair<string, List<long>>(item.key.Value, null));
+                                }
+                            }
+
+                            else if (item.operation.Value == "w")
+                            {
+
+                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(await votesDictionary.SetAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>))))));
+                            }
+                            else if (item.operation.Value == "a")
+                            {
+                                //(tx, key, value, (key, oldvalue) => value);
+                                long tmpvalue = item.value.Value;
+                                string key = item.key.Value;
+
+                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(await votesDictionary.AddOrUpdateAsync(tx, key, new List<long>() { tmpvalue }, (key, oldvalue) => { oldvalue.Add(tmpvalue); return oldvalue; }))));
+
+
+
+
+                            }
+                            else if (item.operation.Value == "c")
+                            {
+                                v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>)), item.expected.ToObject(typeof(List<long>)));
+                                if (!v)
+                                {
+                                    result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -1 }));
+                                }
+                                else
+                                {
+                                    result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -2 }));
+                                }
+
+                            }
+                            else if (item.operation.Value == "deleteall")
+                            {
+                                v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>)), item.expected.ToObject(typeof(List<long>)));
+                                if (!v)
+                                {
+                                    result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -1 }));
+                                }
+                                else
+                                {
+                                    result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -2 }));
+                                }
+
+                            }
+                            else if (item.operation.Value == "abort")
+                            {
+
+                                tx.Abort();
+                                result.Add(new KeyValuePair<string, List<long>>(item.operation.Value, new List<long>() { -10 }));
+                                return this.Json(result);
+                            }
+                            else if (item.operation.Value == "d")
+                            {
+                                conditionalValue = await votesDictionary.TryRemoveAsync(tx, item.key.Value);
+                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, conditionalValue.Value));
                             }
                             else
                             {
-                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, null ));
+                                result.Add(new KeyValuePair<string, List<long>>(item.operation.Value, new List<long>() { -1 }));
                             }
                         }
-
-                        else if (item.operation.Value == "w")
-                        {
-
-                            result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(await votesDictionary.SetAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>))))));
-                        }
-                        else if (item.operation.Value == "a")
-                        {
-                            //(tx, key, value, (key, oldvalue) => value);
-                            long tmpvalue = item.value.Value;
-                            string key = item.key.Value;
-
-                            result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(await votesDictionary.AddOrUpdateAsync(tx, key, new List<long>() { tmpvalue }, (key, oldvalue) => { oldvalue.Add(tmpvalue); return oldvalue; }))));
-
-
-
-
-                        }
-                        else if (item.operation.Value == "c")
-                        {
-                            v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>)), item.expected.ToObject(typeof(List<long>)));
-                            if (!v)
-                            {
-                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -1 }));
-                            }
-                            else
-                            {
-                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -2 }));
-                            }
-
-                        }
-                        else if (item.operation.Value == "deleteall")
-                        {
-                            v = await votesDictionary.TryUpdateAsync(tx, item.key.Value, item.value.ToObject(typeof(List<long>)), item.expected.ToObject(typeof(List<long>)));
-                            if (!v)
-                            {
-                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -1 }));
-                            }
-                            else
-                            {
-                                result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>() { -2 }));
-                            }
-
-                        }
-                        else if (item.operation.Value == "abort")
-                        {
-
-                            tx.Abort();
-                            result.Add(new KeyValuePair<string, List<long>>(item.operation.Value, new List<long>() { -10 }));
-                            return this.Json(result);
-                        }
-                        else if (item.operation.Value == "d")
-                        {
-                            conditionalValue = await votesDictionary.TryRemoveAsync(tx, item.key.Value);
-                            result.Add(new KeyValuePair<string, List<long>>(item.key.Value, conditionalValue.Value));
-                        }
-                        else
-                        {
-                            result.Add(new KeyValuePair<string, List<long>>(item.operation.Value, new List<long>() { -1 }));
-                        }
+                        await tx.CommitAsync();
                     }
-                 await tx.CommitAsync();
+                    catch (Exception e)
+                    {
+                        tx.Abort();
+                        List<KeyValuePair<string, List<long>>> exceptionresult = new List<KeyValuePair<string, List<long>>>();
+                        exceptionresult.Add(new KeyValuePair<string, List<long>>(e.ToString(), new List<long>() { -1 }));
+                        return this.Json(exceptionresult);
+                    }
+                    return this.Json(result);
                 }
-                return this.Json(result);
             }
             catch (Exception e)
             {

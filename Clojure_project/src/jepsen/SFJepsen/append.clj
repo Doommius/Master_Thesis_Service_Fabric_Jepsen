@@ -44,21 +44,18 @@
                   )
         )
       (catch [:status 500] e
-        (assoc op :type :fail, :error :internal-server-error))
+        (assoc op :type :info, :error :internal-server-error,:description (:description e)))
       (catch [:status 400] e
-        (assoc op :type :fail, :error :bad-request))
+        (assoc op :type :fail, :error :bad-request,:description (:description e)))
       (catch [:status 204] e
-        (assoc op :type :fail, :error :not-found))
+        (assoc op :type :fail, :error :not-found,:description (:description e)))
       (catch [:status 601] e
          (assoc op :type :fail, :error :deadlock, :description (:description e)))
       (catch [:status 602] e
-        (assoc op :type :fail, :error :notprimary))
+        (assoc op :type :fail, :error :notprimary,:description (:description e)))
       (catch Exception e
-        (assoc op :type :fail, :error e)
+        (assoc op :type :info, :error :other ,:description (:description e))
         )
-      ;(finally
-        ;(info "OP is " op)
-        ;(info "K is " k))
       )
       )
 
@@ -79,7 +76,7 @@
   {
    :generator (append/gen opts)
    :client    (Client. nil)
-   :checker   (append/checker (assoc opts :anomalies [:G0 :G2  :incompatible-order :dirty-update]))
+   :checker   (append/checker (assoc opts :anomalies [:G0 :G1 :G2 :G-cursor :G-update :GSI :incompatible-order :dirty-update]))
    }
 
   )
