@@ -326,39 +326,7 @@ The Dirty Write phenomena occurs when a given object x is modified by concurrent
 Suppose T1 modifies x by appending [2] and T2 further modifies x by adding [3] prior to T1 commit or abort. If either T1 or T2 aborts, it is unclear what the value of x should be. \\
 
 \vspace{2mm}
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (62.56,29) -- (270.56,30) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (60.56,90) -- (269.56,90) ;
-%Straight Lines [id:da7329480179958066] 
-\draw    (317.56,96) -- (361.56,95.04) ;
-\draw [shift={(363.56,95)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (16,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
-% Text Node
-\draw (16,84) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
-% Text Node
-\draw (61,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(2 to x)};
-% Text Node
-\draw (50,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(3 to x)};
-% Text Node
-\draw (209,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort/commit?};
-% Text Node
-\draw (207,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort/commit?};
-% Text Node
-\draw (317.56,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
-% Text Node
-\draw (143,94) node [anchor=north west][inner sep=0.75pt]   [align=left] {Now};
-% Text Node
-\draw (12.5,47) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
-% Text Node
-\draw (296,25) node [anchor=north west][inner sep=0.75pt]   [align=left] {$x? \begin{array}{@{\,}c@{\,}}    [1,2,3]\\    \hline    [1,2]\\    \hline    [1,3]  \end{array} $};
-\end{tikzpicture}
+\input{figs/tikz/transactions/p0}
 \vspace{2mm}
 
 \subsection{P1 - Dirty Read}
@@ -366,86 +334,21 @@ The Dirty Read phenomena occurs when a transaction T2 Reads a object that has be
 
 \subsubsection{Example of violation}
 Suppose transaction T1 modifies a x by appending [2]. Transaction T2 then reads that x before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read x = [1,2] a object that was never committed and that may thus be considered to have never existed.\\
-\vspace{5mm}
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+\vspace{2mm}
+\input{figs/tikz/transactions/p1}
+\vspace{2mm}
 
-%Straight Lines [id:da9500410641573396] 
-\draw    (62.56,29) -- (270.56,30) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (60.56,90) -- (269.56,90) ;
-%Straight Lines [id:da7329480179958066] 
-\draw    (241.56,108) -- (285.56,107.04) ;
-\draw [shift={(287.56,107)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (16,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
-% Text Node
-\draw (16,84) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
-% Text Node
-\draw (61,3) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(2 to x)};
-% Text Node
-\draw (118,90) node [anchor=north west][inner sep=0.75pt]   [align=left] {r(x)};
-% Text Node
-\draw (222,5) node [anchor=north west][inner sep=0.75pt]   [align=left] {Rollback};
-% Text Node
-\draw (148,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {commit};
-% Text Node
-\draw (243.56,108) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
-% Text Node
-\draw (12.5,47) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
-% Text Node
-\draw (148,113) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1,2]};
-
-\end{tikzpicture}
 \newpage
 \subsection{P2 - Non-repeatable/Fuzzy Read}
 The occurrence of the P2 violation occurs when a given transaction T1 reads the same object multiple times and a given transaction T2 modifies this object in-between any of these reads causing T1 to see different versions of a object in the same transaction without modifying it itself. the preventative implementation for P2 requires the use of long read and write-locks; 
 
 \subsubsection{Example of violation}
-Suppose transaction T1 reads x as [1], transaction T2 then modifies x by appending 2 and commits. T1 then reads x as [1, 2].
-\vspace{5mm}
+Suppose transaction T1 reads x as [1], transaction T2 then modifies x by appending 2 and commits. T1 then reads x as [1, 2].\\
+\vspace{2mm}
+\input{figs/tikz/transactions/p2}
+\vspace{2mm}
  
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
 
-%Straight Lines [id:da9500410641573396] 
-\draw    (63.56,64) -- (271.56,65) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (60.56,125) -- (269.56,125) ;
-%Straight Lines [id:da7329480179958066] 
-\draw    (241.56,143) -- (285.56,142.04) ;
-\draw [shift={(287.56,142)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (12.5,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
-% Text Node
-\draw (12.5,119) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
-% Text Node
-\draw (85.56,128) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(2 to x)};
-% Text Node
-\draw (56,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {r(x)};
-% Text Node
-\draw (244,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
-% Text Node
-\draw (155,128) node [anchor=north west][inner sep=0.75pt]   [align=left] {commit};
-% Text Node
-\draw (243.56,143) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
-% Text Node
-\draw (12.5,82) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
-% Text Node
-\draw (66,22) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1]};
-% Text Node
-\draw (178,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {r(x)};
-% Text Node
-\draw (188,22) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1,2]};
-% Text Node
-\draw (262,79) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=[1,2]};
-
-
-\end{tikzpicture}
 
 \subsection{P3 - Phantom Read}
 
@@ -453,46 +356,10 @@ The Phantom Read violation occurs when Transaction T1 preforms a conditional rea
 
 \subsubsection{Example of violation}
 Suppose Transaction T1 selects all values >= 2, Transaction T2 then writes 3 to key x and commits. T1 then selects all values >= 2. the object x now matches this predicate and is included in the read operation. \\
-\vspace{5mm}
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+\vspace{2mm}
+\input{figs/tikz/transactions/p3}
+\vspace{2mm}
 
-%Straight Lines [id:da9500410641573396] 
-\draw    (63.56,64) -- (271.56,65) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (65.56,160) -- (274.56,160) ;
-%Straight Lines [id:da7329480179958066] 
-\draw    (246.56,178) -- (290.56,177.04) ;
-\draw [shift={(292.56,177)}, rotate = 178.75] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (21.5,40) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
-% Text Node
-\draw (21.5,154) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
-% Text Node
-\draw (101.56,163) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(x=3)};
-% Text Node
-\draw (63,39) node [anchor=north west][inner sep=0.75pt]   [align=left] {r($\forall \geq 2$)};
-% Text Node
-\draw (257,39) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
-% Text Node
-\draw (156,163) node [anchor=north west][inner sep=0.75pt]   [align=left] {commit};
-% Text Node
-\draw (248.56,178) node [anchor=north west][inner sep=0.75pt]   [align=left] {Order};
-% Text Node
-\draw (21.5,77) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=1\\y=2\\z=5};
-% Text Node
-\draw (193,15) node [anchor=north west][inner sep=0.75pt]   [align=left] {x,y,z};
-% Text Node
-\draw (63,15) node [anchor=north west][inner sep=0.75pt]   [align=left] {z,y};
-% Text Node
-\draw (193,39) node [anchor=north west][inner sep=0.75pt]   [align=left] {r($\forall \geq 2$)};
-% Text Node
-\draw (272,77) node [anchor=north west][inner sep=0.75pt]   [align=left] {x=3\\y=2\\z=5};
-
-\end{tikzpicture}
-    
 \newpage
 \subsection{Currently Described Anomalies} \todo[author=Mark]{ Unsure what to name this.}
 
@@ -503,31 +370,9 @@ Following the ANSI standard and Adya et al\cite{Adya99weakconsistency} a signifi
 
 The 18 transactional anomalies are listed below. These definitions will not be explored deeper unless relevant for the thesis.
 
-\begin{table}[h]
-    \begin{tabular}{l|l|l}
-        No & Anomaly, reference, year                        & Formal definition  \\ \hline
-        1  & Dirty Write {[}1{]} 1992                        & $W_1 [x_1 ]...W_2 [x_2 ]...((C_1 or A_1) and (C_2 or A_2) in any order) $  \\
-        2  & Lost Update {[}6{]} 1995                        & $  R_1 [x_0 ]...W_2 [x_1 ]...C_2...W_1 [x_2 ] $ \\
-        3  & Dirty Read {[}1{]} 1992                         & $ W_1 [x ]...R_2 [x ]...(A_1 and C_2 in either order) $ \\
-        4  & Aborted Reads {[}45{]} 2015, {[}2{]} 2000       & $ W_1 [x : i]...R_2 [x : i]...(A_1 and C_2 in any order) $  \\
-        5  & Fuzzy/Non-repeatable Read {[}1{]} 1992          & $ R_1 [x ]...W_2 [x ]...C_2...R_1 [x ]...C_1 $  \\
-        6  & Phantom {[}1{]} 1992                            & $ R_1 [P ]...W_2[y in P]...C_2...R_1 [P ]...C_1 $  \\
-        7  & Intermediate Reads {[}45{]} 2015, {[}2{]} 2000  & $ W_1 [x : i]...R_2 [x : i]...W_1 [x : j]...C_2  $  \\
-        8  & Read Skew {[}6{]} 1995                          & $ R_1 [x_0 ]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1] $ \\
-        9  & Unnamed Anomaly {[}38{]} 2000                   & \begin{tabular}[c]{@{}l@{}}$ R_1 [y]...R_2 [x ]...W_2 [x ]...R_2 [y]...W_2 [y]...C_2...R_3 [x ]...W_3 [x ]$\\$...R_3 [z]...W_3 [z]...C_3...R_1 [z]...C_1 $\end{tabular}      \\
-        10 & Fractured Reads {[}16{]} 2017, {[}5{]} 2014     & $ R_1 [x_0]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1 ] $ \\
-        11 & Serial-Concurrent-phenomenon {[}12{]} 2014      & $ R_1 [x_0 ]...W_2 [x_1 ]...W_2 [y_1 ]...C_2...R_1 [y_1 ] $  \\
-        12 & Cross-phenomenon {[}12{]} 2014                  & $ R_1 [x_0 ]...R_2 [y_0 ]...W_3 [x_1 ]...C_3...W_4 [y_1 ]...C_4...R_2 [x_1 ]...R_1 [y_1 ] $ \\
-        13 & Long Fork Anomaly {[}16{]} 2017                 & $ R_1 [x_0 ]...R_2 [y_0 ]...W_3 [x_1 ]...C_3...W_4 [y_1 ]...C_4...R_2 [x_1 ]...R_1 [y_1 ] $ \\
-        14 & Causality Violation Anomaly {[}16{]} 2017       & $ R_1 [x_0 ]...W_2 [x_1 ]...C_2...R_3 [x_1 ]...W_3 [y_1 ]...C_3...R_1 [y_1 ] $  \\
-        15 & Read-only Transaction Anomaly {[}26, 43{]} 2004 & \begin{tabular}[c]{@{}l@{}}$ R_1 [x_0, 0]...R_1 [y_0, 0]...R_2 [y_0, 0]...W_2 [y_1, 20]...C_2$\\$...R_3 [x_0,0]...R_3 [y_1, 20]...C_3...W_1 [x_2, -11]...C_1 $\end{tabular} \\
-        16 & Write Skew {[}6{]} 1995                         & $ R_1 [x_0 ]...R_2 [y_0 ]...W_1 [y_1 ]...W_2 [x_1 ] $   \\
-        17 & Predicate-based Write Skew {[}27{]} 2005        & $ R_1 [P ]...R_2 [P ]...W_1 [y_1 in P]...W_2[x_1 in P] $  \\
-        18 & Read Partial-Committed {[}44{]} 2019            & $ R_1[x] W_2[x] W_2[y] C_2 R_1[Y] C_1 $ 
-    \end{tabular}
-\end{table}
-
-\vspace{5mm}
+\vspace{2mm}
+\input{figs/tables/cootable}
+\vspace{2mm}
 
 Outside of the above paper other anomalies and issues exist within databases, a deeper investigation into these won't take place but a short explanation will be given here for issues that occur often to create awareness about the issue,
 \begin{itemize}
@@ -559,24 +404,11 @@ Here it should be clarified what is menat by the obvious way" is for a transacti
 
 SS cannot be totally or sticky available in the event of a network partition. In this case, some or all nodes will be stuck; this is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole, as in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.
 
+\vspace{2mm}
+\input{figs/tables/ssdiagram}
+\vspace{2mm}
 
-\begin{table}[h]
-    \begin{tabular}{l|l|l|l}
-        T1   & T2   & T3   & T4   \\
-        w(1) &      &      &      \\
-        r(2) &      &      &      \\
-        c    &      &      &      \\
-        & r(1) &      &      \\
-        & r(2) &      &      \\
-        & c    &      &      \\
-        &      & r(3) &      \\
-        &      & w(4) &      \\
-        &      & c    &      \\
-        &      &      & r(1) \\
-        &      &      & c
-    \end{tabular}
-    \caption{Transactions are ordered chronological in time, and executed as such.}
-\end{table}
+
 
 \subsection{Serializable transaction models}
 
@@ -596,23 +428,9 @@ There is a further limitation of Serializable due to having no real-time constra
 \\ \vspace{5mm}
 SR follows closely to S-SR regarding partition tolerance and availability doing partition and is therefore considered a CA database.
 \\ \vspace{5mm}
-\begin{table}[h]
-    \begin{tabular}{l|l|l|l}
-        T1   & T2   & T3   & T4   \\
-        w(z) &      &      &      \\
-        & r(z) &      &      \\
-        &      &      & r(z) \\
-        & w(y) &      &      \\
-        &      &      & c    \\
-        &      & r(y) &      \\
-        & c    &      &      \\
-        &      & w(h) &      \\
-        r(x) &      &      &      \\
-        c    &      &      &      \\
-        &      & c    &
-    \end{tabular}
-    \caption{Transactions are ordered chronological in time and executed in a way that makes it possible for the operations to occur atomically such that they appear to have been executed in order transaction-wise. }
-\end{table}
+\vspace{2mm}
+\input{figs/tables/sdiagram}
+\vspace{2mm}
 \newpage
 
 \subsubsection{Repeatable Read}
@@ -622,26 +440,10 @@ Repeatable Read (RR) closely resembles the Serializable consistency model, howev
 RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, repeatable read doesn't guarantee repeatable reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
 \\ \vspace{5mm}
 It should also be noted that RR allows for the same pathological ordering of operations as a Serializable database.
+\vspace{2mm}
+\input{figs/tables/rrdiagram}
+\vspace{2mm}
 
-\begin{table}[h]
-    \begin{tabular}{l|l|l|l}
-        T1            & T2            & T3   & T4   \\
-        &               &      & r(y) \\
-        &               &      & c    \\
-        w(p$_1$ to y) &               &      &      \\
-        r(p in y)     &               &      &      \\
-        &               &      &      \\
-        & w(p$_2$ to y) &      &      \\
-        & c             &      &      \\
-        r(p in y)     &               &      &      \\
-        w(z)          &               &      &      \\
-        c             &               &      &      \\
-        &               & r(z) &      \\
-        &               & w(x) &      \\
-        &               & c    &
-    \end{tabular}
-    \caption{T1 shows an example of a valid transaction with a phantom, and T4 could be placed at the beginning of the history, returning the "empty" result. Both are valid transactions within RR.}
-\end{table}
 
 \subsection{Cursor Stability}
 Cursor Stability closely resembles repeatable read where RR locks the objects until committed. Cursor Stability locks the objects until the cursor moves on or until committed. This allows for different behavior depending on implementation but is formally defined by which phenomena it allows and which it prohibits. \cite{Adya99weakconsistency}\\
@@ -689,28 +491,9 @@ When the transaction T1 is ready to commit, it gets a Commit-Timestamp, larger t
 
 There also exist multiple other definitions from Cerone et al \cite{CeroneBernardiGotsman} and Crooks et al\cite{CrooksPuAlvisiClement}
 
-
-\begin{table}[h]
-    \begin{tabular}{l|l|l|l}
-        T1   & T2   & T3   & T4   \\
-        &      &      & r(y) \\
-        &      &      & c    \\
-        w(y) &      &      &      \\
-        r(y) &      &      &      \\
-        &      &      &      \\
-        & w(y) &      &      \\
-        &      &      &      \\
-        r(y) &      &      &      \\
-        w(z) &      &      &      \\
-        c    &      &      &      \\
-        & a    & r(z) &      \\
-        &      & w(x) &      \\
-        &      & c    &
-    \end{tabular}
-    \caption{T1 and T2 contains a conflict that courses T2 to abort as T1 commits prior to T2}
-\end{table}
-
-
+\vspace{2mm}
+\input{figs/tables/sidiagram}
+\vspace{2mm}
 
 \subsubsection{Monotonic Atomic View}
 The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation. It requires that effects by transactions are fully visible once read by other transactions, such that T1 may preform w(1), w(2), w(2), c. These 3 sub operations effects should all either be fully visible or not at all, so partial transactions aren't allowed. Formally this is defined by Bailis et al \cite{HighlyAvailableTransactionsVirtuesandLimitations}
@@ -785,30 +568,9 @@ Directed Serialization graphs(DSG) are to reason about a history of Transactions
 
 The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$, this relation is also called Write-Read (wr) as one transaction writes a object and a second transaction depends on this prior write.
         
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9351620672631715] 
-\draw    (70.33,79.67) -- (250.33,79.67) ;
-%Straight Lines [id:da20316716985592453] 
-\draw    (70.67,119.33) -- (250.67,120.33) ;
-%Straight Lines [id:da3663864520178606] 
-\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (128.33,84) -- (168.74,114.79) ;
-\draw [shift={(170.33,116)}, rotate = 217.3] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (45.33,65.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (45.33,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (101.67,54.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W_1(x_0)$};
-% Text Node
-\draw (160,123.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R_2(x_0)$};
-
-
-\end{tikzpicture}
+\vspace{2mm}
+\input{Report/figs/tikz/dsg/rd}
+\vspace{2mm}
 
 We have a history H. as follows.
 \begin{equation}
@@ -831,33 +593,10 @@ A Predicate read dependency occurs when a transactions $T_j$ preforms a operatio
 
 This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
 
+\vspace{2mm}
+\input{Report/figs/tikz/dsg/prd}
+\vspace{2mm}
 
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9351620672631715] 
-\draw    (41.33,82) -- (358.67,83) ;
-%Straight Lines [id:da20316716985592453] 
-\draw    (41.67,121.67) -- (359,122.67) ;
-%Straight Lines [id:da3663864520178606] 
-\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (209,84.67) -- (268.93,118.68) ;
-\draw [shift={(270.67,119.67)}, rotate = 209.58] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (16.33,68) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (162.67,58) node [anchor=north west][inner sep=0.75pt]   [align=left] {W($x_1$)};
-% Text Node
-\draw (224,123) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(P:Vset(p),x_0\notin Vset(p)$)};
-% Text Node
-\draw (37,123) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R( P:x_0 \in Vset(p))$};
-
-
-\end{tikzpicture}
 
 Transaction $T_2$ sees $x_0$ in it's first predicate read, however in the second read nothing is observed as $x_0$ was overwritten by $x_1$ via $T_1$. \\
 
@@ -878,29 +617,10 @@ select * from accounts where balance > 0;
 \subsubsection{Write-dependency (ww)}
 A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. the relation is named ww as two writes to the same object with only one persisting.
 
+\vspace{2mm}
+\input{Report/figs/tikz/dsg/wd}
+\vspace{2mm}
 
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9351620672631715] 
-\draw    (41.67,80) -- (179.67,80) ;
-%Straight Lines [id:da20316716985592453] 
-\draw    (40.67,120.33) -- (179.33,120.67) ;
-%Straight Lines [id:da3663864520178606] 
-\draw [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ]   (79.33,82.67) -- (139.26,116.68) ;
-\draw [shift={(141,117.67)}, rotate = 209.58] [color={rgb, 255:red, 179; green, 23; blue, 23 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (16.33,68) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (16.33,107.33) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (58,57.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_1)$};
-% Text Node
-\draw (125,122.67) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
-\end{tikzpicture}
 
 Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-depends on $T_1$, The dependency is denoted by the red arrow in the graph. \\
 
@@ -918,31 +638,10 @@ update accounts set balance = -42 where id = 42;
 \subsubsection{Anti-dependency (rw)}
 An read-write-dependency, or formally known as a anti-dependency occurs when a transaction overwrites a version observed by some other transaction. i.e. transaction T1 reads an object x, x is then modified by transaction T2.
 
+\vspace{2mm}
+\input{Report/figs/tikz/dsg/ad}
+\vspace{2mm}
 
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (50.56,42) -- (258.56,43) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (47.56,101) -- (256.56,101) ;
-%Straight Lines [id:da9563274467788809] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (98,46) -- (159.99,94.76) ;
-\draw [shift={(161.56,96)}, rotate = 218.19] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (157.56,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
-% Text Node
-\draw (77,16) node [anchor=north west][inner sep=0.75pt]   [align=left] {$r(x_1)$};
-
-
-\end{tikzpicture}
 
 Transaction $T_1$ reads $X_1$, this object is then modified by $T_2$ and therefor anti-depends on $T_1$, i,e $T_2$ occurred after $T_1$ in the history.
 \begin{equation}
@@ -963,44 +662,11 @@ A history exhibits phenomenon G0 if the DSG contains a directed cycle consisting
 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
+\vspace{2mm}
+\input{Report/figs/tikz/dsg/g0}
+\vspace{2mm}
 
 
-
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (50.56,42) -- (258.56,43) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (47.56,101) -- (256.56,101) ;
-%Straight Lines [id:da9563274467788809] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (68,46) -- (85.86,94.13) ;
-\draw [shift={(86.56,96)}, rotate = 249.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da9159237520413861] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (152.56,96) -- (228.88,47.08) ;
-\draw [shift={(230.56,46)}, rotate = 147.34] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (51.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_1)$};
-% Text Node
-\draw (203.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(y_2)$};
-% Text Node
-\draw (260,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$C_1$};
-
-
-% Text Node
-\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (64.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
-% Text Node
-\draw (128.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(y_1)$};
-% Text Node
-\draw (187,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$C_2$};
-\end{tikzpicture}
 
 \begin{equation}
     History\ H: [W_1(x_1),W_2(x_2),W_3(y_1),C_2,W_3(y_2),C_1]
@@ -1014,110 +680,26 @@ Phenomenon G1 captures the essence of no-dirty-reads, and consists of g1a, g1b, 
 \begin{itemize}
     \item G1a: Aborted Reads (cascaded aborts). \\
         A history exhibits G1a if it contains a aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (49.17,42) -- (216.56,43) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (47.56,101) -- (215.76,101) ;
-%Straight Lines [id:da9563274467788809] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (68,46) -- (85.86,94.13) ;
-\draw [shift={(86.56,96)}, rotate = 249.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da9159237520413861] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (105.56,96) -- (156.08,50.34) ;
-\draw [shift={(157.56,49)}, rotate = 137.89] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da9009499956012581] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (168.56,48) -- (194.58,94.26) ;
-\draw [shift={(195.56,96)}, rotate = 240.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
-% Text Node
-\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
-% Text Node
-\draw (64.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(x\_1)};
-% Text Node
-\draw (51.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(x\_1)};
-% Text Node
-\draw (194,99) node [anchor=north west][inner sep=0.75pt]   [align=left] {?};
-% Text Node
-\draw (156,19) node [anchor=north west][inner sep=0.75pt]   [align=left] {A1};
-
-
-\end{tikzpicture}\\
+        \vspace{2mm}
+\input{Report/figs/tikz/dsg/g1a}
+\vspace{2mm}
+\\
 To prevent this: If a transaction has preformed a read on a object modified by a aborted transaction, It itself has to abort.
     \item G1b: Intermediate Reads (dirty reads)
     A history exhibits G1b if it contains a committed transaction containing a read of an intermediary modification by another transaction. i.e. a read of a non final modification was preformed and committed to the history. 
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (49.17,42) -- (216.56,43) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (47.56,101) -- (215.76,101) ;
-%Straight Lines [id:da9563274467788809] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (68,46) -- (85.86,94.13) ;
-\draw [shift={(86.56,96)}, rotate = 249.64] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da9159237520413861] 
-\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (105.56,96) -- (156.08,50.34) ;
-\draw [shift={(157.56,49)}, rotate = 137.89] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (14.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_1$};
-% Text Node
-\draw (14.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {$T_2$};
-% Text Node
-\draw (64.56,101) node [anchor=north west][inner sep=0.75pt]   [align=left] {$R(x_1)$};
-% Text Node
-\draw (51.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_1)$};
-% Text Node
-\draw (166,100) node [anchor=north west][inner sep=0.75pt]   [align=left] {$C_2$};
-% Text Node
-\draw (156,19) node [anchor=north west][inner sep=0.75pt]   [align=left] {$W(x_2)$};
-
-
-\end{tikzpicture} \\
+    \vspace{2mm}
+\input{Report/figs/tikz/dsg/g1b}
+\vspace{2mm}
+ \\
 To prevent this a: If a transaction has read a intermediate state of an object it must be aborted, or a exclusive lock should be held to prevent other transaction from accessing a intermediate state.
 
 
     \item G1c: Circular Information Flow\\
-A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist 3 possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depends on each others writes.
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist 3 possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depends on each others writes.\\
+\vspace{2mm}
+\input{Report/figs/tikz/dsg/g1c}
+\vspace{2mm}
 
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (61.45,42) -- (257.56,43) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (59.56,101) -- (256.62,101) ;
-%Straight Lines [id:da05192673528173475] 
-\draw [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ] [dash pattern={on 0.84pt off 2.51pt}]  (89.56,100) -- (180.85,45.03) ;
-\draw [shift={(182.56,44)}, rotate = 148.95] [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Straight Lines [id:da10349511339666284] 
-\draw [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ] [dash pattern={on 0.84pt off 2.51pt}]  (89.56,44) -- (180.85,98.97) ;
-\draw [shift={(182.56,100)}, rotate = 211.05] [color={rgb, 255:red, 255; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (26.5,30) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_1};
-% Text Node
-\draw (26.5,91) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_2};
-% Text Node
-\draw (165.56,105) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(x\_?,y\_1)};
-% Text Node
-\draw (63.56,18) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(x\_1)};
-% Text Node
-\draw (68,102) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(y\_1)};
-% Text Node
-\draw (164.56,15) node [anchor=north west][inner sep=0.75pt]   [align=left] {R1(x\_1,y\_?)};
-% Text Node
-\draw (0,49) node [anchor=north west][inner sep=0.75pt]   [align=left] {x\_0\\y\_0};
-\end{tikzpicture}\\
 The above example has x and y in the initial state of 0, $T_1$ writes $x_1$ and $T_1$ writes $y_1$. They then read x,y. $T_1$ sees $x_1,y_0$ and $T_1$ sees $X_0,y_1$ while the actual state of the system is $x_1,y_1$
 \end{itemize}
 
@@ -1789,62 +1371,11 @@ The Consistency model results shows that Service Fabric does not live up to the 
 \newpage
 \subsection{Violation of the Consistency models}
 \subsubsection{G0?: Dirty Update}
-Dirty updates are quite common as soon as any conflicts occur within Service Fabric. In the included example transaction 21005 has been aborted after preforming a write to key 249 while waiting for a shared lock for key 251. Doing this process 100 starts transaction 21019 starting by writing to key 249 followed by a read to this same key. The Violation is that the write from transaction 21005 shouldn't be readable prior to being committed. however doing transaction 21019 this key is read and updated with both the dirty changes from 21005 and the new value from 21019.  key 249 is then read containing both the key 15 and 27.
+Dirty updates are quite common as soon as any conflicts occur within Service Fabric. In the included example transaction 21005 has been aborted after preforming a write to key 249 while waiting for a shared lock for key 251. Doing this process 100 starts transaction 21019 starting by writing to key 249 followed by a read to this same key. The Violation is that the write from transaction 21005 shouldn't be readable prior to being committed. however doing transaction 21019 this key is read and updated with both the dirty changes from 21005 and the new value from 21019.  key 249 is then read containing both the key 15 and 27.\\
     
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+\input{figs/tikz/results/g0}
 
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (62.09,31) -- (608.09,32) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (60.09,196) -- (606.09,197) ;
-%Straight Lines [id:da424831019884359] 
-\draw [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ]   (123.09,40) -- (219,189.32) ;
-\draw [shift={(220.09,191)}, rotate = 237.28] [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-%Curve Lines [id:da475730388715653] 
-\draw [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ]   (231.09,189) .. controls (270.69,159.3) and (391.63,140.38) .. (412.48,190.46) ;
-\draw [shift={(413.09,192)}, rotate = 249.93] [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (12,7) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_21005};
-% Text Node
-\draw (11,172) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_21019};
-% Text Node
-\draw (83,6) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(Append 249 15)};
-% Text Node
-\draw (214,201) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(Append 249 27)};
-% Text Node
-\draw (397,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(249)};
-% Text Node
-\draw (456,6) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort due to timeout};
-% Text Node
-\draw (529,170) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
-% Text Node
-\draw (120,130) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
-
-\end{tikzpicture}
-    
-\begin{lstlisting}
-{:key 249,
-:values [15 27],
-:txns [{:type :fail,
-        :f :txn,
-        :value [[:append 249 15] [:r 251 nil]],
-        :time 204766434560,
-        :process 18,
-        :error Timed out waiting for Shared lock on key;",
-        :index 21005}
-       ...
-       {:type :ok,
-        :f :txn,
-        :value [[:append 249 27]
-                [:r 249 [1 2 3 7 8 11 15 27]]],
-        :time 204800363164,
-        :process 100,
-        :index 21019}]}
-\end{lstlisting}
+\input{figs/tikz/results/g0_data}
 
 \newpage
 \subsubsection{G1a: Aborted Reads (cascaded aborts)}
@@ -1852,60 +1383,10 @@ Aborted reads are common as they share the same underlying issues as Dirty Updat
 
 The the\todo[author=Jacopo]{the the. Use a grammar checker like grammarly. Errors like this are easy to spot and fix} below example. Transaction 336 wrote to key 2 and afterwards aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754 which shouldn't have been possible.
 
-
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
-
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
-
-%Straight Lines [id:da9500410641573396] 
-\draw    (62.09,31) -- (608.09,32) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (60.09,196) -- (606.09,197) ;
-%Straight Lines [id:da424831019884359] 
-\draw [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ]   (123.09,40) -- (396.34,191.03) ;
-\draw [shift={(398.09,192)}, rotate = 208.93] [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (14,10) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_336};
-% Text Node
-\draw (13,175) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_754};
-% Text Node
-\draw (85,9) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(append 22 3)};
-% Text Node
-\draw (216,204) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(23)};
-% Text Node
-\draw (399,205) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(22)};
-% Text Node
-\draw (403,10) node [anchor=north west][inner sep=0.75pt]   [align=left] {Abort due to timeout};
-% Text Node
-\draw (531,173) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
-% Text Node
-\draw (122,133) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
+\input{figs/tikz/results/g1a}
+\input{figs/tikz/results/g1a_data}
 
 
-\end{tikzpicture}
-
-
-\begin{lstlisting}
-    {:op {:type :ok,
-        :f :txn,
-        :value [[:r 23 [4 5]]
-                [:r 22 [1 2 4 3 5 30 32]]],
-        :time 10926481665,
-        :process 180,
-        :index 754},
-   :mop [:r 22 [1 2 4 3 5 30 32]],
-   :writer {:type :fail,
-            :f :txn,
-            :value [[:append 22 3]
-                    [:append 24 7]],
-            :time 6857604069,
-            :process 8,
-            :error "Timed out waiting for Exclusive lock on key",
-            :index 336},
-   :element 3}
-\end{lstlisting}
 
 \newpage
 \subsubsection{G1b: Intermediate Reads (dirty reads)}
@@ -1914,63 +1395,10 @@ Dirty reads occur when a process reads a change prior to this change being commi
 in the below example.
 Transaction 490 writes a change to key 32. this change is then read, and this read is committed prior to 490 committing/aborting.
 
-\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
-\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
-%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+\input{figs/tikz/results/g1b}
+\input{figs/tikz/results/g1b_data}
 
-%Straight Lines [id:da9500410641573396] 
-\draw    (62.09,31) -- (608.09,32) ;
-%Straight Lines [id:da7796185686481738] 
-\draw    (60.09,196) -- (606.09,197) ;
-%Straight Lines [id:da424831019884359] 
-\draw [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ]   (123.09,39) -- (175.41,185.12) ;
-\draw [shift={(176.09,187)}, rotate = 250.3] [color={rgb, 255:red, 198; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
-
-% Text Node
-\draw (13,10) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_490};
-% Text Node
-\draw (13,175) node [anchor=north west][inner sep=0.75pt]   [align=left] {T\_553};
-% Text Node
-\draw (85,9) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(append 32 2)};
-% Text Node
-\draw (162,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(32)};
-% Text Node
-\draw (298,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {W(append 20 15)};
-% Text Node
-\draw (354,7) node [anchor=north west][inner sep=0.75pt]   [align=left] {Timeout on key 30};
-% Text Node
-\draw (531,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {Commit};
-% Text Node
-\draw (122,133) node [anchor=north west][inner sep=0.75pt]   [align=left] {};
-% Text Node
-\draw (467,203) node [anchor=north west][inner sep=0.75pt]   [align=left] {R(30)};
-
-\end{tikzpicture}
-
-\begin{lstlisting}
-  :G1b ({:op {:type :ok,
-        :f :txn,
-        :value [[:r 32 [1 2]] 
-                [:append 20 15] 
-                [:r 30 [5]]],
-        :time 18957901065,
-        :process 71,
-        :index 553},
-   :mop [:r 32 [1 2]],
-   :writer {:type :fail,
-            :f :txn,
-            :value [[:append 32 2] 
-                    [:append 30 9] 
-                    [:r 16 nil] 
-                    [:append 30 10] 
-                    [:append 32 3]],
-            :time 14930759485,
-            :process 84,
-            :error "System.TimeoutException: Timed out waiting for Exclusive lock on key",
-            :index 490},
-   :element 2})},
-\end{lstlisting}
 
 \newpage
 \subsection{Rejected transactions}
@@ -1979,21 +1407,8 @@ One of the symptoms that the reliable collections showed was ever increasing abo
 
 With 100 concurrent connections the following abort rates were found.. 
 
-\begin{tikzpicture}
-\begin{axis}
-[
-    xlabel={Transaction length}, 
-    ylabel={Abort rate in \%}, 
-    grid, 
-    xmin=0, 
-    xmax=11, 
-    ymin=0, 
-    ymax=100
-]
-\addplot[red, mark=x, smooth] table[col sep=comma]{results/dataresult.csv};
+\input{figs/tikz/results/abortrates}
 
-\end{axis}
-\end{tikzpicture}
 \subsection{Statistical data from the test.}
 
 Doing the tests some metrics data is gathered. 
@@ -2078,12 +1493,7 @@ This could be done via automated testing and verification of a given system in i
 Future work could include implementing a deeper testing suite that checks for more types of invariant and issues that might occur in the system.
 
 
-
-
-
 \newpage
-
-
 \chapter{Appendix}
 
 \pagestyle{empty}
@@ -2093,60 +1503,11 @@ Future work could include implementing a deeper testing suite that checks for mo
 \section{Proposal}
 \input{Proposal}
 
+\section{Revised Proposal}
+\input{proposal_revised}
+
 \section{TODO}
 \todototoc
 \listoftodos
-
-
-    % \section{Schedule}
-
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
-% \usepackage[table,xcdraw]{xcolor}
-% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
-
-    % \begin{tabular}{clll}
-    %     \multicolumn{2}{l}{Mark Jervelund thesis plan} & & \\
-    %     & Week 45 &                                                    &                                                                                      \\
-    %     & Week 46 &                                                    & \multirow{-2}{*}{\text{Study Jensen test}}                                           \\
-    %     & Week 47 &                                                    &                                                                                      \\
-    %     \multirow{-4}{*}{November} & Week 48 &                                                    & \multirow{-2}{*}{\text{Finish study on Jepsen test}}                                 \\
-    %     & Week 49 &                                                    &                                                                                      \\
-    %     & Week 50 &                                                    & \multirow{-2}{*}{\text{Study Service Fabric} }                                       \\
-    %     & Week 51 &                                                    &                                                                                      \\
-    %     & Week 52 &                                                    & \multirow{-2}{*}{\text{Christmas break}}                                             \\
-    %     \multirow{-5}{*}{December} & Week 53 &                                                    &                                                                                      \\
-    %     & week 01 & \multirow{-10}{*}{\text{Structured study 8 weeks}} & \multirow{-2}{*}{\text{Finish Study Service Fabric} }                                \\
-    %     & Week 02 &                                                    &                                                                                      \\
-    %     & Week 03 &                                                    & \multirow{-2}{*}{\text{designing the experiment}}                                    \\
-    %     \multirow{-4}{*}{January}  & Week 04 &                                                    &                                                                                      \\
-    %     & Week 05 &                                                    & \multirow{-2}{*}{\text{designing the experiment} }                                   \\
-    %     & Week 06 &                                                    &                                                                                      \\
-    %     & Week 07 &                                                    & \multirow{-2}{*}{\text{Execute the experiment}  }                                      \\
-    %     \multirow{-4}{*}{February} & Week 08 &                                                    &                                                                                      \\
-    %     & Week 09 &                                                    & \multirow{-2}{*}{\text{Analyse the experiment}}                                      \\
-    %     & Week 10 &                                                    &                                                                                      \\
-    %     & Week 11 & \multirow{-10}{*}{\text{Experiment 10 weeks}}      & \multirow{-2}{*}{\text{discover what the findings from the experiment is}}           \\
-    %     & Week 12 &                                                    &                                                                                      \\
-    %     \multirow{-5}{*}{March}    & Week 13 &                                                    & \multirow{-2}{*}{\text{Running additional experiments if needed Full on write mode}} \\
-    %     & Week 14 &                                                    &                                                                                      \\
-    %     & Week 15 &                                                    & \multirow{-2}{*}{\text{Full on write mode} }                                         \\
-    %     & Week 16 &                                                    &                                                                                      \\
-    %     \multirow{-4}{*}{April}    & Week 17 &                                                    & \multirow{-2}{*}{\text{Full on write mode} }                                         \\
-    %     & Week 18 &                                                    &                                                                                      \\
-    %     & Week 19 &                                                    & \multirow{-2}{*}{\text{Full on write mode Send out thesis for feedback}}             \\
-    %     & Week 20 &                                                    &                                                                                      \\
-    %     & Week 21 & \multirow{-10}{*}{\text{Thesis writing 10 weeks}}  & \multirow{-2}{*}{\text{Correction} }                                                 \\
-    %     \multirow{-5}{*}{May}      & Week 22 &                                                    &                                                                                      \\
-    %     & Week 23 & \multirow{-2}{*}{\text{goal}}                      & \multirow{-2}{*}{\text{Hand in}}                                                     \\
-    %     & Week 24 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     & Week 25 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     & Week 26 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     \multirow{-5}{*}{June}     & Week 27 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     \multicolumn{1}{l}{}       & Week 28 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     \multicolumn{1}{l}{}       & Week 29 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     \multicolumn{1}{l}{}       & Week 30 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}                                                                 \\
-    %     \multicolumn{1}{l}{}       & Week 31 & \multicolumn{1}{l}{}                               & \multicolumn{1}{l}{}
-    % \end{tabular}
 
 \end{document}

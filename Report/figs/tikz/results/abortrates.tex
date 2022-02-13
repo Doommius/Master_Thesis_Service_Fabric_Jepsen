@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+\begin{axis}
+[
+    xlabel={Transaction length}, 
+    ylabel={Abort rate in \%}, 
+    grid, 
+    xmin=0, 
+    xmax=11, 
+    ymin=0, 
+    ymax=100
+]
+\addplot[red, mark=x, smooth] table[col sep=comma]{results/dataresult.csv};
+
+\end{axis}
+\end{tikzpicture}

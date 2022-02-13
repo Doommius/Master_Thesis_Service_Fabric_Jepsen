@@ -1,0 +1,19 @@
+\begin{lstlisting}
+{:key 249,
+:values [15 27],
+:txns [{:type :fail,
+        :f :txn,
+        :value [[:append 249 15] [:r 251 nil]],
+        :time 204766434560,
+        :process 18,
+        :error Timed out waiting for Shared lock on key;",
+        :index 21005}
+       ...
+       {:type :ok,
+        :f :txn,
+        :value [[:append 249 27]
+                [:r 249 [1 2 3 7 8 11 15 27]]],
+        :time 204800363164,
+        :process 100,
+        :index 21019}]}
+\end{lstlisting}
