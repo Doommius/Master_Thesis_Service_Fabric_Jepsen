@@ -147,57 +147,52 @@
     \item Poor use available optimizations allowed within the Repeatable Read consistency model. 
     \end{itemize}
     
-    The results for the test show that Service Fabric expresses G0 and G1 violations as well as as exponential abort rates in correlation with transaction length. There is no guarantee of consistency with scaling beyond a single node, due to the under laying architecture that requires an individual implementation of a transaction manager and query optimizer.
+    The results for the test show that Service Fabric expresses G0 and G1 violations as well as exponential abort rates in correlation with transaction length. There is no guarantee of consistency with scaling beyond a single node due to the underlying architecture that requires an individual implementation of a transaction manager and query optimizer.
     Within the industry, the classifications and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
-    A wide range of papers, outdated standards, and articles are currently used with mixed terminology, definitions, and specifications, which means that users cannot rely on documentation of how a given database or data store behaves.
-
+    Instead, numerous papers, outdated standards, and articles are used with mixed terminology, definitions, and specifications. Users cannot rely on documentation of how a given database or data store behaves.
 
 
 
     \chapter{Introduction}
-    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost.
-    However, often this expectations are not met.
-\todo[author=Mark]{    
-     How do we guarantee this is a distributed system that spans the planet? Is it even possible to get both consistency and availability, and is it needed in most use cases?}
+    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost. However, often these expectations are not met.
 
     Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present.
-    For example the YouTube video counter that got stuck at around 300 views and didn't update for a while. This problem was a side effect of a anti botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes weren't consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people don't notice a few seconds to a minute delay when dealing with comments, views or likes.
+    For example, the YouTube video counter got stuck at around 300 views and did not update for a while. This problem was a side effect of an anti-botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes were not consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people do not notice a few seconds to a minute delay when dealing with comments, views, or likes.
     \\
-    Many user-facing services aren't required to be fully consistent; however, there are use cases where not being consistent can have a severe impact. Strongly consistent transactions are of utmost importance when dealing with data that has a real-time constraint, such as financial data, automated or autonomous systems, and other areas where out of sync states might lead to issues or loss of life.
+    Many user-facing services are not required to be entirely consistent; however, there are use cases where not being consistent can have a severe impact. Strongly consistent transactions are of utmost importance when dealing with data that has a real-time constraint, such as financial data, automated or autonomous systems, and other areas where out-of-sync states might lead to issues or loss of life.
 
-    In these cases a lack of consistency would result in loss of life or significant loss of revenue. These situations require that no matter which server we are querying, it supplies the most recent data. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
+    In these cases, a lack of consistency would result in loss of life or significant loss of revenue. These situations require that it supplies the most recent data no matter which server we are querying. If we receive stale data, we risk making an illegal transaction or an autonomous system making a wrong decision. This could be an automated trading system fetching stale data and making the wrong transaction, a bank withdrawal that might be overdrawing the users' accounts, or autonomous vehicles that might make decisions with stale data that can lead to fatal accidents. \\
 
     \vspace{5mm}
     How do we test a given system's ACID compliance level? To understand this, we need to be familiar with the consistency levels and the intended behavior and anomalies they exhibit.\\
     \vspace{5mm}
-    In the following paper we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how are these verified. A test is also carried out on such a system. In this case Azure Service Fabric will be analyzed, i.e. a distributed systems platform. The results show that Azure Service Fabric contains some major issues when it comes the Consistency model where the implementation used also has its drawbacks that highly limit the performance of the system.\\
+    In the following paper, we investigate what consistent systems are, how they are defined, what anomalies they might exhibit and how these are verified. A test is also carried out on such a system. Azure Service Fabric will be analyzed in this case, i.e., a distributed systems platform. The results show that Azure Service Fabric contains some major issues when it comes to the Consistency model where the implementation used also has its drawbacks that highly limit the performance of the system.\\
     \vspace{5mm}
     \newpage
 \section{Structure of the thesis.}
 
-    In Chapter 2 I will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
+    Chapter 2 will present ACID \& BASE, their constraints, faults in database systems, how they manifest themselves, the underlying causes, and the limits that ACID properties impose on a given system. BASE will be introduced to explain what relaxations are introduced to a system to gain desired properties and trade-offs.\\
     \vspace{5mm}
 
-    In Chapter 3 I will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. This is done by building a directed serialization graph (DSG) via querying the target system with carefully chosen queries for traceability and recoverability.  \\
+    Chapter 3 will introduce Jepsen, a Clojure framework\cite{jepsonio} developed by K. Kingsbury that allows for testing distributed systems. Jepsen performs this by building a directed serialization graph (DSG) via client observations and analyzing it. \\
     \vspace{5mm}
 
-    In Chapter 4 I will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows for hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
+    Chapter 4 will introduce Azure Service Fabric (SF). SF is a distributed container orchestration system made by Microsoft that allows hosting services or containers. It includes a few different built-in subsystems, but the primary interest here lies in the aspect of SF's reliable containers and the claims Microsoft makes concerning the behavior of this datastore.\\
     \vspace{5mm}
 
-    In Chapter 5 I will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
+    Chapter 5 will present what modern database systems promise, the ACID properties they follow, the ones they relax or disregard, and the gain and trade-offs they suffer. Here the main focus will be on Service Fabric.\\
     \vspace{5mm}
 
-    In Chapter 6  I will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
+    Chapter 6 will demonstrate the attempt to implement and execute a Jepsen test against Service Fabrics reliable containers and compare these results to Microsoft's claims.\\
     \vspace{5mm}
 
-    Finally, in Chapter 7 I will present the way ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
-
+    Finally, Chapter 7 will present how ACID properties compare to modern use cases of databases. Do we need to follow them strictly, or can we disregard them in some use cases? What are the exceptions, and what is there to gain?\\
 
     \chapter{Database transaction models}
 
     Database and data store models can be categorized into two main groups, ACID and BASE, consistent or available.
 
-    The underlying reason for both these is consistency limitations caused by the latency between nodes in the system. On a physical level, this results from the speed of light; in turn, a system cannot instantly distribute data between nodes. A system's availability limitation is the ability to respond to a given query: either wait for the changes to broadcast to all required nodes. Or reply via the best effort approach where each node responds with what information is available and then handle any "write" conflicts down the line. Both models of designing the systems have their trade-offs which will be presented in this chapter.
+    The underlying reason for both is consistency limitations caused by the latency between nodes in the system. On a physical level, this results from the speed of light; in turn, a system cannot instantly distribute data between nodes. A system's availability limitation is the ability to respond to a given query: either wait for the changes to broadcast to all required nodes. Alternatively, reply via the best effort approach where each node responds with what information is available and handles any "write" conflicts down the line. Both models of designing the systems have their trade-offs which will be presented in this chapter.
 
 
     \section{ACID}
@@ -206,52 +201,51 @@
     The ACID acronym is defined as follows in the DBMS book\cite{DBMSbook}.
 
     \begin{itemize}
-        \item "A" stands for "atomicity", the all-or-nothing execution of transactions.
-        \item "C" stands for "consistency". All databases have consistency constraints or expectations about relationships among data elements (e.g., account balances may not be negative after a transaction is finished). Transactions are expected to preserve the consistency of the database.
-        \item "I" stands for "isolation", the fact that each transaction must appear to be executed as if no other transaction is performed at the same time.
-        \item "D" stands for "durability", This condition requires that no data may be lost once a Transaction has been committed.
+        \item "A" stands for "atomicity," the all-or-nothing execution of transactions.
+        \item "C" stands for "consistency." All databases have consistency constraints or expectations about relationships among data elements (e.g., account balances may not be negative after a transaction is finished). Transactions are expected to preserve the consistency of the database.
+        \item "I" stands for "isolation," the fact that each transaction must appear to be executed as if no other transaction is performed simultaneously.
+        \item "D" stands for "durability," This condition requires that no data may be lost once a Transaction has been committed.
     \end{itemize}
 
     ACID, therefore, offers strong consistency with rigorous handling of transaction isolation that prevents inaccurate data. This allows for designing a system to avoid operations on stale data, data loss, or "illegal" transactions. These faults will be presented later in the paper.
 
 
     \section{BASE}
-    The BASE model allows the designing of a system where we value availability, throughput, and scalability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. It can benefit some applications where overwriting old data isn't an issue, or the newest data version might not be required as long as it is available eventually. These databases are hugely beneficial for social media, logging, and other hyper-scale systems where consistency isn't needed.\\
+    The BASE model allows designing a system where we value availability, throughput, and scalability. This can cause issues with stale data, dirty reads, overwriting data, and other undesired behavior. It can benefit some applications where overwriting old data is not an issue, or the newest data version might not be required as long as it is available eventually. These databases are hugely beneficial for social media, logging, and other hyper-scale systems where consistency is not needed.\\
     \vspace{5mm}
     The BASE acronym was defined by Eric Brewer\cite{brewer2000towards} as follows:
 
     \begin{itemize}
         \item Basically Available – Rather than enforcing immediate consistency, BASE-modelled NoSQL databases will ensure data availability by spreading and replicating it across the database cluster nodes.
         \item Soft State – Due to the lack of immediate consistency, data values may change over time. The BASE model breaks off with the concept of a database that enforces its consistency, delegating that responsibility to developers.
-        \item Eventually Consistent – The fact that BASE does not enforce immediate consistency does not mean that it never achieves it. However, until it does, data reads are still possible (even though they might not reflect the reality).
+        \item Eventually Consistent – The fact that BASE does not enforce immediate consistency does not mean that it never achieves it. However, data reads are still possible (even though they might not reflect reality).
     \end{itemize}
 
-    The BASE model of databases often has a weak consistency where stale data is considered "OK" while offering a best-effort approach with approximate answers. It gains availability, performance, and it can be viewed as a relaxed way of handling the database side of things where the system database system is simpler and makes it easier to modify the database schema.
-
+    The BASE model of databases often has a weak consistency where stale data is considered "OK" while offering a best-effort approach with approximate answers. It gains performance and a higher level of availability. It can be viewed as a relaxed way of handling the database side of things where the system database system is simpler and makes it easier to modify the database schema.
 
     \section{CAP theorem}
 
-    Eric Brewer defined the CAP Theorem\cite{CAP}. It states that a distributed database system can't provide Consistency, Availability, and Partition Tolerance in a single system. Only two of these guarantees can be met.\\
+    Eric Brewer defined the CAP Theorem\cite{CAP}. It states that a distributed database system cannot provide Consistency, Availability, and Partition Tolerance in a single system. Only two of these guarantees can be met.\\
     \vspace{5mm}
     It should be noted that the definitions of the terms differ from the definitions in ACID. They are all critical when it comes to distributed systems and their behaviors. Firstly, consistency in ACID is defined as constraints on the data. By the CAP consistency concept, ACID would follow sequential consistency as defined by Lamport\cite{lamport1993how}: "the program behaves as if the memory accesses of all processes were interleaved and then executed sequentially." While the consistency in CAP is defined as Atomic Consistency (also called linearizability), it is sequential with an added constraint of real-time ordering: "Unlike sequential consistency, linearizability implicitly assumes the notion of an observable global time across all processes. Operations are modeled by an interval consisting of the period of time between the invocation and response for the operation. Each operation is assumed to take effect instantaneously at some point within this interval". \cite{CSL-TR-95-685} \\
     \vspace{5mm}
-    CAP states we can only have two of the three properties in any given data-share system. The three different options will be explained below.
+    CAP states that we can only have two of the three properties in any given data-share system. The three different options will be explained below.
 
 
 \begin{itemize}
     \item Consistency and Partition tolerance (CP) \\ 
     \begin{quote}
-         A system that delivers consistency and partition tolerance but the trade-off here is availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates simply follow the master's transaction log and apply it to their own data set. If the primary becomes unavailable, the Replicate with the most recent transaction log becomes the new master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.
+         A system that delivers consistency and partition tolerance but the trade-off here is availability. If a partition occurs in the system, the non-consistent nodes would have to be shut down or made unavailable to deliver consistent data. CP would cover majority protocols and most distributed databases. An example of a CP database would be MongoDB and Service Fabrics Reliable collections. These work by having partitions that contain a master and a set of replicates. The replicates follow the master's transaction log and apply it to their own data set. If the primary becomes unavailable, the Replicate with the most recent transaction log becomes the new master. During this switch, the partition becomes unavailable while the replicates catch up to the new master. This causes the network to remain consistent but limits availability.
     \end{quote}
 
 
     \item Availability and Partition tolerance (AP) \\ 
     \begin{quote}
-    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency isn't guaranteed as nodes are always available. In case of partitioning, the nodes will diverge while partitioned due to its Last Write Wins model and will first regain consistency once the network is healed. 
+    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency is not guaranteed as nodes are always available. In the case of partitioning, the nodes will diverge while partitioned due to its Last Write Wins model and will first regain consistency once the network is healed. 
     \end{quote}
 
     \item Availability and Consistency (CA) \\ 
-    \begin{quote}Database delivers consistency and availability but doesn't allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it covers single-node/Cluster databases and file systems. In practice having a distributed system, that doesn't allow for partitioning isn't unusable. An example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication, by becoming a CP style database, here some asterisks may apply as the system may not behave as expected or may not be consistent\cite{aphyrpostgres}  \end{quote}
+    \begin{quote}Database delivers consistency and availability but does not allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it covers single-node/Cluster databases and file systems. In practice having a distributed system, that does not allow for partitioning is not unusable. An example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication, by becoming a CP style database, here some asterisks may apply as the system may not behave as expected or may not be consistent\cite{aphyrpostgres}  \end{quote}
 \end{itemize}
 
 \section{Availability}
@@ -279,19 +273,20 @@ Availability refers to the guarantee a system promises doing the presence of net
  
 \end{itemize}
 
+
 \newpage
 \section{Transaction Anomalies \& Phenomena}
 
-Consistency models are defined by what Phenomena they allow or prohibit, What lies is this in what behavior expected doing use. There are however issues the definitions of these Phenomena where loose definitions allow for interpretation leading to different interpretations of consistency models and Phenomena, or simply the lack of a definition for some properties.\\
+Consistency models are defined by what Phenomena they allow or prohibit. What lies is this in what behavior is expected doing use. There are, however, issues with the definitions of these Phenomena where loose definitions allow for interpretation leading to different interpretations of consistency models and Phenomena, or simply the lack of a definition for some properties.\\
 
-The most common standard for these definitions is ANSISQL99\cite{ansisql1999}, within it three phenomena  are used to describe the different transactional consistency models These are defined as follows:
+The most common standard for these definitions is ANSISQL99\cite{ansisql1999}, within it, three phenomena are used to describe the different transactional consistency models. These are defined as follows:
 \begin{itemize}
     \item "P1: Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed."
     \item "P2: Fuzzy or Non-repeatable Read — Transaction T1 reads x, then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted."
     \item "P3: Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read."
 \end{itemize}
 
-There are however issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation, This lead to the Berenson et al\cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include further definition for "Read and Write Skew", This phenomena defined data item constraint violations, where the ANSI models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations was defined.. The exact definition is below: \\
+There are, however, issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation; this led to the Berenson et al. \cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include the further definition for "Read and Write Skew," This phenomena defined data item constraint violations, where the ANSI models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations is defined. The exact definition is below: \\
 \begin{quote}
     (Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation
 \begin{itemize}
@@ -308,7 +303,7 @@ r1[x]...r2[y]...w1[y]...w2[x]...(c1 and c2 occur)
 \end{itemize}
 \end{quote}
 
-This work was later used in Adya et al\cite{Adya99weakconsistency} where the Dirty Write phenomenon is introduced to prevent non-serializable histories. This paper is a solid part of the foundation of modern day definitions of phenomena and consistency models defined by them. This is also what will be used to describe the Transnational consistency models.\\
+This work was later used in Adya et al. \cite{Adya99weakconsistency} where the Dirty Write phenomenon is introduced to prevent non-serializable histories. This paper is a substantial part of the foundation of modern-day definitions of phenomena and consistency models defined by them. This is also what will be used to describe the Transnational consistency models.\\
 
 These 4 phenomena are defined by the following Read/Write conflicts.
 \begin{itemize}
@@ -318,12 +313,12 @@ These 4 phenomena are defined by the following Read/Write conflicts.
     \item P3 (Phantom): r1(P) … w2(y in P)
 \end{itemize}
 
-Explications follows.
+Explanations follow.
 \subsection{P0 - Dirty Write}
-The Dirty Write phenomena occurs when a given object x is modified by concurrent transactions, prior to commit or abort. Following such a violation symptoms such as aborted operations persisting to the history or cases where a committed value might be overwritten by a process and are lost. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. The prevention is often defined as a locking mechanism working on the transaction history, by reacquiring long-term locks for write and at least short term locks for read operations.\\
+The Dirty Write phenomena occur when concurrent transactions modify a given object x prior to committing or aborting. Following such a violation, symptoms such as aborted operations persisting to the history or cases where a committed value might be overwritten by a process and are lost. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. Prevention is often defined as a locking mechanism working on the transaction history, by reacquiring long-term locks for write and at least short term locks for read operations.\\
 \vspace{5mm}
 \subsubsection{Example of violation}
-Suppose T1 modifies x by appending [2] and T2 further modifies x by adding [3] prior to T1 commit or abort. If either T1 or T2 aborts, it is unclear what the value of x should be. \\
+Suppose T1 modifies x by appending [2] and T2 further modifies x by adding [3] prior to T1 committing or aborting. If either T1 or T2 aborts, it is unclear what the value of x should be. \\
 
 \vspace{2mm}
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
@@ -362,10 +357,10 @@ Suppose T1 modifies x by appending [2] and T2 further modifies x by adding [3] p
 \vspace{2mm}
 
 \subsection{P1 - Dirty Read}
-The Dirty Read phenomena occurs when a transaction T2 Reads a object that has been modified by a concurrent transaction T1 prior to T1 committing or aborting. this results in t2 returning a object that might never have existed in the transaction history. The preventative interpretation for P1 uses the same locking of the history via long-term and short-term locks as P0, such that P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock.
+The Dirty Read phenomena occur when a transaction T2 Reads an object that a concurrent transaction T1 has modified prior to T1 committing or aborting. This results in t2 returning an object that might never have existed in the transaction history. The preventative interpretation for P1 uses the same locking of the history via long-term and short-term locks as P0, such that P1 requires T1 to acquire a long write-lock and T2 to acquire (at least) a short-term read-lock.
 
 \subsubsection{Example of violation}
-Suppose transaction T1 modifies a x by appending [2]. Transaction T2 then reads that x before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read x = [1,2] a object that was never committed and that may thus be considered to have never existed.\\
+Suppose transaction T1 modifies x by appending [2]. Transaction T2 then reads that x before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read x = [1,2], an object that was never committed and that may thus be considered to have never existed.\\
 \vspace{5mm}
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
@@ -401,7 +396,7 @@ Suppose transaction T1 modifies a x by appending [2]. Transaction T2 then reads 
 \end{tikzpicture}
 \newpage
 \subsection{P2 - Non-repeatable/Fuzzy Read}
-The occurrence of the P2 violation occurs when a given transaction T1 reads the same object multiple times and a given transaction T2 modifies this object in-between any of these reads causing T1 to see different versions of a object in the same transaction without modifying it itself. the preventative implementation for P2 requires the use of long read and write-locks; 
+The P2 violation occurs when a given transaction T1 reads the same object multiple times. A given transaction T2 modifies this object in-between any of these reads, causing T1 to see different versions of an object in the same transaction without modifying it. The preventative implementation for P2 requires the use of long read and write-locks; 
 
 \subsubsection{Example of violation}
 Suppose transaction T1 reads x as [1], transaction T2 then modifies x by appending 2 and commits. T1 then reads x as [1, 2].
@@ -449,10 +444,10 @@ Suppose transaction T1 reads x as [1], transaction T2 then modifies x by appendi
 
 \subsection{P3 - Phantom Read}
 
-The Phantom Read violation occurs when Transaction T1 preforms a conditional read operation. Following this initial read, a second transaction T2 either inserts or modifies objects such that they meet the conditional requirement of T1, T2 then commits this change. T1 then performs the same conditional read operation containing additional objects It is called Phantom Read because the new records seem to be of phantom origin. the preventative interpretation of P3 requires acquisition of long-term Phantom read-locks
+The Phantom Read violation occurs when Transaction T1 performs a conditional read operation. Following this initial read, a second transaction T2 either inserts or modifies objects such that they meet the conditional requirement of T1, T2 then commits this change. T1 then performs the same conditional read operation containing additional objects. It is called Phantom Read because the new records seem to be of phantom origin. the preventative interpretation of P3 requires the acquisition of long-term Phantom read-locks
 
 \subsubsection{Example of violation}
-Suppose Transaction T1 selects all values >= 2, Transaction T2 then writes 3 to key x and commits. T1 then selects all values >= 2. the object x now matches this predicate and is included in the read operation. \\
+Suppose Transaction T1 selects all values >= 2. Transaction T2 then writes 3 to key x and commits. T1 then selects all values >= 2. the object x now matches this predicate and is included in the read operation. \\
 \vspace{5mm}
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
@@ -496,7 +491,7 @@ Suppose Transaction T1 selects all values >= 2, Transaction T2 then writes 3 to 
 \newpage
 \subsection{Currently Described Anomalies} \todo[author=Mark]{ Unsure what to name this.}
 
-Following the ANSI standard and Adya et al\cite{Adya99weakconsistency} a significant amount of discoveries have been made that describes anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang Li et al\cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years, The paper mentions that all these definitions are defined Case by case and not in a rigours mathematically manner. The paper includes the following sentence: 
+Following the ANSI standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang Li et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years; The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. The paper includes the following sentence: 
 \begin{quote}
     "Definition of data anomalies. Although there are so many data anomalies, but it seems that data anomalies are not explicitly defined. There is no universally accepted definition of data anomalies in academia and industry, and the understanding of data anomalies is only in the way of case-by-case" \cite{li2021coo}
 \end{quote}
@@ -529,15 +524,14 @@ The 18 transactional anomalies are listed below. These definitions will not be e
 
 \vspace{5mm}
 
-Outside of the above paper other anomalies and issues exist within databases, a deeper investigation into these won't take place but a short explanation will be given here for issues that occur often to create awareness about the issue,
+Outside of the above paper, other anomalies and issues exist within databases, a deeper investigation into these will not take place, but a short explanation will be given here for issues that often occur to create awareness about the issue,
 \begin{itemize}
-    \item Split Brain, A Split Brain occurs when a distributed Database is partitioned in 2 of more fragments that are unable to reach each other but both remain active with a new leader and continue to process transaction, This leads to each fragment believing in separate histories, and is a regular occurrence in distributed databases.\cite{aphyrelasticsearch, jepsenscylla, jepsenhazelcast}, Some systems can recover from this but often loose data during the healing process.
+    \item Split Brain, A Split Brain occurs when a distributed database is partitioned into two or more fragments that cannot reach each other. However, both remain active with two leaders and continue to process transactions, leading to each fragment believing in separate histories. Split Brain is a regular occurrence in distributed databases.\cite{aphyrelasticsearch, jepsenscylla, jepsenhazelcast}, Some systems can recover from this but often lose data during the healing process.
     \item Poor handling of quorum
 \end{itemize}
 
 \newpage
 \section{Consistency models}
-
 
 \begin{wrapfigure}{r}{0.5\linewidth}
     \centering
@@ -545,20 +539,18 @@ Outside of the above paper other anomalies and issues exist within databases, a 
     \caption{Picture from jepsen.io/consistency}
     \label{fig:jepsenioconsistency}
 \end{wrapfigure}
-
-For explaining the concepts within consistency, I will use a paper by Ballis et al. on "Highly available transactions"\cite{HighlyAvailableTransactionsVirtuesandLimitations} that contains a good model for presenting the different consistency models and their relation to other consistency models. A focus will be on Transactional models so not all of the BASE models are covered.\\
+For explaining the concepts within consistency, we will use a paper by Ballis et al. on "Highly available transactions"\cite{HighlyAvailableTransactionsVirtuesandLimitations} that contains a good model for presenting the different consistency models and their relation to other consistency models. A focus will be on Transactional models, so not all of the BASE models are covered.\\
 
 \subsection{Strict Serializability}
 
-For a system to have Strict Serializability, it is required that the entire system operationally appears to occur in order, with regards to both the order and the real-time of the operations. Within the CAP theorem, this would be considered a CA system.\\
+For a system to have Strict Serializability, it is required that the entire system operationally appears to occur in order regarding both the order and the real-time of the operations. Within the CAP theorem, this would be considered a CA system.\\
 \vspace{5mm}
-Formally Strict Serializability is defined as a Serviceable system that is compatible with a Time-dependent order.
+Formally Strict Serializability is defined as a Serviceable system compatible with a Time-dependent order.
 "A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in an obvious way. A history is strictly serializable if the transactions' order in the sequential history is compatible with their precedence order." \cite{Herlihy1990Linearizability}\\
 \vspace{5mm}
-Here it should be clarified what is menat by the obvious way" is for a transactions A and B, that A proceeds B if A completes prior to transaction B's begin or in other words a Serializable system with the time constraint from Linearizability.
+Here it should be clarified what is meant by "the obvious way." For transactions A and B, A proceeds B if A completes prior to transaction B starting. Essentially a Serializable system with the time constraint from Linearizability.
 
 SS cannot be totally or sticky available in the event of a network partition. In this case, some or all nodes will be stuck; this is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole, as in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.
-
 
 \begin{table}[h]
     \begin{tabular}{l|l|l|l}
@@ -589,12 +581,12 @@ Serializability is a relaxation of the Strict Serializability consistency model 
 \end{quote}
 \vspace{5mm}
 
-The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole. This means that in the case of a network partition some or all notes will be stuck until the network is healed. Further, as no real-time constraint is enforced,  we can observe stale reads. This occurs when process A completes a write, then process B begins a read, and the read is not guaranteed to observe the write from process A.
+The above implies that Serializability of the transactions does not only apply to the objects in use but the system as a whole. This means that in the case of a network partition, some or all notes will be stuck until the network is healed. Further, we can observe stale reads as no real-time constraint is enforced. This occurs when process A completes a write, then process B begins a read, and the read is not guaranteed to observe the write from process A.
 \\ \vspace{5mm}
 
-There is a further limitation of Serializable due to having no real-time constraint; SR allows pathological orderings. This allows a serializable database to discard, write, and increment operations that are never observed by executing them at the very end of the history. Furthermore, read operations can always return an empty state by placing the transaction at the beginning of the history. It should however be noted that most implementation does not take advantage of this.
+Serializable has a further limitation due to having no real-time constraint; SR allows pathological orderings. This allows a serializable database to discard, write, and increment operations that are never observed by executing them at the very end of the history. Furthermore, read operations can always return an empty state by placing the transaction at the beginning of the history. However, it should be noted that most implementation does not take advantage of this.
 \\ \vspace{5mm}
-SR follows closely to S-SR regarding partition tolerance and availability doing partition and is therefore considered a CA database.
+SR follows closely to S-SR regarding partition tolerance and availability and is therefore considered a CA database.
 \\ \vspace{5mm}
 \begin{table}[h]
     \begin{tabular}{l|l|l|l}
@@ -617,9 +609,9 @@ SR follows closely to S-SR regarding partition tolerance and availability doing 
 
 \subsubsection{Repeatable Read}
 
-Repeatable Read (RR) closely resembles the Serializable consistency model, however in RR we allow phantoms. This implies that if T1 reads a predicate like "select all from alarms with the newest timestamp," another transaction T2 is able to create or modify values within the predicate before T1 commits. So if the transaction T1 performs the read again, this predicate might not be stable.
+Repeatable Read (RR) closely resembles the Serializable consistency model, however in RR, we allow phantoms. This implies that if T1 reads a predicate like "select all from alarms with the newest timestamp," another transaction T2 is able to create or modify values within the predicate before T1 commits. So if the transaction T1 performs the read again, this predicate might not be stable.
 \\ \vspace{5mm}
-RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, repeatable read doesn't guarantee repeatable reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
+RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, repeatable read does not guarantee repeatable reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
 \\ \vspace{5mm}
 It should also be noted that RR allows for the same pathological ordering of operations as a Serializable database.
 
@@ -651,7 +643,7 @@ Cursor Stability closely resembles repeatable read where RR locks the objects un
     \begin{enumerate}
         \item G1a (Aborted Reads): A transaction observes an object (perhaps via a predicate) modified by an aborted transaction. Intuitively, transactions have to commit for us to read them.
         \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction that was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
-        \item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 can't be affected by T1.
+        \item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 cannot be affected by T1.
     \end{enumerate}
 \end{itemize}
 Furthermore, since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
@@ -687,8 +679,7 @@ When the transaction T1 is ready to commit, it gets a Commit-Timestamp, larger t
 \end{displayquote}
 
 
-There also exist multiple other definitions from Cerone et al \cite{CeroneBernardiGotsman} and Crooks et al\cite{CrooksPuAlvisiClement}
-
+There also exist multiple other definitions from Cerone et al. \cite{CeroneBernardiGotsman} and Crooks et al. \cite{CrooksPuAlvisiClement}
 
 \begin{table}[h]
     \begin{tabular}{l|l|l|l}
@@ -711,30 +702,29 @@ There also exist multiple other definitions from Cerone et al \cite{CeroneBernar
 \end{table}
 
 
-
 \subsubsection{Monotonic Atomic View}
-The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation. It requires that effects by transactions are fully visible once read by other transactions, such that T1 may preform w(1), w(2), w(2), c. These 3 sub operations effects should all either be fully visible or not at all, so partial transactions aren't allowed. Formally this is defined by Bailis et al \cite{HighlyAvailableTransactionsVirtuesandLimitations}
-\textit{Under MAV, once some of the effects of a transaction Ti are observed by another transaction Tj, thereafter, all effects of Ti are observed by Tj. That is, if a transaction Tj reads a version of an object that transaction Ti wrote, then a later read by Tj cannot return a value whose later version is installed by Ti.}
+The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation. It requires that effects by transactions are fully visible once read by other transactions, such that T1 may perform w(1), w(2), w(2), c. These three sub-operations effects should all either be fully visible or not at all, so partial transactions are not allowed. Formally this is defined by Bailis et al. \cite{HighlyAvailableTransactionsVirtuesandLimitations}
+\textit{Under MAV, once some of the effects of a transaction Ti are observed by another transaction Tj, thereafter, all effects of Ti are observed by Tj. That is if a transaction Tj reads a version of an object that transaction Ti wrote, then a later read by Tj cannot return a value whose later version is installed by Ti.}
 
-and by Adya et al\cite{Adya99weakconsistency} as prohibiting:
+Furthermore, by Adya et al. \cite{Adya99weakconsistency} as prohibiting:
 \begin{itemize}
     \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction that was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
 \end{itemize}
 
-Further since MAV is strictly stronger than Read Committed, it also disallows the ANSI phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
+Further, since MAV is strictly stronger than Read Committed, it also disallows the ANSI phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
 
 \subsection{Read Committed}
-The Read Committed transaction model is the first non-atomic transaction model where partial visibility of committed transactions is permitted. This however might lead to foreign key constraint issues, among other problems where required data joins are performed due to not yet visible values.
+The Read Committed transaction model is the first non-atomic transaction model where partial visibility of committed transactions is permitted. This however, might lead to foreign key constraint issues, among other problems where required data joins are performed due to not yet visible values.
 \\ \vspace{5mm}
 
 Formally it is defined in ANSISQL1999\cite{ansisql1999} by disallowing P1
-\textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
+\textit{P1 ("Dirty read" ): SQL-transaction T1 modifies a row. SQL-transaction T2 then reads that row before T1 performs a COMMIT. If T1 then performs a ROLLBACK, T2 will have read a row that was never committed, and that may thus be considered to have never existed.} However, in the Microsoft paper, Berenson et al. \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unconcise ANSI specification.
 \\ \vspace{5mm}
 
 \todo[author=Mark]{TODO Make Diagram Read committed}
 
 \subsection{Read Uncommitted}
-Read Uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al\cite{Berensonetal} where they argue that Read Uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al \cite{Adya99weakconsistency} which again provides a better definition based, on what can be interpreted from the loose definition in ANSISQL99\cite{ansisql1999}. It should be noted that due to the loose specification in ANSI, multiple mainstream interpretations exist.\\
+Read Uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al. \cite{Berensonetal} where they argue that Read Uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al. \cite{Adya99weakconsistency} which again provides a better definition based on what can be interpreted from the loose definition in ANSISQL99\cite{ansisql1999}. It should be noted that due to the loose specification in ANSI, multiple mainstream interpretations exist.\\
 
 by the Aday's specification Read Uncommitted disallows
 \begin{itemize}
@@ -748,10 +738,10 @@ But allows
 \end{itemize}
 
 \subsection{Non-transaction models (BASE)}
-The category of BASE transaction models aren't considering the order of transactions but rather the ordering of operations in real time. Only Linearizable and Sequential Consistency is introduced here. other BASE models exist, The core ones are Casual Consistency, Writes Follows Reads, Monotonic Reads, Monotonic Writes and Read your writes.
+The category of BASE transaction models is not considering the order of transactions but rather the ordering of operations in real-time. Only Linearizable and Sequential Consistency are introduced here. Other BASE models exist. The core ones are Casual Consistency, Writes Follows Reads, Monotonic Reads, Monotonic Writes, and Read Your Writes.
 
 \subsubsection{Linearizable}
-Linearizablilty is the strongest single object consistency model, that requires operations to occur in a order consistent with real time, and the operations themselves should occur atomically. It should also be noted that linearzability is not tolerant to network partitions and should be considered a CA model according to the CAP theorem.
+Linearizability is the strongest single object consistency model that requires operations to occur in an order consistent with real-time, and the operations themselves should occur atomically. It should also be noted that Linearizability is not tolerant to network partitions and should be considered a CA model according to the CAP theorem.
 
 it is formalized  in \cite{Linearizability} and later specified  in \cite{ConsistencyinNonTransactionalDistributedStorageSystems} where it's defined by 3 requirements
 
@@ -762,9 +752,9 @@ it is formalized  in \cite{Linearizability} and later specified  in \cite{Consis
 \end{itemize}
 
 \subsubsection{Sequential Consistency}
-Sequential Consistency (SC) is a relaxation of Linearizability. Unlike Linearizability, SC is a concurrent model. Here the requirement is that all operations follow a total order and this order is consistent across all processes. However, since a Total order is required, the model is unable to tolerate partitions and some or all nodes will be unable to make progress. 
+Sequential Consistency (SC) is a relaxation of Linearizability. Unlike Linearizability, SC is a concurrent model. The requirement is that all operations follow a total order, which is consistent across all processes. However, since a Total order is required, the model cannot tolerate partitions, and some or all nodes will be unable to make progress. 
 \\ \vspace{5mm}
-One of the phenomena SC allows is Stale Reads. All processes have to follow the same total order but as there isn't a strong constraint concerning how far a process may be behind or ahead and it may return an arbitrarily stale state. However, once a given node A observes some operations from a separate node B, A may never observe a state prior to B.
+One of the phenomena SC allows is Stale Reads. All processes have to follow the same total order, but there is not a strong constraint concerning how far a process may be behind or ahead, and it may return an arbitrarily stale state. However, once a given node A observes some operations from a separate node B, A may never observe a state prior to B.
 
 Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formalized it into three requirements:
 \begin{itemize}
@@ -779,11 +769,11 @@ Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti a
 
 \section{Directed Serialization graphs}
 
-Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction, such that each node represents a node and edges represent different types of direct conflicts. \\ using these conflicts we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
+Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction. Each node represents a committed transaction, and edges represent different types of direct conflicts. \\ using these conflicts, we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
 \subsection{Transaction conflicts relations}
 \subsubsection{Read-dependency}
 
-The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$, this relation is also called Write-Read (wr) as one transaction writes a object and a second transaction depends on this prior write.
+The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$. This relation is also called Write-Read (wr), as one transaction writes an object and a second transaction depends on this prior write.
         
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
@@ -825,9 +815,8 @@ select * from accounts where id = 1;
 \end{lstlisting}
         
         
-
 \subsubsection{predicate-based read dependency (wr)}
-A Predicate read dependency occurs when a transactions $T_j$ preforms a operation containing multiple reads while a concurrent $T_i$ is preforming writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
+A Predicate read dependency occurs when a transaction $T_j$ performs an operation containing multiple reads while a concurrent $T_i$ performs writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
 
 This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
 
@@ -866,7 +855,7 @@ We have a history H. as follows.
     History\ H: [T_1(W(x_1)), T_2(R(x_0),R(\emptyset))]
 \end{equation}
 
-A SQL example of this relation would be the below script
+A SQL example of this relation would be the below script.
 
 \begin{lstlisting}
 select * from accounts where balance > 0;
@@ -915,9 +904,8 @@ update accounts set balance = 42 where id = 42;
 update accounts set balance = -42 where id = 42;
 \end{lstlisting}
 
-\subsubsection{Anti-dependency (rw)}
-An read-write-dependency, or formally known as a anti-dependency occurs when a transaction overwrites a version observed by some other transaction. i.e. transaction T1 reads an object x, x is then modified by transaction T2.
-
+subsubsection{Anti-dependency (rw)}
+A read-write-dependency, formally known as an anti-dependency, occurs when a transaction overwrites a version observed by another transaction. i.e., transaction T1 reads an object x, x is then modified by transaction T2.
 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
@@ -1009,11 +997,11 @@ In the above example $T_1$ writes $x_1, y_2$, and $T_2$ writes $x_2, y_1$, The o
 
 
 \subsection{G1: dirty reads}
-Phenomenon G1 captures the essence of no-dirty-reads, and consists of g1a, g1b, g1c.
+Phenomenon G1 captures the essence of no-dirty-reads and consists of g1a, g1b, g1c.
 
 \begin{itemize}
     \item G1a: Aborted Reads (cascaded aborts). \\
-        A history exhibits G1a if it contains a aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
+        A history exhibits G1a if it contains an aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
 \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
@@ -1048,9 +1036,9 @@ Phenomenon G1 captures the essence of no-dirty-reads, and consists of g1a, g1b, 
 
 
 \end{tikzpicture}\\
-To prevent this: If a transaction has preformed a read on a object modified by a aborted transaction, It itself has to abort.
+To prevent this: If a transaction has performed a read on an object modified by an aborted transaction, It itself has to abort.
     \item G1b: Intermediate Reads (dirty reads)
-    A history exhibits G1b if it contains a committed transaction containing a read of an intermediary modification by another transaction. i.e. a read of a non final modification was preformed and committed to the history. 
+    A history exhibits G1b if it contains a committed transaction containing a read of an intermediary modification by another transaction. i.e., a read of a non-final modification was performed and committed to the history. 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
 \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
@@ -1082,11 +1070,11 @@ To prevent this: If a transaction has preformed a read on a object modified by a
 
 
 \end{tikzpicture} \\
-To prevent this a: If a transaction has read a intermediate state of an object it must be aborted, or a exclusive lock should be held to prevent other transaction from accessing a intermediate state.
+To prevent this, a: If a transaction has read an intermediate state of an object, it must be aborted, or an exclusive lock should be held to prevent other transactions from accessing an intermediate state.
 
 
     \item G1c: Circular Information Flow\\
-A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist 3 possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depends on each others writes.
+A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist three possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depend on eachothers writes.
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
 \begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
@@ -1129,28 +1117,28 @@ The above example has x and y in the initial state of 0, $T_1$ writes $x_1$ and 
 \chapter{Consistency Model testing}
 
 \section{Introduction}
-Consistency model testing is the process of testing if a given system meet the requirement for a given consistency model. The way consistency models are defined is by which anomalies they prohibit. Therefor a straight forward method for testing whether a given system meets the requirements for a model can be done by analysing the transaction history for anomalies.\\
+Consistency model testing is the process of testing if a given system meets the requirement for a given consistency model. The way consistency models are defined is by which anomalies they prohibit. Therefore a straightforward method for testing whether a given system meets the requirements for a model can be done by analyzing the transaction history for anomalies.\\
 \vspace{5mm}
-The reason for doing these tests is to ensure both that a system behaves in an expected manner and to verify that they behave according to how they're presented and defined by their creators. If a system doesn't behave as expected, situations can occur where information is lost and harm can be done either bodily, financially or materially. \\ \vspace{5mm}
-These situations occur as Databases often sacrifice consistency to gain performance or higher availability. In context older style transactional databases might only allow for the execution of one transaction at the time where either the whole database or tables are locked by this transaction. Other implementations allow for transactions to execute concurrently to allow for higher performance and better scalability. however it often occurs that these optimizations have side effects due to either poor implementations, understanding or simply intentionally to gain performance. These side effects might range from sometimes returning a stale value to the dirty reads and writes that allow for uncommitted data to persist 
+The reason for doing these tests is to ensure that a system behaves expectedly and to verify that they behave according to how they are presented and defined by their creators. If a system does not behave as expected, situations can occur where information is lost, and harm can be done either bodily, financially, or materially. \\ \vspace{5mm}
+These situations occur as Databases often sacrifice consistency to gain performance or higher availability. In context, older style transactional databases might only allow for the execution of one transaction at a time where either the whole database or tables are locked by this transaction. Other implementations allow for transactions to execute concurrently to allow for higher performance and better scalability. However, these optimizations often have side effects due to either poor implementations, understanding, or simply intent to gain performance. These side effects might range from sometimes returning a stale value to the dirty reads and writes that allow for uncommitted data to persist. 
 
 \section{Historically}
 
-Historically, this was done using manually defined sets of transactions. They required careful consideration and were time consuming to design, and often only able to check for simple patterns.  These tests were run on a given system checking if a proven invariant hold for a given consistency model, or if an anomaly is present in concurrent execution, This was done by inserting 2 records,  x and y in two separate transactions and in two following transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handle long forks and snapshot isolation, and more importantly if it supports them at all.
+Historically, this was done using manually defined sets of transactions. They required careful consideration and were time-consuming to design, and often only able to check for simple patterns. These tests were run on a given system, checking if a proven invariant hold for a given consistency model or if an anomaly is present in concurrent execution; this was done by inserting two records,  x, and y, in two separate transactions and in two following transactions checking if we can observe x but not y, or y and not x, as this could show how the systems handle long forks and snapshot isolation, and more importantly if it supports them at all.
 
-These tests are generally quite efficient, but only check for certain patterns and therefore don't allow for the larger picture of where issues might be present. they are also highly limited in what they can check and which models they can check for. Furthermore due to the hard-coded and highly custom design they are implemented on a system to system basis with interchangeability is supported.
+These tests are generally quite efficient but only check for specific patterns and therefore do not allow for the larger picture of where issues might be present. They are also highly limited in what anomalies they can check and which consistency models they can check. Furthermore, due to the hard-coded and highly custom design, they are implemented on a system-to-system basis with no interchangeability.
 
-This also means that the scope of these testing projects are normally huge and defined case by case with predefined transactions that only test a limited scope. The test might have been done previously but were very limited in test coverage and most anomalies were are never detected,
+This also means that the scope of these testing projects usually is enormous and defined case by case with predefined transactions that only test a limited scope. The test might have been done previously but were very limited in test coverage, and most anomalies were are never detected,
 
 \section{State of the art}
 
-The state of the art is Jepsen, or rather one of the state of the Art projects.
+State of the art is Jepsen, or rather one of the state of the Art projects.
 
-The Jepsen client is build up in a modular fashion such that the different modules needed for a test can be defined independently and a given project might not require all modules. A jepsen test suite generally consist of a 5 modules. Database automation, client, generator, correctness checkers, and a fault introduce. On top of these modules a test runner is required that glues the modules together.
+The Jepsen client is built up in a modular fashion such that the different modules needed for a test can be defined independently, and a given project might not require all modules. A Jepsen test suite generally consists of 5 modules. Database automation, client, generator, correctness checkers, and a fault introduction. On top of these modules, a test runner is required to connect the modules.
 
 The goal of Jepsen was to have a framework that allows 
 
-The more inner workings of Jepsen consist of a Host node, and tentacles going connecting to the nodes in the test cluster to preform of\todo[author=Daniela]{preform of the tasks?} the tasks such as database automation and the introduction of faults.
+The more inner workings of Jepsen consist of a Host node and tentacles going connecting to the nodes in the test cluster to perform of\todo[author=Daniela]{preform of the tasks?} the tasks such as database automation and the introduction of faults.
 
 
 \section{Jepsen}
@@ -1160,12 +1148,12 @@ Jepsen is an effort to improve the safety of distributed databases, queues, cons
 \\
 \vspace{5mm}
 
-Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that are given by their creators. In a world where distributed, hyper scale or even planetary scale systems are becoming the more common, this requires data storage to behave in an expected manner. The reason that expected manner is used rather than correct manner is that we may allow certain faults to occur, and allow for eventual consistency as this allows for higher throughput applications. There are case where data may only be required locally as to consider a transaction complete even in the case where some undesirable conditions occur, but these are tolerated to a certain extent. \\
+Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that its creators give. In a world where distributed, hyper-scale, or even planetary-scale systems are becoming more common, this requires data storage to behave expectedly. The expected manner is used rather than the correct manner because we may allow certain faults to occur and allow for eventual consistency as this allows for higher throughput applications. There are cases where data may only be required locally to consider a transaction complete, even when some undesirable conditions occur. However, these are tolerated to a certain extent. \\
 \vspace{5mm}
 
-A scenario where real time data distribution and correctness is of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data is replicated and the 'old' balance is no longer available. Otherwise we could reach a condition where worst case a client is able to draw a negative balance on their account or where one of the transactions isn't recorded as only one of the two transactions is recorded.\\
+A scenario where real-time data distribution and correctness are of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data are replicated, and the 'old' balance is no longer available. Otherwise, we could reach a condition where worst case, a client can draw a negative balance on their account or where one of the transactions is not recorded as only one of the two transactions is recorded.\\
 
-Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post this comment might not necessary be available to users instantly and it's of no concern if it take a few seconds or minutes for it to be distributed to all nodes. Users generally don't notice these delays and it allows for better scaling within these huge applications with mullions or billions of request per second.
+Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post, this comment might not necessarily be available to users instantly, and it is of no concern if it takes a few seconds or minutes to be distributed to all nodes. Users generally do not notice these delays, and it allows for better scaling within these huge applications with mullions or billions of requests per second.
 
 
 
@@ -1174,36 +1162,36 @@ Oppositely a situation where eventual consistency is of no issues is for platfor
 The runner is the glue that binds the underlying modules together. It contains configurations for targets, rates, how many faults should be introduced, and every other aspect of the testing suite.
 
 \subsection{Database Automation}
- The Database or db module job is to handle starting, stopping and interaction with the database program or service itself. It's main job is to spin up, prepare and configure a test target, in some instances this might not be required but it is best practice to do this as it allows for better repeatably of the tests. A just as important feature is interacting with the service ones it is running, killing workers, inducing crashes, or removing the entire node from the cluster.
+ The Database or db module job handles starting, stopping, and interaction with the database program or service itself. Its main job is to spin up, prepare and configure a test target; in some instances, this might not be required, but it is best practice to do this as it allows for better repeatably of the tests. A just as important feature is interacting with the service ones it is running, killing workers, inducing crashes, or removing the entire node from the cluster.
 
 \subsection{Client}
-The Client is an interface from a map of commands to a connector or driver. It handles parsing, validation of return values, exception and faults handling and routing of requests to the correct endpoint.
+The Client is an interface from a map of commands to a connector or driver. It handles parsing \& validation of return values, exception and faults handling, and routing requests to the correct endpoint.
 
 \subsection{Generator}
-The generator's task is to generate the test map which includes transactions and faults in a manner that allow for correctness checking. in the sense that our checker needs to be able defer a ordered history from the responses from the target database.
+The generator's task is to generate the test map, which includes transactions and faults to allow for correctness checking. Our checker needs to be able to defer an ordered history from the responses from the target database.
 
 \subsection{Correctness checker}
-The checker module checks for anomalies in the results, this can be a host of symptoms, out of order operations, violation of isolation, corrupt data due to conflicts. This can either be done by writing custom checkers or by using some of the functionality built into Jepsen.
+The checker module checks for anomalies in the results; this can be a host of symptoms, out-of-order operations, violation of isolation, corrupt data due to conflicts. This can either be done by writing custom checkers or using some of the functionality built into Jepsen.
 
 \subsection{Fault inducer}
-Nemesis the the module within jepsen that induces faults, it's task is to induce faults at random such time skew, network partitions, crashes, increased package drop, increased latency and other such tools.
+Nemesis is the module within Jepsen that induces faults; its task is to induce faults at random such as time skew, network partitions, crashes, increased package drop, increased latency, and other tools.
 
 
 
 
-Jepsen supports quite a few different modules but the most powerfull features goes by the name Elle, inferring isolation anomalies from Experimental Observations. \\
+Jepsen supports quite a few different modules, but the most powerful checker is Elle, inferring isolation anomalies from Experimental Observations. \\
 \vspace{5mm}
-The way this works is by inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
+This works by inferring a dependency graph between client-side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
 \vspace{5mm}
-This means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.\\
-\vspace{5mm}
-
-And these things can be manifested in multiple ways, some cases are, as mentioned earlier in the paper, accepted as eventually consistency and performance is valued higher or some applications where loosing some data points are acceptable to allow for higher write throughput.\\
+This means that Elle can reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information, we can say how a system behaves, what level of consistency and which behavior we will see, what promises the system makes, and how promises are reflected in reality.\\
 \vspace{5mm}
 
-And the same does for stale, dirty, non-repeatable and phantom reads aren't an issue. This could be on hyper scale social networks where if you see something that was deleted, or if the newest posts, comments and likes aren't distributed across the all notes, but they will eventually. But this is a trade off that is done to allow for much higher write performance as the chance a user is making chancing to the same page on two different nodes/clusters are minimal and the required performance drop required to facilitate the guarantee that all data is always up to date would mean that the system wouldn't scale at the rate it's required, this also brings up another interesting topic, approximate programming, where a program doesn't always have to return the correct output, but if we can see a magnitude speedup of a program and accept a faulty result rate of a few \%, then the cost saving and capacity increase could very much be worth it. This could be in the case of Netflix and Amazon recommencing products and services, it doesn't have to be perfect and maybe sometimes the result is wrong but if it means we're able to serve a lot more customers before having to degrade services or maybe having it as a step in the service degradation levels to support as many users as possible. \\
+And these things can be manifested in multiple ways; some cases are, as mentioned earlier in the paper, accepted as eventually consistency and performance is valued higher, or some applications were losing some data points are acceptable to allow for higher write throughput.\\
 \vspace{5mm}
-But a lot of this lays outside the scope of this thesis but it's also a super interesting field that will probably see grow in the next decade.
+
+Moreover, the same goes for stale, dirty, non-repeatable, and phantom reads are not an issue. This could be on hyper-scale social networks where a user might see something that was deleted, or if the newest posts, comments, and likes are not distributed across all nodes, they will eventually. Nevertheless, this is a trade-off that allows for much higher write performance as the chance of a user making changes to the same page on two different nodes/clusters is minimal. The required performance drop required to facilitate the guarantee that all data is always up to date would mean that the system would not scale at the rate it is required; this also brings up another interesting topic, approximate programming, where a program does not always have to return the correct output. However, if we can see a magnitude speedup of a program and accept a faulty result rate of a few \%, then the cost-saving and capacity increase could very much be worth it. This could be in the case of Netflix and Amazon recommencing products and services, it does not have to be perfect, and maybe sometimes the result is wrong, but if it means we can serve a lot more customers before having to degrade services or maybe having it as a step in the service degradation levels to support as many users as possible. \\
+\vspace{5mm}
+However, a lot of this lies outside the scope of this thesis, but it is also a super exciting field that will probably see growth in the next decade.
 
 
 \subsection{Elle}
@@ -1307,7 +1295,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \chapter{Modern Datastores}
 
-    The thesis will primacy focus on Service Fabrics but investigation into other data stores is also done to allow comparisons and investigation into what different models affect the behavior of the database systems.
+    The thesis will primacy focus on Service Fabrics. However, an investigation into other data stores is also done to allow comparisons and investigation into what different models affect the behavior of the database systems.
 
 
     \section{Service Fabric}
@@ -1318,127 +1306,127 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \subsection{Introduction}
 
-    Service Fabric (SF) is presented as a distributed systems platform something akin to Kubernetes (K8S), where the user is able to build, deploy and scale micro services and containers. One of the key points presented by Microsoft on Azure Service Fabric is that you're able to run stateful services. It's presented by Microsoft as the backbone of their core services and data stores.\\
+    Service Fabric (SF) is presented as a distributed systems platform akin to Kubernetes (K8S), where the user can build, deploy and scale microservices and containers. One of the key points presented by Microsoft on Azure Service Fabric is that developers are able to run stateful services. Microsoft presents it as the backbone of their core services and data stores.\\
     \vspace{5mm}
 
     \includegraphics[scale=0.5]{images/service-fabric-architecture.png}
 
     \subsection{System Architecture}
 
-    The architecture behind Service Fabric is built via a layered approach, by Microsoft's words this allows developers to write applications that are highly available, scalable, manageable and testable. These layers are built on 5 Core and 2 supporting subsystems. Our main interest lies within the reliable collection so I will only be investigating the layers and services that lay below this.\\
+    The architecture behind Service Fabric is built via a layered approach; by Microsoft's words, this allows developers to write highly available applications, scalable, manageable, and testable. These layers are built on five Core and two supporting subsystems. Our main interest lies within the reliable collection, so we will only be investigating the layers and services that lay below this.\\
     \vspace{5mm}
 
     \subsubsection{Transport subsystem}
     \todo[author=Mark]{these might be serving the same purpose and the documentation might just be odd.}
-    The lowest layer in the core stack that provides secure communication within the cluster itself and between the cluster and clients. This functionality is provided via point to point communication channels that support one way and request reply patterns, in other terms UDP and TCP. This also provides basis for broadcast and multicast within the cluster. Security is handled via wither windows security or x509 certificates. \\
+    The lowest layer in the core stack provides secure communication within the cluster itself and between the cluster and clients. This functionality is provided via point-to-point communication channels that support one-way and request-reply patterns, in other terms UDP and TCP. This also provides the basis for broadcast and multicast within the cluster. Security is handled via either windows security or x509 certificates. \\
     \vspace{5mm}
 
     \subsubsection{Federation subsystem}
 
-    The next subsystem in the stack is the Federation subsystem, this uses communication channels provided to it by the transport subsystem to gather the nodes into a unified service fabric cluster. It also provides system primitives that allow for Failure detection, leader Election and consistent routing within the cluster by upper layers in the system.\\
+    The next subsystem in the stack is the Federation subsystem, which uses communication channels provided by the transport subsystem to gather the nodes into a unified service fabric cluster. It also provides system primitives that allow for Failure detection, leader Election and consistent routing within the cluster by upper layers in the system.\\
     \vspace{5mm}
 
-    The core of the subsystem is built around an SF-ring that was developed internally at Microsoft in the early 2000s, where both keys and nodes are mapped to a point in the ring, with keys being owned by the node closest to it in the ring. Each node also uses this ring to keep track of its immediate successor and predecessor nodes that it stores in a Neighborhood set, this set is then used by the Federation layer to run consistent membership and failure detection. Nodes also maintain long distance routing partners that are used for consistent routing.\\
+    The core subsystem is built around an SF-ring developed internally at Microsoft in the early 2000s. Keys and nodes are mapped to points in the ring, with keys being owned by the node closest to it in the ring. Each node also uses this ring to keep track of its immediate successor and predecessor nodes in a Neighborhood set; the Federation layer then uses this set to run consistent membership and failure detection. Nodes also maintain long-distance routing partners that are used for consistent routing.\\
     \vspace{5mm}
 
-    The membership and Failure detection is done using tow key design principles.\\
+    The membership and Failure detection are done using two key design principles.\\
     \vspace{5mm}
 
     Strongly Consistent membership and Decoupling Failure Detection from Failure Decision\\
     \vspace{5mm}
 
     \begin{itemize}
-        \item \textbf{Strongly Consistent membership} All nodes monitoring a given nodes status must agree on weather the node is up or down. For use in the SF ring this means that the all nodes on the node's Neighborhood set must agree on its status.
-        \item \textbf{Decoupling Failure Detection from Failure Decision}: Failure detection protocols can lead to conflicting states, therefore the decision is decoupled from detection.
+        \item \textbf{Strongly Consistent membership} All nodes monitoring the status of a given node must agree on whether the node is up or down. For use in the SF ring, this means that all nodes on the node's Neighborhood set must agree on its status.
+        \item \textbf{Decoupling Failure Detection from Failure Decision}: Failure detection protocols can lead to conflicting states; therefore, the decision is decoupled from detection.
     \end{itemize}
     \vspace{5mm}
 
-    To solve the issue of decoupling failure detection and the decision making on these failure, all decisions is distributed to a set responsible nodes. This Ensures that decisions are performed in a consistent and reliable manner. The detection of failures is performed via a distributed monitoring and leasing solution implemented in SF. This implementation solves this via Lease Renewal Request(LR) and LRack(Lease Renewal Acknowledgement). A node is simply required to maintain valid leases from all of its monitors and these leases have to be renewed every lease period. This leasing period is calculated based on round trip times within the cluster. If a node fails to renew any of these leases it considers removing itself from the set of nodes. If a monitor misses a lease request to a node, the node turn considers marking the monitor as failed. Both of these decisions need to be approved by an Arbitrator group. If a node fails to receive an LRack within a timeout based on round trip time, it repeats the LR until it receives an LRack. Due to the nature of the SF-ring these monitor relations are symmetrical, but this Lease protocol is still run independently, there are however other cases. If a node fails the renewal process, it stops renewing leases to any other nodes, or if a node detects another node as having failed, it stops sending renewal request to it. These 2 cases have the potential to cause inconsistencies if they were operating alone, however decision of deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
+    To solve the issue of decoupling failure detection and decision-making on these failures. All decisions are distributed to a set of responsible nodes. This ensures that decisions are performed consistently and reliably. The detection of failures is performed via a distributed monitoring and leasing solution implemented in SF. This implementation solves this via Lease Renewal Request(LR) and LRack(Lease Renewal Acknowledgement). A node must maintain valid leases from all of its monitors, and these leases have to be renewed every lease period. This leasing period is calculated based on round trip times within the cluster. If a node fails to renew any of these leases, it considers removing itself from the set of nodes. If a monitor misses a lease request to a node, the node turn considers marking the monitor as failed. Both of these decisions need to be approved by an Arbitrator group. If a node fails to receive an LRack within a timeout based on round trip time, it repeats the LR until it receives an LRack. Due to the nature of the SF-ring, these monitor relations are symmetrical, but this Lease protocol is still run independently. There are other cases; if a node fails the renewal process, it stops renewing leases to any other nodes, or if a node detects another node as having failed, it stops sending renewal requests to it. These 2 cases can cause inconsistencies if they were operating alone; however, deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
     \vspace{5mm}
 
-    The decision to determine failures is preformed by the Arbitrator group. This is separate from the neighborhood set. They operate independently and it has two ways of deciding if a given node has failed. The way that the groups stay consistent when members join or leave the group is that when an Arbitrator joins the set, it initially rejects all requests in the first T seconds. This is done to prevent new Arbitrator making conflicting decisions with the excising nodes, and to prevent failed nodes to exist in the distributed membership protocol. This ensures that detected nodes leave before being forgotten.\\
+    The Arbitrator group performs the decision to determine failures. This is separate from the neighborhood set. They operate independently, and it has two ways of deciding if a given node has failed. The way that the groups stay consistent when members join or leave the group is that when an Arbitrator joins the set, it initially rejects all requests in the first T seconds. This is done to prevent new Arbitrators from making conflicting decisions with the excising nodes and prevent failed nodes from existing in the distributed membership protocol. This ensures that detected nodes leave before being forgotten.\\
     \vspace{5mm}
 
     \begin{enumerate}
         \item X detects Y as failed and sends fail(Y) to the arbitrator
         \item The arbitrator adds Y to a recently failed list and sends ack(fail(y)) containing a timeout for Y to X. If The arbitrator already marked X as having failed and ignores the request,
-        \item If X receives this request it waits for the TO to claim Y's area of the ring. and if re receives no response within the timeout it leaves itself.
+        \item If X receives this request, it waits for the timeout to claim Y's ring area. Moreover, if it receives no response within the timeout, it leaves itself.
     \end{enumerate}
 
-    If a node is already in the recently failed list, it returns the same response as to the first reporter except it calculates the time since first detection so the portion of the ring it own is claimed by the neighbors at the same time. This also means that the routing can continue after Time out with a laxity added. As all routing request for a node are added to a queue if a node is marked as failed. The queue is then released after Timeout+laxity that allows all neighboring nodes to claim that part of the ring and allows to these routing request to be preformed by its successors.\\
+    If a node is already in the recently failed list, it returns the same response as the first reporter, except it calculates the time since the first detection, so the neighbors claim the portion of the ring it owns at the same time. This also means that the routing can continue after time out with a laxity added. All routing requests for a node are added to a queue if a node is marked as failed. The queue is then released after Timeout+laxity that allows all neighboring nodes to claim that part of the ring and allows these routing requests to be performed by its successors.\\
     \vspace{5mm}
 
-    If the case of two nodes reporting each other as failed, the conflict is resolved either by majority. The node that was reported first to the most Arbitrators leaves the ring. A second option is to heal the membership if both nodes are healthy and can therefor be allowed to stay. \\   \vspace{5mm}
+    If the case of two nodes reporting each other failed, the conflict is resolved either by a majority; the node that was reported first to the most Arbitrators leaves the ring. A second option is to heal the membership if both nodes are healthy and can therefore stay. \\   \vspace{5mm}
     
-    The implementation in SF is presented as being failure tolerant towards cascade failures as the decision isn't made by the detectors themselves but by arbitrators.
-    This can be in cases of network congestion or partitions that result in multiple nodes detecting each other as failed. where traditional distributed hash tables this can result in inconsistencies in the membership lists or ring.\\ 
+    The implementation in SF is presented as failure tolerant towards cascade failures as the decision is not made by the detectors themselves but by arbitrators.
+    This can be in cases of network congestion or -partitions that result in multiple nodes detecting each other as failed. For traditional distributed hash-tables, this can result in membership list or ring inconsistencies.\\ 
     \vspace{5mm}
 
     \includegraphics[scale=0.3]{images/servicefabric-fig-ring-topology.jpeg}
 
-    SF-Ring and consistent routing.(need to rewrite/reword this to a more coherent sentence.)
+    SF-Ring and consistent routing. 
 
-    The Distributed Hash table used for service fabric routing is a evolution of SF-ring that was developed within Microsoft in the 2000s. The routing used offers symmetry and due to this it allows bidirectional routing that allow for lookup and routing via binary search. This allows SF to route message around the ring in a fast manner, with multiple routing options in that there always exist 2 routing partners on either side of the destination that both helps distribute the load and is able to route even with stale routing tables. Initially all packages were routed using this method, this has changed over the years. Today the hash table is used to build a routing table and maintain it when a new node is added to the cluster. After discovery a direct route is used via the destination IP address. \\
+    The Distributed Hash table used for Service Fabric routing is an evolution of SF-ring developed within Microsoft in the 2000s. The routing used offers symmetry, and due to this, it allows bidirectional routing that allows for lookup and routing via binary search. This allows SF to quickly route messages around the ring, with multiple routing options. There are always two routing partners on either side of the destination that help distribute the load and route, even with stale routing tables. Initially, all packages were routed using this method; this has changed over the years. Today the hash table is used to build a routing table and maintain it when a new node is added to the cluster. After discovery, a direct route is used via the destination IP address. \\
     \vspace{5mm}
 
-    Routing tables work differently depending on the size of the cluster. However it is able to route in two ways. If the size of the routing table is smaller than the number of nodes a direct route is used, if there exist more nodes in the cluster than the routing tables it switches to routing via routing tables to reduce memory consummation but causing an increase in time complexity to O(Log(n)) from O(1)\\
+    Routing tables work differently depending on the size of the cluster. However, it can route in two ways. If the size of the routing table is smaller than the number of nodes a direct route is used, if there exist more nodes in the cluster than the routing tables, it switches to routing via routing tables to reduce memory consummation but causing an increase in time complexity to O(log(n)) from O(1)\\
     \vspace{5mm}
 
     Routing Tokens.
-    \todo[author=Mark]{I was unable to find information on this precisely is handled however from the wording in the paper the initially split would be 50/50 and a third node would be 50/25/25? is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done}
+    \todo[author=Mark]{I was unable to find information on this precisely is handled; however, from the wording in the paper, the initially split would be 50/50, and a third node would be 50/25/25? is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done}
     Each node owns a token that includes a portion of the routing token it is responsible for. The SF-ring protocol ensures two properties:
     \begin{itemize}
         \item Each token is only owned by one node at any given time;
-        \item Eventually every token is owned by 1 node.
+        \item Eventually, every token is owned by one node.
     \end{itemize}
-    This ensures SF handles nodes joining and leaving the ring. Initially a bootstrap node owns the entire ring. After the initial bootstrap node, any joining node will split the ring segment between them. Routing tokens are also used for leader election, simply the owner of a given key is the owner. This same process ensures no keys are abandoned.
+    This ensures SF handles nodes joining and leaving the ring. Initially, a bootstrap node owns the entire ring. After the initial bootstrap node, any joining node will split the ring segment between them. Routing tokens are also used for leader election, simply the owner of a given key is the owner. This same process ensures that no keys are abandoned.
 
     \subsubsection{Reliability subsystem}
-    The reliability subsystem is in charge of load balancing, replication and availability. These three aspects are provided via 3 services: a Failover Manage, a Naming and Resolution, and a Placement and lastly a Load Balancer service.\\
+    The reliability subsystem is in charge of load balancing, replication, and availability. These three aspects are provided via three services: a Failover Manage, a Naming and Resolution, and a Placement, and lastly, a Load Balancer service.\\
     \vspace{5mm}
 
-    The Failover Manager is running as a stateful service, that has an instance running on each node in the cluster, that provides 3 actions: start a replica, move a replica, reconfiguration of a replica.\\
+    The Failover Manager runs as a stateful service with an instance running on each node in the cluster that provides three actions: start a replica, move a replica, and reconfigure a replica.\\
     \vspace{5mm}
 
     \begin{itemize}
         \item \textbf{Create a replica} Create a new replica when instructed by the PLB
         \item \textbf{Move a replica} migrate a replica when instructed by the PLB to a different node.
-        \item \textbf{Reconfiguration} If a primary replica becomes unavailable, promote a secondary as the new primary, in case the old primary comes back only it is demoted to secondary.
+        \item \textbf{Reconfiguration} If a primary replica becomes unavailable, promote a secondary as the new primary. If the old primary comes back only, it is demoted to secondary.
     \end{itemize}
 
-    A service called Failover Master Manager is also running that is able to restart the failure manager via a cached state in case it fails. In case the master fails it is able to rebuilt its state via the SF-ring. The Master Failover manager is running on the node who's token range contains ID0.\\
+    A service called Failover Master Manager is also running that can restart the failure manager via a cached state in case it fails. If the master fails, it can rebuild its state via the SF-ring. The Master Failover manager is running on the node whose token range contains ID0.\\
     \vspace{5mm}
 
-    The naming and resolution service maps instance names to endpoints that services are listening on. This allows for consistent routing from outside of the cluster via URI that doesn't change over their lifetimes.\\
+    The naming and resolution service map instance names to endpoints that services are listening on. This allows for consistent routing from outside the cluster via URI that does not change over their lifetimes.\\
     \vspace{5mm}
 
-    The Placement and Load Balancer(PLB) service is stateful and is in charge of placing replicas and instances of services on nodes and ensures an even load throughout the cluster. They claim that unlike other solutions where services are hashed onto the ring in SF, the PLB explicitly assigns each service replica Primary and Secondary nodes in the Ring. It continually monitor the cluster for available resources. This allows for assignment and migration of services to underutilized nodes,  more importantly it ensures services are migrated away from a node that is about to enter a service window or in cases of over-utilization that could lead to service degradation\\
+    The Placement and Load Balancer(PLB) service is stateful and is in charge of placing replicas and instances of services on nodes and ensures an even load throughout the cluster. They claim that, unlike other solutions where services are hashed onto the ring in SF, the PLB explicitly assigns each service replica Primary and Secondary nodes in the ring. It continually monitors the cluster for available resources. This allows for assignment and migration of services to underutilized nodes; more importantly, it ensures services are migrated away from a node that is about to enter a service window or in cases of over-utilization that could lead to service degradation\\
     \vspace{5mm}
 
-    The technique used for selecting placement of nodes is done via Simulated Annealing, as it is presented to provide a near optimal solution as to where services can be placed. The way the system is modeled is via resource use in the system where an even load is desired, but some constraints need to be met such as fault tolerance, avoiding replica co-location and some service might have a strict set of nodes to run on. \\
+    The technique used for selecting the placement of nodes is done via Simulated Annealing, as it is presented to provide a near-optimal solution as to where services can be placed. The way the system is modeled is via resource use in the system where an even load is desired, but some constraints need to be met, such as fault tolerance, avoiding replica co-location, and some services might have a strict set of nodes to run on. \\
     \vspace{5mm}
 
     \subsubsection{Reliable Collections}
 
-    Reliable collections provide stateful services in Service Fabric via Reliable Directories and Reliable Queues that are available for C\# and Java programming, and are promised to be:
+    Reliable collections provide stateful services in Service Fabric via Reliable Directories and Reliable Queues that are available for C\# and Java programming and are promised to be:
     \begin{itemize}
         \item Available and Fault-tolerant via replication,
         \item Persistent via disk
-        \item Efficient via asynchronous via API that are non blocking.
+        \item Efficient via asynchronous via a nonblocking API.
         \item Transnational via APIs with ACID semantics.
     \end{itemize}
 
-    One of the key differences between storage systems built on SF and other highly-available systems is that states are kept locally in the replica while also being made highly-available. This causes most reads to be local.\\
+    One of the key differences between storage systems built on SF and other highly-available systems is that states are kept locally in the replica while also being made highly available. This causes most reads to be local.\\
     \vspace{5mm}
 
-    Writes are relayed from the primary replica to secondary replicas via passive replication. A write is considered complete when the majority of secondaries acknowledge it. The relaxations allow an application to achieve weaker consistency by relaxing where a read can go, eg: always read from primary to read from secondary. \\
+    Writes are relayed from the primary replica to secondary replicas via passive replication. A write is considered complete when the majority of secondaries acknowledge it. The relaxations allow an application to achieve weaker consistency by relaxing where a read can go, e.g., always write to primary and read from secondary. \\
     \vspace{5mm}
 
-    SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable, available, self-*, and upgradeble because the lower layers assure consistency"\cite{SFpaper} \\
+    SF is presented as the only "self-sufficient microservice system that can be used to build a transactional consistent database which is reliable, available, self-*, and upgradeable because the lower layers assure consistency"\cite{SFpaper} \\
     \vspace{5mm}
 
     \paragraph{Consistency models/isolation levels}
-    SF reliable collections promise two Select-able consistency models that the user can pick. Repeatable Read and Snapshot Isolation. eg there is no promise about Serializability of the transactions.\\
+    SF reliable collections promise two Select-able consistency models that the user can pick. Repeatable Read and Snapshot Isolation. \todo[author=Mark]{maybe delete this last line.}eg, there is no promise about Serializability of the transactions.\\
     \vspace{5mm}
 
     \begin{table}[h]
@@ -1449,25 +1437,25 @@ https://jepsen.io/analyses/postgresql-12.3
             Single Entity Read & Repeatable Read & Snapshot  \\
             Enumeration, Count & Snapshot        & Snapshot
         \end{tabular}
-        \caption{isolation level defaults for Reliable Dictionary and Queue operations.}
+        \caption{Isolation level defaults for Reliable Dictionary and Queue operations.}
         \cite{SF_RC_Transactions}
     \end{table}
 
 
     \section{Programming for Service Fabric}
     
-    Development for the Service Fabric Framework is done closely resembles the Development flow for Dotnet Web applications and Kubernetes service Development, There are however tighter constraints where the application is only executable in azure as no local development environment exist for Linux. \\
+    Development for the Service Fabric Framework closely resembles the Development flow for Dotnet Web applications and Kubernetes service Development. There are however, tighter constraints where the application is only executable in azure as no local development environment exists for Linux. \\
     
-    Writing the code itself is possible via either Java or C\#. Documentation only really exist for C\#, however this documentation also seem to be outdated and lack quite a bit of information. Generally a MVC application is the best choice for architecture of the service itself where stateless or stateful variants are available.\\
+    Writing the code itself is possible via either Java or C\#. Documentation only really exists for C\#. However, this documentation also seems outdated and lacks quite a bit of information. Generally, an MVC application is the best choice for the architecture of the service itself, where stateless or stateful variants are available.\\
     
-    Debugging and testing code on the Linux implementation is highly lacking with no debug tooling available such as remote executing with a debugger or support for dump files to analyse crashes and issues within the application. This caused development to be slow paced, trail\&error and draining. i would recommend creating a working application, prior to integrating the Service Fabric functionality. On top of this using heavy logging from the application to an external store that allows for insight.
+    Debugging and testing code on the Linux implementation is highly lacking, with no debug tooling available such as remote executing with a debugger or support for dump files to analyze crashes and issues within the application. This caused development to be slow-paced, trail\&error and draining. I would recommend creating a working application before integrating the Service Fabric functionality. On top of this, using heavy logging from the application to an external store allows for insight.
    \\
-   A careful note here should also be taken as there isn't features parity between platforms which causes core functionality to be unavailable on Linux.
+   A careful note here should also be taken as there is no features parity between platforms which causes core functionality to be unavailable on Linux.
 
 
 
     \section{Comparison}
-    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Dynamo. Therefore, a introduction will be made to two of these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but a investigation of consistency and failure modes will be be done.
+    In many of the papers published by Microsoft, many comparisons are made to Cassandra, Redis, and Dynamo. Therefore, an introduction will be made to two of these as they are comparable in many aspects. The investigation will not be as deep as with SF, but consistency and failure modes will be investigated.
     
     
     
@@ -1509,111 +1497,108 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \chapter{Jepsen Test on Service Fabric Reliable collections}
 
-
     One of the goals of the thesis was to attempt to perform a Jepsen test on Service Fabric Reliable Collections subsystem. Reliable Collections powers services in Azure and is the target of this endeavor. 
-    In this chapter we will present the design, implementation and revisions of the testing suite. \\
+    This chapter will present the design, implementation, and revisions of the testing suite. \\
     \vspace{5mm}
-    To perform such a test we need to build up both a testing suite, APIs and libraries to allow for a connection between the Jepsen service and the Service Fabric core components. Therefore, a few different applications and services need to be learnt, understood, designed, implemented, tested, executed, and at last the data generated from this can be analyzed.
+    To perform such a test, we need to build up both a testing suite, APIs, and libraries to connect the Jepsen service and the Service Fabric core components. Therefore, a few different applications and services need to be learned, understood, designed, implemented, tested, executed, and finally, the data generated can be analyzed.
     
-    
-   
+
     \section{Design \& implementation}
     The Design of the services required for preforming the Jepsen test were revised multiple times following a a learn by doing methodology as I did have no prior experience with Service Fabric, Jepsen, C\# or Clojure. 
 
     \subsection{Initial Design}
 
-    The initial design of the of the testing suite contained two applications. The first one is a Service Fabric application containing a stateful and a stateless Service. The second application is a Clojure application running the Jepsen testing suite.
+    The initial design of the testing suite contained two applications. The first one is a Service Fabric application containing a stateful and a stateless Service. The second application is a Clojure application running the Jepsen testing suite.
 
     \subsubsection{Service Fabric Services}
 
-    The Service Fabric stateless service contains operation our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, add, Update, Check\&set, delete and delete all, which operated on a reliable directory datatype. The service is implemented using C\# as the lack of documentation for Service Fabric for Java made this this seem as the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server. This was made as it is the native implementation already integrated into SF, had the most documentation and was therefore deemed the safest choice to proceed with.\\
+    The Service Fabric stateless service contains endpoints our Jepsen test can interact with. These should then be routed to the correct stateful service partition. The initial design contained endpoints for insert, Add, Update, Check\&set, delete, and Delete All, which operated on a reliable directory datatype. The service is implemented using C\# as the lack of documentation for Service Fabric for Java made this seem like the better choice (as of writing, nearly all this documentation is for the C\# language). Both services will expose these endpoints via the Kestrel web server. This was made as it is the native implementation already integrated into SF, had the most documentation, and was therefore deemed the safest choice to proceed with.\\
     \vspace{5mm}
-    A flow diagram for the design of the stateful service contains the following functionality. The Stateless service simply works as a forwarding service as is simply a 1:1 mapping with partition calculations for use in routing of the request. \\
+    A flow diagram for the design of the stateful service contains the following functionality. The Stateless service works as a forwarding service as it is simply a 1:1 mapping with partition calculations for use in the routing of the request. \\
     \vspace{5mm}
     \includegraphics[scale=0.5]{images/Design_Stateful_service_1.0.drawio.png}
-    \todo[author=Jacopo]{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
+    \todo[author=Jacopo]{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is supposed to say}
 
-    This implementation contains 2 main codebases. The C\# dotnet web services that acts as a API to the reliable collections using 3 controllers for the 3 default data structures implemented in the framework, and a Clojure codebase containing the Jepsen test and a driver for connecting to the Service fabric services.
+    This implementation contains two primary codebases. The C\# dotnet web services act as an API to the reliable collections using three controllers for the three default data structures implemented in the framework and a Clojure codebase containing the Jepsen test and a driver for connecting to the Service fabric services.
 
     \subsection{Infrastructure}
-    The infrastructure is centered around Azure, using an isolated v-net containing 6 virtual machines all running Linux. Ubuntu was chosen as it's a known distribution that we are familiar with. 1 of the 6 nodes is running the Jepsen application while the 5 remaining notes are running the Service Fabric Cluster.
-    The 5 Service Fabric nodes are mostly self managing.\todo[author=Jacopo]{what does it mean mostly self managing?} Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
+    The infrastructure is centered around Azure, using an isolated v-net containing six virtual machines running Linux. Ubuntu was chosen because it is a known distribution that we are familiar with. one of the six nodes runs the Jepsen application, while the five remaining notes run the Service Fabric Cluster.
+    The 5 Service Fabric nodes are managed by Service fabric, and the configuration is deployed to them via Azure. There are cases where manual intervention is required due to the cluster becoming unhealthy and is unable to heal. in these cases, a full reimage of the cluster is performed. ,  Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
 
-    The Jepsen host is manged and accessed via ssh. For deployment a deployment pipeline was considered but was decided against due to development overhead. A solution using scp was chosen instead due to the quicker development cycles and the fact that only a single machine required access to the deployment. 
+    The Jepsen host is manged and accessed via ssh. A deployment pipeline was considered but was decided against due to development overhead. A solution using SCP was chosen instead due to the quicker development cycles and that only a single machine required access to the deployment. 
     
 
-    The topology of the network is arranged such that the 6 nodes are located in the same VLAN to keep connections local and prevent outside connection from causing issues with the test.\\
+    The network's topology is arranged such that the six nodes are located in the same VLAN to keep connections local and prevent outside connections from causing issues with the test.\\
     \includegraphics[scale=0.3]{images/topology.png}
     \\
-    \todo[author=Jacopo]{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is suppose to say}
+    \todo[author=Jacopo]{missing description of this figure. What are these components? Time allowing provide some text explaining what this figure is supposed to say}
 
-    All traffic resides within the cluster. The load balancer is part of the standard service fabric deployment and allows for connection to management interface, deployments and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence of the results.
+    All traffic resides within the cluster. The load balancer is part of the standard service fabric deployment and allows for connection to the management interface, deployments, and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence on the results.
 
     \subsubsection*{Node Sizes}
 
-    The initial node size contained 2vcpu, 8 GBs of ram and 20 GB local storage, as this was thought be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to setup and get ready for any given deployment. This problem was resolved by upgrading the size of the nodes to 4vcpu, 16GB ram and 80GB local storage per node. This configuration resulted in a more well-behaved cluster. This node size was kept for the reminder of the project. However, the Jepsenhost is slightly under-dimensioned compared to the workload it handles when computing on the result of the test. This is primary due to out of memory errors that could be solved by lowering the search space of the test or increasing the memory of the node itself.
+    The initial node size contained 2vcpu, 8 GBs of ram, and 20 GB of local storage, as this was thought to be enough to handle the workload of the test. This was later revised as the nodes had issues with disk space and often took a long time to set up and get ready for any given deployment. This problem was resolved by upgrading the size of the nodes to 4vcpu, 16GB Ram, and 80GB local storage per node. This configuration resulted in a more well-behaved cluster. This node size was kept for the remainder of the project. However, the Jepsenhost is slightly under-dimensioned compared to its handling when analyzing the test result. This is primarily due to out-of-memory errors that could be solved by lowering the test's search space or increasing the node's memory.
 
 
     \subsection{Services}
-    As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a stateless front-end that provides this data to clients via an API, a driver that handles the connection to this API and finally the Jepsen test suite itself consisting of workloads, generator, checker and Nemesis module..
+    As mentioned earlier, running these tests required multiple components. The stateful service that hosts the reliable collections from SF Reliability subsystem, a stateless front-end that provides this data to clients via an API, a driver that handles the connection to this API, and finally the Jepsen test suite itself consisting of workloads, generator, checker and Nemesis module.
 
     \subsubsection{SF services}
-    Microsoft recommends using two services, such that a Statefull service is never directly exposed to the internet but where a stateless services acts a proxy. This provides multiple benefits but also a few negatives. The prime benefit is abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. Time connections are held open should also be reduced to due round trips times being lower, which should allow for higher throughout.
+    Microsoft recommends using two services, such that a Stateful service is never directly exposed to the internet but where a stateless service acts as a proxy. This provides multiple benefits but also a few negatives. The prime benefit is abstracting from the back-end and adding a layer of validation, routing, and protection of the back-end service. Time connections are held open should also be reduced to due round trips times being lower, which should allow for higher throughput.
 
     \paragraph*{Stateful Reliable collection service}
 
-    The stateful services provides 3 separate controllers that each expose one of the built in reliable collection data types, These 3 being: Reliable Dictionary, Reliable Queue, and Reliable Concurrent Queue. Faults are also handled at this stage where faults caused by transactional issues are returned to the client via http status codes\cite{wikihttpstatuscodes}: node not primary, accepted, result not found, etc. This should allow for easier diagnoses and handling of faults when they are parsed by the Clojure application.
+    The stateful services provide three separate controllers that expose one of the built-in reliable collection data types, These three being: Reliable Dictionary, Reliable Queue, and Reliable Concurrent Queue. Faults are also handled at this stage where faults caused by transactional issues are returned to the client via HTTP status codes\cite{wikihttpstatuscodes}: node not primary, accepted, result not found, and internal server error. This should allow for more straightforward diagnoses and handling of faults when parsed by the Clojure application.
 
-    The fronted stateless service simply provides these same APIs but with wrappers and routing in case of a portioned design. This layer could also be used to build additional features, but this was not the case as only the bare transactions supported by the reliable collections layer was needed.
+    The fronted stateless service provides these same APIs but with wrappers and routing in a portioned design. This layer could also be used to build additional features, but this was not the case as only the bare transactions supported by the reliable collections layer were needed.
 
     \paragraph*{Jepsen test suite}
     
-    The design of the Jepsen test suite aims to use skeleton code from a past Jepsen test to start the project as it gives a template of what functionality should be implemented. These implementations are still custom but it gives a pointer to what the bare minimum is to have a functioning application.
+    The design of the Jepsen test suite aims to use skeleton code from a past Jepsen test to start the project as it gives a template of what functionality should be implemented. These implementations are still custom, but it gives a pointer to the bare minimum of a functioning application.
     \\
-    The first module is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java but depending on implementation issues or compatibility issues Clojure might be the choice. This module should handle connections, exceptions, and parse values in both directions.\todo[author=Jacopo]{did you use Java or Clojure. Here write the final result, not speculation.}
+    The first module is a Driver that allows our test to connect to our stateless API. Options here are to either write it in Java or Clojure. An attempt will be made to implement this in Java, but Clojure might be the choice depending on implementation issues or compatibility issues. This module should handle connections, exceptions and parse values in both directions.\todo[author=Jacopo]{did you use Java or Clojure. Here write the final result, not speculation.}
     \\
-    The Jepsen suite should use a modular setup that allows interoperability between multiple workloads, a runner that allows for test tuning, db that deploys, configures and operates on the running datastore, a client runs the transactions via the driver, nemesis that induces faults in the cluster and 3 workloads, queue, concurrent queue, and dictionary. One workload for each of the transactional data types exposed by Service Fabric.
+    The Jepsen suite should use a modular setup that allows interoperability between multiple workloads, a runner that allows for test tuning, db that deploys, configures, and operates on the running datastore; a client runs the transactions via the driver, a nemesis that induces faults in the cluster and three workloads, queue, concurrent queue, and dictionary. One workload for each of the transactional data types exposed by Service Fabric.
     \begin{itemize}
-        \item The runner module is the main class and handles defaults, CLI input and workload selection along with configuration of common behavior shared between workloads, nemesis, db, along with other features that are mutual for all workloads.
+        \item The runner module is the main class. It handles defaults, CLI input, and workload selection along with the configuration of common behavior shared between workloads, nemesis, db, and other mutual features for all workloads.
         \item   The db module should handle spinning up and tearing down the services along with functions for stating, stopping, and killing services and workers in the cluster.
 
-  \item  The nemesis modules should contain the functions that kill, partition or in other ways introduce failures in the cluster.
+  \item  The nemesis modules should contain the functions that kill, partition, or in other ways introduce failures in the cluster.
 
-  \item 3 Workers, that act on different data types and each requiring a separate generator, checker and client.
+  \item 3 workloads act on different data types, each requiring a separate generator, checker, and client.
     \end{itemize}
     
-    Of the 3 workloads designed only one should be used for the final testing as they should all exhibit the same symptoms if issues exists, but all 3 are initially implemented as to allow for deciding on which type should be focused on.
+    Only one should be used for the final testing of the three workloads designed. They should all exhibit the same symptoms if issues exist, but all three are initially implemented to decide which type should be focused on.
     
 
   
-
 \subsubsection{Implementation of the initial design}
 
-The initial design targeted the reliable collection dictionary datatype. It presented a few issues with the design and implementational details that were not considered. The biggest obstacles when developing for Service Fabric the non feature parity between Linux and the windows implementation, this is caused by two parallel implementations where some core functionality isn't yet available in the Linux implementation. This resulted in unfavorable conditions with no debugging support, dump files that weren't readable, lack of documentation and black box behavior as local code execution wasn't possible. \\ \vspace{5mm}
-A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries and rolling back to older versions of frameworks used. It should be noted that the Service Fabric framework was kept at the same release while .NET and similar aspects where rolled back to older releases.
+The initial design targeted the reliable collection dictionary datatype. It presented a few issues with the design and implementational details that were not considered. The biggest obstacle when developing for Service Fabric is the non-feature parity between Linux and the Windows implementation; this is caused by two parallel implementations where some core functionality is not yet available in the Linux implementation. This resulted in unfavorable conditions with no debugging support, dump files that were not readable, lack of documentation, and black box behavior as local code execution was impossible. \\ \vspace{5mm}
+A large amount of time was spent debugging, changing configuration files, stripping any unneeded libraries, and rolling back to older versions of frameworks used. It should be noted that the Service Fabric framework was kept at the same release while .NET and similar aspects were rolled back to older releases.
 
-All of these attempts were however frugal, after spending newly 2 months deleting all code, restarting from scratch using a different approach. An attempt at the implementations via Java, which was also unsuccessful, and finally going back to C\#. After getting a working solution of the project on a Service Fabric Cluster running on a windows host, i reached out to Mikkel Hegnhøj from Microsoft for assistance.
+However, all of these attempts were frugal, after two months deleting all code and restarting from scratch using a different approach. An attempt was made via an implementation via Java, which was also unsuccessful, and finally went back to C\#. After getting a working solution for the project on a Service Fabric Cluster running on a Windows host, I reached out to Mikkel Hegnhøj from Microsoft for assistance.
 
-The issue turned out to be 2 fold.
+The issue turned out to be twofold.
 \begin{itemize}
     \item .NET needing to be rolled back to 3.5
-    \item The entry point having to be defined via .NET and the name of the DLL file. This was something I attempted prior by using an entry point via a bash script, as documented in the official doc. 
+    \item The entry point has to be defined via .NET and the name of the DLL file. As documented in the official doc, I attempted something like this by using an entry point via a bash script. 
 \end{itemize}
 
-Finally I had a working version on Linux, or rather, I had a way to run my application on Linux as the issues didn't stop here. The Feature parity was still there. The DNS routing service is missing from the Linux implementation, this required endpoints to be hard coded, where each service was bound to a given port. This introduced a limit of 1 replica of a given service per node. This greatly reduce horizontal scaling as we need an extra node per partition. Running larger partitions on each node is also an option, but from a performance, availability, and reliability perspective it's much more effective having lots of smaller partitions, instead of one large database instance that introduces higher risks of deadlocking and along with other issues.
+Finally, I had a working version on Linux, or rather, I had a way to run the application on Linux as the issues did not stop here. The Feature parity was still there. The DNS routing service is missing from the Linux implementation; this required endpoints to be hardcoded, where each service was bound to a given port. This introduced a limit of 1 replica of a given service per node. This dramatically reduces horizontal scaling as we need an extra node per partition. Running larger partitions on each node is also an option. However, from a performance, availability, and reliability perspective, having lots of smaller partitions is much more effective than one large database instance that introduces higher risks of deadlocking and other issues.
 
 
 \paragraph*{Implementation details SF}
 
-The design uses 2 service: a  stateless service that processes the the incoming request and routes it to the back-end service. The get key endpoint will be used to outline the design. All the stateless endpoints closely resemble each other, therefore only this will be included here.\\
+The design uses a stateless service that processes the incoming request and routes it to a back-end service. The get key endpoint will be used to outline the design. All the stateless endpoints closely resemble each other; therefore, only this will be included here.\\
         
 \paragraph*{Stateless Service}
-The Stateless service is implemented via Model View Controllers (MVC) that expose the website via a kestrel web server. Each endpoint route is defined via flags which define protocol and request type followed by paths and an endpoint name. A http get request using a path variable as a parameter, The \textbf{"[HttpGet("{key}")]"} flag is used. This is then followed by a function that allows the MVC design pattern, but this function a Async function that takes the key as a variable and returns a \textbf{"Task<IActionResult>"}. The used return type allows for the return value to be either JSON or predefined methods to return bad request, No Content, or other http response codes without requiring explicit handling of them.
+The Stateless service is implemented via Model View Controllers (MVC) that expose the website via a kestrel web server. Each endpoint route is defined via flags which define protocol and request type followed by paths and an endpoint name. A HTTP get request using a path variable as a parameter, The \textbf{"[HttpGet("{key}")]"} flag is used. This is then followed by a function that allows the MVC design pattern, but this function is an Async function that takes the key as a variable and returns a \textbf{"Task<IActionResult>"}. The used return type allows for the return value to be either JSON or predefined methods to return bad requests, No Content, or other HTTP response codes without requiring explicit handling.
 \begin{lstlisting}[language=csh]
 public async Task<IActionResult> Get(string key)
 \end{lstlisting}   
 
-The underlying Service Fabric framework exposes an endpoint that is used to retrieve all partitions of given stateful service. This is coupled with the internal routing in the transport subsystem, such that any service in the cluster can easily and securely be found and reached. 
+The underlying Service Fabric framework exposes an endpoint used to retrieve all partitions of a given stateful service. This is coupled with the internal routing in the transport subsystem, such that any service in the cluster can easily and securely be found and reached. 
 \begin{lstlisting}[language=csh]
     ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 \end{lstlisting}   
@@ -1624,7 +1609,7 @@ This allows us to query the individual partitions, where any aggregate operation
 \end{lstlisting}  
 \paragraph*{Stateful Service}
 
-The stateful service was implemented via the MVC patterns as well and followed a design that kept simplicity in mind where each endpoint exposed and preformed one operation and committed this change to the datastore. This allowed for querying the database in a quick and consistent manner even if data split among  partitions.
+The stateful service was implemented via the MVC patterns and followed a design that kept simplicity in mind where each endpoint exposed and performed one operation and committed this change to the datastore. This allowed for querying the database quickly and consistently, even if data split among partitions.
 \begin{lstlisting}[language=csh]
         [HttpGet("{key}")]
         public async Task<IActionResult> Get(string key){
@@ -1636,72 +1621,73 @@ The stateful service was implemented via the MVC patterns as well and followed a
 \end{lstlisting}   
 
 \paragraph*{Implementation details Clojure}
+Doing the initial implementation of the Jepsen test, quite a few aspects were somewhat chaotic. Programming practices do not carry over from object-oriented programming into dynamic and functional programming. The Clojure programming language was treated as a learn by doing. This resulted in the first implementation of the application functioning, but not without issues. Most of these were a cause of not fully understanding the language used and how the information flowed within it. This caused issues with HTTP requests being mishandled and responses not being parsed correctly into the history such that transactions with a status of failed were considered valid in the history used to check the consistency of the model.
  
- Doing the initial implementation of the jepsen test, quite a few aspect of the program were rather chaotic. Poor programming practices that don't carry well over from object oriented  programming, into dynamic and functional programming. The Clojure programming language was treated as a learn by doing. This resulted in the first implementation of the application functioning, but not without issues. most of these were a cause of not fully understanding the language i was using and how the information flow was handled. this caused issues with HTTP requests being handled incorrectly and responses not being parsed correctly into the history such that transactions with a status of failed were considered valid in the history used to check the consistency of the model.
- 
- This caused the whole application to exhibit a broad range of unintended and weird behavior, resulted from asynchronous distributed systems being complex and concurrent applications handling 100s, or 1000s of threads requiring careful planning and considerations.
-        
-        
-The Clojure application itself is split into different modules that expose and classes. the core modules required to make up a jepsen test suite requires a runner, generator, nemesis(a type of Chaos monkey)\cite{Choasmonkey}, db, client, connector/driver and workloads.
+This caused the whole application to exhibit a broad range of unintended and weird behavior, resulting from asynchronous distributed systems being complex and concurrent applications handling 100s or 1000s of threads requiring careful planning and considerations.
+       
+       
+The Clojure application itself is split into different modules that expose classes. the core modules required to make up a Jepsen test suite require a runner, generator, Nemesis (a type of Chaos monkey)\cite{Choasmonkey}, db, client, connector/driver, and workloads.
 \begin{itemize}
-    \item The \textbf{Runner} contains the the majority of the configurations and a CLI interface that exposes options and settings where generalized values for the tests are specified. This is also where a select Workload is chosen for running the test. in total 3 different workloads were implemented that each require a generator, checker, client, and Nemesis.
-        
-   \item  The \textbf{Generator} class generate a list of transaction to execute, which can later be used to check the transaction history for any anomalies. this is closely linked with the checker.
-        
-   \item  The \textbf{checker} checks for anomalies in the transaction history, This could be by either checking if all committed values exist in the data store after the test, if there are transactional violation in the data store, if odd behavior like the case of Casandra where multiples objects are merged due to conflicts that might lead to unintended outcome. 
-        
-  \item  the \textbf{client} interface maps Jepsen operations to a connector or driver calls for a given data store. This module processes the map generated by our generator into transactions, parses the transaction into a format the driver understands and back into a format jepsen understands as well as handling any errors, exception as well as basic check if the operation failed and succeeded and logs this to the internal transaction history handled by jepsen.
+   \item The \textbf{Runner} contains the majority of the configurations and a CLI interface that exposes options and settings where generalized values for the tests are specified. This is also where a select Workload is chosen for running the test. Three different workloads were implemented that each required a generator, checker, client, and Nemesis.
+       
+  \item  The \textbf{Generator} class generates a list of transactions to execute, which can later be used to check the transaction history for any anomalies. This is closely linked with the checker.
+       
+  \item  The \textbf{checker} checks for anomalies in the transaction history, This could be by either checking if all committed values exist in the data store after the test, if there are transactional violations in the data store, if odd behavior like the case of Casandra where multiples objects are merged due to conflicts that might lead to an unintended outcome. 
+       
+ \item  the \textbf{client} interface maps the generated list of transactions to the driver calls for a given data store. This module processes the map generated by our generator into transactions, parses the transaction into a format the driver understands and back into a format Jepsen understands as well as handling any errors, exception as well as basic check if the operation failed and succeeded and logs this to the internal transaction history handled by Jepsen.
 \end{itemize}
-        
-The Jepsen application required a driver to be written for jepsen to be able to interact with the API exposed by the stateless service, This could have been written in either java or Clojure. An attempt was made to implement this in Java with some success but was scrapped and a implementation was done in Clojure instead. The Driver preforms http/https calls to the service fabric cluster and handles some input validation as well as connection management, fault handing of connection, as well as parsing of any faults and results returned by the service into a format compatible with Clojure.
-        
+       
+The Jepsen application required a driver to be written for Clojure to interact with the API exposed by the stateless service; This could have been written in either Java or Clojure. An attempt was made to implement this in Java with some success but was scrapped, and implementation was done in Clojure instead. The driver performs HTTP/HTTPS calls to the service fabric cluster and handles input validation, connection management, fault handling of connection, and parsing any faults and results returned by the service into a format compatible with Clojure.
+       
 
 \subsubsection{Resolving issues with the design.}
-    
+   
 
-The initial version of the service fabric has some issues with the stateless service where the connection buffer simply overflew due to a high number of connections from the jepsen host, which caused issues for connections between the stateless service and the underlying state full services that provided the data.
+The initial version of the service fabric has some issues with the stateless service. Due to a high number of connections from the Jepsen host, the connection buffer overflow caused issues for connections between the stateless service and the underlying state-full services that provided the data.
 
-A few considerations on how this issue could be resolved was considered, lowering the latency between nodes in the cluster, removing the stateless layer and connect directly to the state full service. A choice here was made to scrap the initial implementation for Service Fabric and redesign it to only require a stateful service. The transactions would behave the same in a  single partition compared to a cluster with 500 partitions, as each "master" node will behave the same, either way with the implementation that service fabric exposes. The service should therefor have a master node as well as a few active replicas that allow for checking of replication status if this should be required down the line. this resolves and simplifies two things. Routing to the separate partitions is no longer an issue as the stateless "proxy" node is removed, we no longer need to consider routing data to the correct node from our Clojure connector, where it's possible to route all traffic to the primary or only route writes to the primary while distributing the reads to check for replication issues. This allows for testing of the replication engine in the future.
+A few considerations on how this issue could be resolved were considered, lowering the latency between nodes in the cluster, removing the stateless layer, and connecting directly to the stateful service. A choice here was made to scrap the initial implementation for Service Fabric and redesign it only to require a stateful service. The transactions would behave the same in a  single partition compared to a cluster with 500 partitions, as each "primary" node will behave the same, either way with the implementation that service fabric exposes. The service should therefore have a primary node as well as a few active replicas that allow for checking of replication status if this should be required down the line. This resolves and simplifies two things. Routing to the separate partitions is no longer an issue as the stateless "proxy" node is removed, we no longer need to consider routing data to the correct node from our Clojure connector, where it is possible to route all traffic to the primary or only route writes to the primary while distributing the reads to check for replication issues. This allows for testing of the replication engine in the future.
 
- \subsubsection{Implementation of the revised design}
+\subsubsection{implementation of the revised design}
 
-The implementation of this \todo[author=Jacopo]{I lost it. what is this revised design? The structure of this chapter is not clear. You jump taking about designs. You should make more clear that you are talking about the initial design early and then move to the final design. Now is very confusing.} revised design was supposed to be fairly straight forward, however the lack of feature parity poked its ugly head out again.\todo[author=Jacopo]{too colloquial. You are writing a thesis, not talking to friends} Issues started showing up that which\todo[author=Jacopo]{not English} were due to a change in the release and forced update to a new version service fabric, This changed the behavior of some warns to instead cause errors. this exposed my inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out but a lot of times was lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure which turned the development cycle upside down as I had no way to execute the code without service fabric cluster but the code wouldn't run on service fabric cluster due to error code that lacked definition or documentation. The issue here ended up being related to changes in allowed port ranges that weren't allowed to be used by services, port 80 and port 443. The applications where therefor killed. These warnings were however not displayed correctly in the Linux distribution so\todo[author=Jacopo]{so?} tweaking code and settings, while scouring the internet was the only apparent solution for these issues.
+The implementation of this \todo[author=Jacopo]{I lost it. what is this revised design? The structure of this chapter is not clear. You jump talking about designs. You should clarify that you are talking about the initial design early and then move to the final design. Now is very confusing.} revised design was supposed to be fairly straightforward. However, the lack of feature parity started causing issues. These started showing up after an update to a new version of Service Fabric, a change to the behavior of warning to instead throw errors. This exposed the inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out, but a significant amount of time was again lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure. This turned the development cycle upside down as there is no way to execute the code without a Service Fabric cluster.
+\\ \vspace{5mm}
+Nevertheless, the code would not run on the Service Fabric cluster due to an error code that lacked definition or documentation. The issue here was related to changes in allowed port ranges that were not allowed to be used by services, port 80 and port 443. The applications were therefore killed. These warnings were not displayed correctly in the Linux distribution so\todo[author=Jacopo]{so?} tweaking code and settings while scouring the internet was the only apparent solution for these issues.
 
 \paragraph*{Implementation changes for the SF Application}
-The second iteration of the Service Fabric application removes the stateless layer of the application, The aim of these changes was to increase the throughput of the service by removing  layer of network traffic and routing. This required moving the handling of request, parsing and verification to the stateless service.   \\
+The second iteration of the Service Fabric application removes the stateless layer of the application. These changes aimed to increase the throughput by removing a layer of network traffic and routing. This required moving the request handling, parsing, and verification to the stateful service.   \\
 
-The changes required here weren't overly complex and only required merging the code together and ensure that only valid data was used in transactions. 
+The changes required here were not overly complex and only required merging the code and ensuring that only valid data was used in transactions. 
 \\
 
 \paragraph*{Implementation changes for the Clojure Application}
-This design iteration didn't required any major changes to the Clojure application, the changes were only on the routing side of service fabric. this did require minor changes to the connector such that the headers of the requests such that\todo[author=Jacopo]{such that such that (and as always dots not followed by capital letter} they were valid as internal service fabric requests. Otherwise  the connections from the Clojure application were simply rejected by the stateful application. Routing was defined such that the primary node was connection to by default as was defined in the code itself. This should probably have been implemented as a command line configuration but the direct solution was chosen as that endpoint would have to be defined either way. 
+This design iteration did not require any significant changes to the Clojure application. The changes were only on the routing side of Service Fabric. This did require minor changes to the connector such that the headers of the requests such that\todo[author=Jacopo]{such that (and as always dots not followed by capital letter} they were valid as internal service fabric requests. Otherwise, the connections from the Clojure application were rejected by the stateful application. Routing is defined such that the primary node is connected to by default. This should probably have been implemented as a command-line configuration, but the immediate solution was chosen as that endpoint would have to be defined either way. 
 
 
 \subsubsection{Final iteration of the design.}
-At this point in the process and major flaw was realized and required major changes to how transactions were handled. in other words, the generator, checker, driver, client had to be rewritten on the Clojure side and most of the code on the Service Fabric side required the same treatment. 
+At this point in the process, a significant flaw was realized and required significant changes to how transactions were handled. In other words, the generator, checker, driver, and client had to be rewritten on the Clojure side, and most of the code on the Service Fabric side required the same treatment. 
 \\
-The prior Designs treated the system as a BASE data-store, where we just preformed single operation transactions, where we required multi operation transactions to test transnational data store, where a transaction can contain a  arbitrary long ordered list of operations to execute. 
+The prior Designs treated the system as a BASE data store. We performed single operation transactions, where multi-operation transactions to test the transactional data store, where a transaction can contain an arbitrary long ordered list of operations to execute. 
 \\
-A change was made to the network topology where all nodes were added to a proximity group that should reduce any latency or keep it to a minimal and ensure that outside forces such as bottle necked routing or switching gear isn't affecting the test results.  \\
+A change was made to the network topology. All nodes were added to a proximity group that should reduce any latency or keep it to a minimum and ensures that outside forces such as bottlenecked routing or switching gear do not affect the test results.  \\
 
 
-\paragraph*{The Stateless service}
+\paragraph*{Stateless service}
 
-The changes required for the Service fabric cluster required changing how transactions were passed to the service, before a URI path variables were used, For transactions requiring multiple operations this isn't viable, The API was changed to accepting a transaction stored in JSON via URI parameters. This allows for greater flexibility, and a standardized way to pass information and configuration between the two services if needed. 
+The changes required for the Service fabric cluster required changing how transactions were passed to the service before URI path variables were used. For transactions requiring multiple operations, this is not viable. The API was changed to accepting a transaction stored in JSON via URI parameters. This allows for greater flexibility and a standardized way to pass information and configuration between the two services if needed. 
 
-The way this should be implemented is by first parsing the incoming transaction JSON into iterable format and simply iterate over it preforming the required sub operations of a given transaction and committing afterwards.
+This should be implemented by parsing the incoming transaction JSON into an iterable format and iterating over it, performing the required sub-operations of a given transaction, and committing afterward.
 
 \paragraph*{Clojure application}
 
-The jepsen application requires significant redesign. Centered around generation of transactions instead of sub operations, Starting with the driver where the choice is to add a new interface that requires new code that handles transactions instead of sub operations, On top of the Driver layer the Client module sits, for this a change in design is required that handles the new data type, complexity added by it. where it should parse the incoming transactions, pass this on to the driver, where verification and fault handling should occur when a result or exception is returned. The Generator should generate transaction containing a list of operations, here Jepsen Elle module provides functionality that eases the implementation of both the generator and the checking for the generated ordering.
+The Jepsen application requires significant redesign. Centered around the generation of transactions instead of sub-operations, Starting with the driver where the choice is to add a new interface that requires new code that handles transactions instead of sub-operations, On top of the Driver layer, the Client module sits, for this, a change in design is required that handles the new data type, complexity added by it. It should parse the incoming transactions pass this on to the driver, where verification and fault handling should occur when a result or exception is returned. The generator should generate transactions containing a list of operations. Here, the Jepsen Elle module provides functionality that eases the generator's implementation and the checking for the generated ordering.
 
 \subsubsection{Implementation of the final design}
 
-\paragraph*{The Stateless service}
+\paragraph*{Stateless service}
 
-The changes to the stateless services required designing a new API endpoint which collected all functionaility of the existing endpoints into a single MVC. For the implementation the use of tools such as Postman, dotnetfiddle and curiousconcept JSON tool were used, This allowed testing concepts and code idea prior to implementing them for the Service Fabric cluster. The implementation was still time consuming due to the lack of debugging tools and generally black box behavior of Service Fabric. stemming from the inability  to run the application locally. and the cluster only returning internal server codes that wasn't usable for debugging of the solution. The issue here turned out to be wrong documentation, which ended requiring a few days of investigation prior to being able to solve the issue. but it also summarizes the entire development process so far.\\ \todo[author=Jacopo]{ be aware that this can be read also as "I can not read the documentation good enough. Note that often the failures are hidden in the final work. Here you chose to describe the failures in every step but this can give also the image to the external reviewer of someone that can not do the job properly"}
+The changes to the stateless services required designing a new API endpoint that collected all functionality of the existing endpoints. For the implementation use of tools such as Postman, dotnetfiddle, and curiousconcept JSON tool was used. This allowed testing concepts and code ideas before implementing them for the Service Fabric cluster. The implementation was still time-consuming due to the lack of debugging tools and generally black-box behavior of Service Fabric. Stemming from the inability to run the application locally, the cluster returned internal server codes that were not usable for debugging the solution. The issue here turned out to be wrong documentation, which ended up requiring a few days of investigation prior to solving the issue. It also summarizes the entire development process so far.\\ \todo[author=Jacopo]{ be aware that this can also be read as "I can not read the documentation good enough. Note that often the failures are hidden in the final work. Here you chose to describe the failures in every step, but this can also give the image to the external reviewer of someone that can not do the job properly"}
 
-Solutions such as implementing application logging or application performance monitoring could have given insight as to why the application didn't behave as expected. Looking at a lot of things in hindsight plenty of poor decisions were made that would be changed and the whole design mythology of the project might be done in a different manner.\todo[author=Jacopo]{this are consideration better to do in the conclusion}
+Solutions such as implementing application logging or application performance monitoring could have given insight into why the application did not behave as expected. Looking at many things in hindsight, plenty of poor decisions were made that would be changed, and the whole design mythology of the project might be done differently.\todo[author=Jacopo]{this are consideration better to do in the conclusion}
 
 \vspace{5mm}
 
@@ -1716,7 +1702,7 @@ The JSON data passed to the Jepsen service is of the following format, It's simp
 {      "operation":"abort"      }  ]}
 \end{lstlisting}  
 
-The revised stateless service uses the transaction JSON by parsing it into a native JSON object in .Net and simply loops over it and checks for operation types and simply executes them according to the type, and ads the result of the operation to a result list.
+The revised stateless service uses the transaction JSON by parsing it into a native JSON object in .Net and loops over it and checks for operation types, simply executes them according to the type, and ads the result of the operation to a result list.
 \begin{lstlisting}[language=csh]
 [HttpPut]
 public async Task<IActionResult> Put(){
@@ -1730,51 +1716,51 @@ public async Task<IActionResult> Put(){
      return this.Json(result);}
 \end{lstlisting}  
 
-In case of aborts the cases are handling by a try catch that returns the state of the transaction as aborted along with why a given transaction was aborted to allow for analysis of this later.
+In the case of exceptions, the cases are handled by a try-catch that returns the state of the transaction as aborted along with why a given transaction was aborted to allow for later analysis.
 
 \paragraph*{Implementation changes to the Jepsen Clojure application.}
 
 
-The changes to the Jepsen application required starting anew of many of the modules. in places where this was viable these changes were implemented as a parallel execution path in case the older code might be relevant, in other cases the older code was simply discarded in favor of the new implementation.
+The changes to the Jepsen application required starting anew of many of the modules. In places where this was viable, these changes were implemented as a parallel execution path in case the older code might be relevant; in other cases, the older code was discarded in favor of the new implementation.
 \\
 \vspace{5mm}
-A entirely new implementation of the Driver was required. The modules retrieves a Clojure Map that is parses into JSON verifying the validity of the transaction, This payload is then packed into a get request where relevant meta data is added. For the returned payload a check if first preformed to handle any exception throw in case of a network issues or error, secondly a check is preformed to check what the commit status of the transaction is. if it's aborted or ended in a different failure, and lastly if the return status is good, the return values are parsed and returned to our Client module.
+An entirely new implementation of the driver was required. The modules receive a Clojure Map that is parsed into JSON verifying the transaction's validity; This payload is then packed into a get request where relevant metadata is added. A check is first performed on the returned payload to handle any exceptions or errors. Secondly, a check is performed to check the transactions commit status. If it is aborted or ended in a different failure, and lastly, if the return status is good, the return values are parsed and returned to our Client module.
 \\
 \vspace{5mm}
-The Client Module was started a new that handled multi operation transactions. here the requirement for the module was the  implementation of code to handle preparing the map,  as well as checking and verifying the values returned from the driver. The payload is prepared by parsing the Clojure map into a JSON compatible format and when retrieving the data it should verify the values, and check the status of the returned value as well as storing the returned values in our history for later comparison.
+The Client Module was restarted to handle multi-operation transactions. Here the module's requirement was the implementation of code to handle preparing the map and checking and verifying the values returned from the driver. The payload is prepared by parsing the Clojure map into a JSON-compatible format. When retrieving the data, it should verify the values, check the status of the returned value, and store the returned values in our history for later analysis.
 \\
 \vspace{5mm}
     
-The changes for the Generator and checker shifted a lot of the heavy lifting from custom generators and Checkers into using Elle where the generated transactions are unique to ensure traceability and the checker then using these unique values to check for phenomenon via directed serialization graphs rules.
+The changes for the Generator and checker shifted a lot of the heavy lifting from custom generators and Checkers into using Elle, where the generated transactions are unique to ensure traceability. The checker then uses these unique values to check for phenomena via directed serialization graphs rules.
 \\
 \vspace{5mm}
 
 \subsubsection{Running the test}
 
-The testing suite is run in Azure using 6 nodes. 5 for service fabric and 1 for the jepsen host. Service Fabric is in charge of cluster for Orchestration. deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script, The Jepsen test code is deployed to the Jepsen node test node. From here the jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time skew , and other failures and issues.  Doing the test the systems take care of themselves and depending on the length of the test you can either remain connected and follow the tail of the output or reconnect at a later time to retrieve the results. The test outputs Client side transaction logs, as well as any issues and results from the test with issues found by the checker. then means the test data can be analysed with further tools or manually checked for issues that aren't covered by automatic testing.
+The testing suite is run in Azure using six nodes. Five for service fabric and 1 for the Jepsen host. Service Fabric is in charge of the cluster for Orchestration. Deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script; The Jepsen test code is deployed to the Jepsen node test node. The Jepsen node can connect to the 5 Service Fabric nodes via SSH to induce crashes, time skew, and other failures and issues. During the test, the systems take care of themselves. Depending on the length of the test, the tester can either remain connected during the test and follow the tail of the output or reconnect later to retrieve the results. The test outputs Client-side transaction logs containing all issues and results from the test enriched with issues found by the checker. This means the test data can be analyzed with different tools or manually checked for issues not covered by automatic testing.
 
-\todo[author=Jacopo]{how long do they run, how many times have you repeated them. If someone has to reproduce what you did he or she will have hard time understanding what to do with such a scarce description}
+\todo[author=Jacopo]{how long do they run, how many times have you repeated them. If someone has to reproduce what you did, he or she will have a hard time understanding what to do with such a scarce description}
 
 
-\subsubsection{Issues doing the Design and implementation stages.}
+\subsubsection{Issues during the Design and implementation stages.}
 
-For Service Fabric Linux and windows versions of the framework is far from interchangeable,\todo[author=Jacopo]{english!} This results in applications and services that function on one version to fail on the other. This especially presented issues as the local development environment provided by Microsoft might right an application, but the same application would fail to run or crash on cluster, this issue was further concatenated by visual studio being unable to load dump files that would allow a debugger to trace why the applications from the cluster weren't functioning as intended. other debugging options such as the remote debugger feature wasn't compatible with the Linux cluster either which meant that doing the development we were often flying blind. There was also some minor issues with the Cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required a entire new deployment of the cluster and any data that might have been in the cluster to be lost. this was not an issue for this experiment but could have been a significant issues in a production scenario with data that wasn't redundantly stored on a different data store.
+Service Fabric Linux and Windows versions of the framework are far from interchangeable,\todo[author=Jacopo]{english!} This results in applications and services that function on one version failing on the other. This especially presented issues as the local development environment provided by Microsoft might write an application, but the same application would fail to run or crash on the cluster. This issue was further concatenated by Visual Studio being unable to load dump files that would allow a debugger to trace why the applications from the cluster were not functioning as intended. Other debugging options, such as the remote debugger feature, were not compatible with the Linux cluster, which meant we were often flying blind doing the development. There were also some minor issues with the cluster becoming unhealthy/corrupt and nodes not being configured correctly after a re-image that required an entirely new deployment of the cluster and any data that might have been in the cluster to be lost. This was not an issue for this experiment but could have been significant issues in a production scenario with data not redundantly stored on a different data store.
 
 \newpage
 \section{Results}
 
 \subsection{Introduction}
 
-The results from the experiment using Jepsen to check whether Service Fabric Living up to the promises presented by Microsoft the below finding where discovered. 
+The results from the experiment using Jepsen to check whether Service Fabric Living up to the promises presented by Microsoft the below findings were made. 
 \begin{itemize}
-    \item The consistency provided by Service fabric does not live up to the isolation guaranteed provided by Repeatable read as promised by Microsoft, Service Fabric does also not make use of the relaxations permitted by this consistency model, In the sense that it handles locking poorly resulting deadlocks and timeouts.
+    \item The consistency provided by Service fabric does not live up to the isolation guaranteed provided by Repeatable read as promised by Microsoft. Service Fabric does also not make use of the relaxations permitted by this consistency model, In the sense that it handles locking poorly, resulting in deadlocks and timeouts.
     \item Contains :G1a, :G1b, :G0 violation most ACID Consistency models.
 \end{itemize}
 
 
 
 \subsection{Consistency model results.}
-The Consistency model results shows that Service Fabric does not live up to the requirements for read-atomic and read-committed from this it can be deduced that the requirements for any stricter consistency models is also not met. Due the this the is part of the disheartening results from the Jepsen test 
+The Consistency model results show that Service Fabric does not live up to the requirements for read-atomic and read-committed. From this, it can be deduced that any stricter consistency models are also not met. Due to this, this is part of the disheartening results from the Jepsen test. 
 \begin{lstlisting}
 :not #{:read-atomic :read-committed},
 :also-not #{
@@ -1789,7 +1775,7 @@ The Consistency model results shows that Service Fabric does not live up to the 
 \newpage
 \subsection{Violation of the Consistency models}
 \subsubsection{G0?: Dirty Update}
-Dirty updates are quite common as soon as any conflicts occur within Service Fabric. In the included example transaction 21005 has been aborted after preforming a write to key 249 while waiting for a shared lock for key 251. Doing this process 100 starts transaction 21019 starting by writing to key 249 followed by a read to this same key. The Violation is that the write from transaction 21005 shouldn't be readable prior to being committed. however doing transaction 21019 this key is read and updated with both the dirty changes from 21005 and the new value from 21019.  key 249 is then read containing both the key 15 and 27.
+Dirty updates are pretty common as soon as conflicts occur within Service Fabric. In the included example, transaction 21005 has been aborted after performing a write to key 249 while waiting for a shared lock for key 251. during this process 100 starts transaction 21019 by writing to key 249 followed by a read to this same key. The Violation is that the write from transaction 21005 should not be readable prior to being committed. However during transaction 21019, this key is read and updated with the dirty changes from 21005 and the new value from 21019. key 249 is then read containing both the values 15 and 27.
     
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
@@ -1848,9 +1834,9 @@ Dirty updates are quite common as soon as any conflicts occur within Service Fab
 
 \newpage
 \subsubsection{G1a: Aborted Reads (cascaded aborts)}
-Aborted reads are common as they share the same underlying issues as Dirty Update, These occur when a transaction commits that it has read the updates of an aborted transaction.\\
+Aborted reads are common as they share the same underlying issues as Dirty Update. These occur when a transaction commits that it has read the updates of an aborted transaction.\\
 
-The the\todo[author=Jacopo]{the the. Use a grammar checker like grammarly. Errors like this are easy to spot and fix} below example. Transaction 336 wrote to key 2 and afterwards aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754 which shouldn't have been possible.
+The below example. Transaction 336 wrote to key two and afterward aborted due to being unable to retrieve a lock on key 24. this write was read in Transaction 754, which should not have been possible.
 
 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
@@ -1911,8 +1897,8 @@ The the\todo[author=Jacopo]{the the. Use a grammar checker like grammarly. Error
 \subsubsection{G1b: Intermediate Reads (dirty reads)}
 Dirty reads occur when a process reads a change prior to this change being committed. 
 
-in the below example.
-Transaction 490 writes a change to key 32. this change is then read, and this read is committed prior to 490 committing/aborting.
+In the below example.
+Transaction 490 writes a change to key 32. this change is then read, which is committed prior to 490 committing/aborting.
 
 \tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
 
@@ -1975,9 +1961,9 @@ Transaction 490 writes a change to key 32. this change is then read, and this re
 \newpage
 \subsection{Rejected transactions}
 
-One of the symptoms that the reliable collections showed was ever increasing abort rates for transactions containing more than 1 operation, These aborts were caused by heavy deadlocking and timeouts bringing the entire system to a slowdown with test parameters of 200 concurrent clients and randomly distributed transactions with 1-10 sub operations aborting 89.5 \% of the time meaning only 10.5 \% of the transaction got committed.\todo[author=Jacopo]{phrase too long} The reason for these aborts resolves around the way that the API to service fabric is designed, that causing it to be blocking. The reliable collection doesn't preform any query optimizations, or any kind of checks prior to acquiring a lock or attempting to acquire them. 
+One of the symptoms that the reliable collections showed was ever-increasing abort rates for transactions containing more than one operation. These aborts were caused by heavy deadlocking and timeouts, bringing the entire system to a slowdown with test parameters of 200 concurrent clients and randomly distributed transactions with 1-10 sub-operations aborting 89.5 \% of the time, meaning only 10.5 \% of the transaction got committed. The reason for these aborts resolves around how the API to service fabric is designed, which causes it to be blocking. The reliable collection does not perform any query optimizations or checks prior to acquiring a lock or attempting to acquire them. 
 
-With 100 concurrent connections the following abort rates were found.. 
+With 100 concurrent connections, the following abort rates were found. 
 
 \begin{tikzpicture}
 \begin{axis}
@@ -2010,13 +1996,13 @@ Without any description than better to remove them}
 
 \chapter{Discussion}
 
-Doing this thesis a surprising amount of information was found in existing papers, both concerning databases in general. The lack of precise and unambiguous definitions surrounding them, coupled with the number of database system that violate the consistency models they are presented to follow. This point also applies to service fabric were violations occur with aborted transactions persisting and deadlocks cause a high number of aborts due to the lack of query optimizations within Service Fabric.\\ \vspace{5mm}
+During this thesis, a surprising amount of information was found in existing papers, both concerning databases in general. The lack of precise and unambiguous definitions surrounding them, coupled with the number of database systems that violate the consistency models they are presented to follow. This point also applies to service fabric where violations occur with aborted transactions persisting, and deadlocks cause a high number of aborts due to the lack of query optimizations within Service Fabric.\\ \vspace{5mm}
 
     \begin{itemize}
-        \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself as well as reliable collections and lastly Jepsen itself.
-        \item Understanding the problem, requirement, topology, architectures and how we want to test these things.
+        \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself and reliable collections and lastly Jepsen itself.
+        \item Understanding the problem, requirement, topology, architectures, and how we want to test these things.
         \item Designing the Services, Libraries, APIs, testing suite, the infrastructure and networking of the cluster and azure.
-        \item Implement the Services, Libraries, APIs and testing suite required for things to talk to each other.
+        \item Implement the Services, Libraries, APIs, and testing suite required for things to talk to each other.
         \item Test all the code and configurations and ensure things work as intended.
         \item Execute the test itself.
         \item Analyse the data from the test.
@@ -2025,18 +2011,18 @@ Doing this thesis a surprising amount of information was found in existing paper
 
 \section{Consistency model Standards or the lack thereof}
 
-Doing my time studying prior to this thesis databases were always presented as a fairly strict adhering to strict behavior with predictable results. This turned out to lack a few asterisks where the definitions for databases behavior is ambiguous and often many databases also fail these requirements when they are put under some workloads. Some of the more worrying findings is how often Nosql databases loose data and how often SQL databases violate their set consistency model. This is also not a new discovery either. looking at papers over the past 10 years it is a topic that is being investigated more and more but it also appears that changes are first being made and issues are first resolved often a third party in the open source community brings these issues to light, The paper from Haixiang et al\cite{li2021coo} is one of the more recent papers collecting existing literature on the topics and proposes like many papers prior of defining the Consistency models not in terms of things they prohibit but in unambiguous mathematically notation that cleanly defines what can and can't be expected.\\
+During my time studying prior to this thesis, databases were always presented as fairly strict, adhering to strict behavior with predictable results. This turned out to lack a few asterisks where the definitions for databases behavior are ambiguous. Many databases often fail these requirements when they are put under some workloads. Some of the more worrying findings are how often Nosql databases lose data and how often SQL databases violate their set consistency model. This is also not a discovery either. Looking at papers over the past ten years, it is a topic that is being investigated more and more. It also appears that changes are first being made when a third party in the open-source community brings these issues to light. The paper from Haixiang et al. \cite{li2021coo} is one of the more recent papers collecting existing literature on the topic and proposes, like many papers prior to the definition of Consistency models, not in terms of things they prohibit but in unambiguous mathematical notation that cleanly defines what can and cannot be expected.\\
 \vspace{5mm}
-This unambiguous definition would prevent the current situation where databases are presented in the different light compared to how they behave in reality. Currently mislabeling and mis-classification of databases is the norm and when there is no standardized way to classify or test them this issue will persist like aborted reads in Service Fabric, or the other issues discovered while working on the thesis. \\\vspace{5mm}
+This unambiguous definition would prevent the current situation where databases are presented differently compared to how they behave in reality. Currently, mislabeling and misclassification of databases are the norm. This issue will persist when there is no standardized way to classify or test them, like aborted reads in Service Fabric or the other issues discovered while working on the thesis. \\\vspace{5mm}
 \begin{itemize}
-    \item postgres concerning it's implementation of repeatable read or it's replication functionality.
+    \item Postgres concerning its implementation of repeatable read or its replication functionality.
     \item MongoDB dropping data
-    \item Casandra last-write wins issues, %and a attempt at a solution via Atomic clocks
+    \item Casandra last-write wins issues, %and an attempt at a solution via Atomic clocks
     \item Elastic search issues.
 \end{itemize}
 \todo[author=Mark]{add some more information to the above points}
 
-All of these issues can have huge implications in the real world if the behavior isn't well understood. Just here in Odense MongoDB is used by the City to gather data from intersections, water usage, water height levels, temperatures, pollution, and many many other things around the city, This implementation might only annoy a few city planners and other city officials but if such a system is used in a place where data is more important such as healthcare or other environment where no data loss is acceptable but due to poor understanding journal data is stored where data critical to human life is lost due to not under the correct understand and information about the system in use.
+These issues can have huge implications in the real world if the behavior is not well understood. Just here in Odense, MongoDB is used by the city to gather data from intersections, water usage, water height levels, temperatures, pollution, and many many other things around the city, This implementation might only annoy a few city planners and other city officials, but if such a system is used in a place where data is more critical such as healthcare or another environment where no data loss is acceptable but due to insufficient understanding journal data is stored where data critical to human life is lost due to not under the correct understand and information about the system in use.
 \todo[author=Mark]{add more to the above concerns.}
 
 \section{How can this be improved going forward}
@@ -2044,13 +2030,13 @@ All of these issues can have huge implications in the real world if the behavior
 
 How to resolve these issues that aeries from mislabeled and misunderstood consistency models.
 
-Enable better understanding of databases, transaction models, and use cases doing teaching of database courses where behavior is better explained, This should not in depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have a lot of unintended behavior, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
+Enable better understanding of databases, transaction models, and use cases doing the teaching of database courses where behavior is better explained. This should not in-depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have much-unintended behavior, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
 
 ... should maybe be defined as future work.
 
-Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labelling and allows user and developers to choose the current system for their use case and avoid the headaches of phantom behavior.
+Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labeling and allows users and developers to choose the current system for their use case and avoid the headaches of phantom behavior.
 
-This could be done via automated testing and verification of a given system in it's different transactional configurations.
+This could be done via automated testing and verification of a given system in it is different transactional configurations.
 
 
 \section{Results from Service Fabric}
@@ -2061,12 +2047,12 @@ This could be done via automated testing and verification of a given system in i
 \section*{Conclusion}
 \todo[author=Mark]{write Conclusion}
 
- I will only write deeper about designing, implementing, testing, executing and analysing the results. However this does not mean that the learning and understanding phase of the project was any smaller, quite the contrary. Learning 2 new programming languages that I've never interacted with before isn't an easy task; adding in the complexity of write code for cloud framework that I had no prior experience working on didn't help either. Spicing it with up with outdated documentation, incompatibility between versions of the framework and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute forcing solutions to a lot of issues due to lacking features on the Linux version of the cluster.\\
+I will write deeper about designing, implementing, testing, executing, and analyzing the results. However, this does not mean that the learning and understanding phase of the project was any smaller—quite the contrary. Learning two new programming languages that I have never interacted with before is not easy; adding in the complexity of writing code for a cloud framework that I had no prior experience working on did not help either. Spicing it up with outdated documentation, incompatibility between versions of the framework, and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute-forcing solutions to many issues due to lacking features on the Linux version of the cluster.\\
  
  
-Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labelling and allows user and developers to choose the current system for their use-case and avoid the headaches of phantom behavior.
+Next, Defining a standard for testing and certifying database systems towards the transactional model allows the industry to standardize the labeling and allows users and developers to choose the current system for their use-case and avoid the headaches of phantom behavior.
 
-This could be done via automated testing and verification of a given system in it's different transactional configurations.
+This could be done via automated testing and verification of a given system in its different transactional configurations.
 
 \section*{Outlook}
 \todo[author=Mark]{write Outlook}
