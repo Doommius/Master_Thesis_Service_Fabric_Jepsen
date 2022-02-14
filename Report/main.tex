@@ -225,7 +225,7 @@
         \item Eventually Consistent – The fact that BASE does not enforce immediate consistency does not mean that it never achieves it. However, data reads are still possible (even though they might not reflect reality).
     \end{itemize}
 
-    The BASE model of databases often has a weak consistency where stale data is considered "OK" while offering a best-effort approach with approximate answers. It gains performance and a higher level of availability. It can be viewed as a relaxed way of handling the database side of things where the system database system is simpler and makes it easier to modify the database schema.
+    The BASE model of databases often has a weak consistency where stale data is considered "OK" while offering a best-effort approach with approximate answers. It gains performance and a higher level of availability. It can be viewed as a relaxed way of handling the database side of things where the database system is simpler and makes it easier to modify the database schema.
 
     \section{CAP theorem}
 
@@ -245,11 +245,13 @@
 
     \item Availability and Partition tolerance (AP) \\ 
     \begin{quote}
-    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency is not guaranteed as nodes are always available. In the case of partitioning, the nodes will diverge while partitioned due to its Last Write Wins model and will first regain consistency once the network is healed. 
+    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency is not guaranteed as nodes are always available. In the case of partitioning, the nodes will diverge while partitioned model and will first regain consistency once the network is healed. 
     \end{quote}
 
     \item Availability and Consistency (CA) \\ 
-    \begin{quote}Database delivers consistency and availability but does not allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it covers single-node/Cluster databases and file systems. In practice having a distributed system, that does not allow for partitioning is not unusable. An example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication, by becoming a CP style database, here some asterisks may apply as the system may not behave as expected or may not be consistent\cite{aphyrpostgres}  \end{quote}
+    \begin{quote}
+    Database delivers consistency and availability but does not allow for partitions of the network or nodes. This results in a single node or single cluster system as any system distribution introduces network instability and latency that would break the system. In this case, it covers single-node/Cluster databases and file systems. In practice having a distributed system, that does not allow for partitioning is not unusable. An example of this would be a single node database. PostgresSQL could be an example here; however, PostgresSQL does support replication, by becoming a CP style database, here some asterisks may apply as the system may not behave as expected or may not be consistent\cite{aphyrpostgres}  
+    \end{quote}
 \end{itemize}
 
 \section{Availability}
@@ -290,7 +292,7 @@ The most common standard for these definitions is ANSISQL99\cite{ansisql1999}, w
     \item "P3: Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read."
 \end{itemize}
 
-There are, however, issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation; this led to the Berenson et al. \cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include the further definition for "Read and Write Skew," This phenomena defined data item constraint violations, where the ANSI models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations is defined. The exact definition is below: \\
+There are, however, issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation; this led to the Berenson et al. \cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include the further definition for "Read and Write Skew," This phenomena defined data item constraint violations, where the ANSISQL99\cite{ansisql1999} models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations is defined. The exact definition is below: \\
 \begin{quote}
     (Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation
 \begin{itemize}
@@ -384,7 +386,7 @@ Suppose Transaction $T_1$ \& $T_2$ read object x contain 5, Transaction T2 then 
 \subsection{Currently Described Anomalies} 
 \todo[author=Mark]{ Unsure what to name this.}
 
-Following the ANSI standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang Li et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years; The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. The paper includes the following sentence: 
+Following the ANSISQL99\cite{ansisql1999} standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years; The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. The paper includes the following sentence: 
 \begin{quote}
     "Definition of data anomalies. Although there are so many data anomalies, but it seems that data anomalies are not explicitly defined. There is no universally accepted definition of data anomalies in academia and industry, and the understanding of data anomalies is only in the way of case-by-case" \cite{li2021coo}
 \end{quote}
@@ -428,7 +430,7 @@ SS cannot be totally or sticky available in the event of a network partition. In
 \newpage
 \subsection{Serializable}
 
-Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in the ANSI SQL 1999 spec as follows.
+Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in ANSISQL99\cite{ansisql1999} as follows.
 
 \begin{quote}
 "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
@@ -469,7 +471,7 @@ Cursor Stability closely resembles repeatable read where RR locks the objects un
         \item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 cannot be affected by T1.
     \end{enumerate}
 \end{itemize}
-Furthermore, since cursor stability is strictly stronger than read committed, it also prohibits the ANSI phenomena:
+Furthermore, since cursor stability is strictly stronger than read committed, it also prohibits the ANSISQL99\cite{ansisql1999} phenomena:
 \begin{itemize}
     \item P0 (Dirty Write): w1(x) … w2(x)
     \item P1 (Dirty Read): w1(x) … r2(x)
@@ -482,7 +484,6 @@ but allows:
 \end{itemize}
 
 \input{figs/tables/cs_schedule}
-\todo[author=Mark]{Make diagram Cursor Stability}
 \newpage
 \subsection{Snapshot Isolation}
 
@@ -520,19 +521,19 @@ Furthermore, by Adya et al. \cite{Adya99weakconsistency} as prohibiting:
     \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction that was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
 \end{itemize}
 
-Further, since MAV is strictly stronger than Read Committed, it also disallows the ANSI phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
+Further, since MAV is strictly stronger than Read Committed, it also disallows the ANSISQL99\cite{ansisql1999} phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
 
 \subsection{Read Committed}
 The Read Committed transaction model is the first non-atomic transaction model where partial visibility of committed transactions is permitted. This however, might lead to foreign key constraint issues, among other problems where required data joins are performed due to not yet visible values.
 \\ \vspace{5mm}
 
-Formally it is defined in ANSISQL1999\cite{ansisql1999} by disallowing P1 ("Dirty read" ). In the Microsoft paper, Berenson et al. \cite{Berensonetal} it is observed that the ANSI specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unambiguous ANSI specification.
+Formally it is defined in ANSISQL99\cite{ansisql1999} by disallowing P1 ("Dirty read" ). In the Microsoft paper, Berenson et al. \cite{Berensonetal} it is observed that the ANSISQL99\cite{ansisql1999} specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unambiguous ANSISQL99\cite{ansisql1999} specification.
 \\ \vspace{5mm}
 
-\todo[author=Mark]{TODO Make Diagram Read committed}
+%\todo[author=Mark]{TODO Make Diagram Read committed}
 
 \subsection{Read Uncommitted}
-Read Uncommitted as defined by ANSI allows all behavior. However, this has been challenged by Berenson et al. \cite{Berensonetal} where they argue that Read Uncommitted should disallow dirty writes. This is also the non-ANSI defacto definition as per Adya et al. \cite{Adya99weakconsistency} which again provides a better definition based on what can be interpreted from the loose definition in ANSISQL99\cite{ansisql1999}. It should be noted that due to the loose specification in ANSI, multiple mainstream interpretations exist.\\
+Read Uncommitted as defined by ANSISQL99\cite{ansisql1999} allows all behavior. However, this has been challenged by Berenson et al. \cite{Berensonetal} where they argue that Read Uncommitted should disallow dirty writes. This is also the non-ANSISQL99\cite{ansisql1999} defacto definition as per Adya et al. \cite{Adya99weakconsistency} which again provides a better definition based on what can be interpreted from the loose definition in ANSISQL99\cite{ansisql1999}. It should be noted that due to the loose specification in ANSISQL99\cite{ansisql1999}, multiple mainstream interpretations exist.\\
 
 by the Aday's specification Read Uncommitted disallows
 \begin{itemize}
@@ -571,10 +572,11 @@ Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti a
     \item RVal (the order must be consistent with the semantics of the datatype)
 \end{itemize}
 
-\todo[author=Mark]{Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.}
+\subsubsection{Causal Consistency and Eventual Consistency}
+Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
 
 
-
+\newpage
 \section{Directed Serialization graphs}
 
 Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction. Each node represents a committed transaction, and edges represent different types of direct conflicts. \\ using these conflicts, we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
@@ -636,7 +638,7 @@ A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T
 \vspace{2mm}
 
 
-Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-depends on $T_1$, The dependency is denoted by the red arrow in the graph. \\
+Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-dependency on $T_1$, The dependency is denoted by the red arrow in the graph. \\
 
 \begin{equation}
     History\ H: [T_1(W(x_1)), T_2(W(x_2))]
@@ -1419,56 +1421,59 @@ With 100 concurrent connections, the following abort rates were found.
 
 \chapter{Discussion}
 
-During this thesis, a surprising amount of information was found in existing papers, both concerning databases in general. The lack of precise and unambiguous definitions surrounding them, coupled with the number of database systems that violate the consistency models they are presented to follow. This point also applies to service fabric where violations occur with aborted transactions persisting, and deadlocks cause a high number of aborts due to the lack of query optimizations within Service Fabric.\\ \vspace{5mm}
+While writing this thesis, a surprising amount of information was found in existing papers concerning databases and consistency models. Consistency Models lack precise and unambiguous definitions. Database systems often violate the consistency models they are supposed to adhere to. This point also applies to Service Fabric; violations occur with aborted transactions persisting and locking problems causing deadlocks where a high number of transactions abort due to the lack of query optimizations within Service Fabric.\\ \vspace{5mm}
 
-    \begin{itemize}
-        \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself and reliable collections and lastly Jepsen itself.
-        \item Understanding the problem, requirement, topology, architectures, and how we want to test these things.
-        \item Designing the Services, Libraries, APIs, testing suite, the infrastructure and networking of the cluster and azure.
-        \item Implement the Services, Libraries, APIs, and testing suite required for things to talk to each other.
-        \item Test all the code and configurations and ensure things work as intended.
-        \item Execute the test itself.
-        \item Analyse the data from the test.
-    \end{itemize}
-    
 
 \section{Consistency model Standards or the lack thereof}
 
-Before this thesis, databases were always presented as fairly strict, adhering to strict behavior with predictable results. This turned out to lack a few asterisks where the definitions for databases behavior are ambiguous. Many databases often fail these requirements when they are put under some workloads. Some of the more worrying findings are how often Nosql databases lose data and how often SQL databases violate their set consistency model. This is also not a discovery either. Looking at papers over the past ten years, it is a topic that is being investigated more and more. It also appears that changes are first being made when a third party in the open-source community brings these issues to light. The paper from Haixiang et al. \cite{li2021coo} is one of the more recent papers that summarize existing literature on the topic. Coo, like many papers prior to the definition of Consistency models, not in terms of things they prohibit but in unambiguous mathematical notation that cleanly defines what can and cannot be expected.\\
+Before this thesis, my understanding of databases was always fairly strict, adhering to strict behavior with predictable results. This understanding of consistency models turned out to be misplaced; the definition for database behavior is unambiguous. Numerous databases often fail the consistency requirements when put under some workloads. Some of the more worrying findings are how often NoSQL databases lose data and how often SQL databases violate their consistency model. This unambiguousness is also not a discovery. The papers published in the last twenty years show this topic being investigated both in the scientific community and in the industry. It also appears that consistency issues in systems are first being resolved when a third party brings these issues to light. The paper from Haixiang et al. \cite{li2021coo} is one of the more recent papers that summarizes the existing literature on the topic. Haixiang et al, like many papers prior, brings up issues with the definition of Consistency models. The census is that the current definition of prohibiting behaviors that allow ambiguousness is not suitable. An unambiguous mathematical notation is required that precisely defines what can and cannot be expected.
+
 \vspace{5mm}
-This unambiguous definition would prevent the current situation where databases are presented differently compared to how they behave in reality. Currently, mislabeling and misclassification of databases are the norm. This issue will persist with no standardized way to classify or test them, like aborted reads in Service Fabric or the other issues discovered while working on the thesis. \\\vspace{5mm}
+This unambiguous definition of consistency would prevent the current situation where databases are presented differently compared to how they behave in reality. Currently, mislabeling and misclassification of databases is not an uncommon occurrence. This issue will persist with no standardized way to classify or test them, like aborted reads in Service Fabric or the other issues discovered while working on the thesis. A few examples of  mislabeling and misclassification of databases are listed below: \\\vspace{5mm}
 \begin{itemize}
-    \item Postgres concerning its implementation of repeatable read or its replication functionality.
-    \item MongoDB dropping data and violating consistency models.
-    \item Casandra last-write wins issues
-    \item Elastic search losing data.
+    \item Postgres mislabeling its implementation of repeatable read and serializability;
+    \item MongoDB loosing data and violating its already loosely defined consistency models;
+    \item Casandra last-write wins conflicts resulting in corrupt data;
+    \item Elastic search losing data whenever issues occur with its primary partition.
 \end{itemize}
 
-These issues can have huge implications in the real world. Often this behavior is not well understood by the users of the systems. Just here in Odense, MongoDB is used by the city to gather data from intersections, water usage, water height levels, temperatures, pollution, and many other metrics and data points around the city. In this use case, these issues might only annoy a few city planners and other city officials. Situations might occur where these systems are used in a critical application. i.e., in Healthcare, where no data loss is acceptable, medical journals with data critical to human life could be lost due to the information. This case could be due to the system not behaving as expectedly or system designers choosing a system without understanding its behavior.
+These issues can have huge implications in the real world. Often these failure modes, the anomalous behavior occurring during them are not well understood by the users of the systems. Just here in Odense, MongoDB is used by the city to gather data from intersections, water usage, water height levels, temperatures, pollution, and many other metrics and data points around the city. In this use case, these issues might only annoy a few city planners and other city officials. Situations might occur where these systems are used in a critical application. i.e., in Healthcare, where no data loss is acceptable, medical journals with data critical to human life could be lost due to the incorrect information. This case could be due to the system not behaving as expectedly or because system designers chose a system without fully understanding its behavior.
 
 \section{How can this be improved going forward}
 
-There is no single way to resolve all of the issues surrounding the definitions of consistency models. These issues stem from the ANSI\cite{ansisql1999} standard where due to poor official definitions, either other definitions are used, or these definitions are used that allow for the flaws within them. Information should be available to ensure that developers to ensure that they understand the tradeoffs of a given systems consistency model. System implements should also use automated testing to ensure expected behavior. Such that any issues are found before being shipped and deployed. \\
+There is no single way to resolve all of the issues surrounding the definitions of consistency models. These issues stem from the ANSISQL99\cite{ansisql1999} standard where due to poor official definitions, either other definitions are used, or these definitions are used that allow for the flaws within the consistency models.. Information should be available to developers that ensure that they understand the trade-offs of a given systems consistency model. System implements should also use automated testing to ensure expected behavior, such that any issues are found before being shipped and deployed. \\
 \vspace{5mm}
 Students should be taught about transaction models and use cases during introductory database courses where behavior is explained to prevent misuse of consistency models where they do not belong. This should not be in-depth, but Read Uncommitted or last-write-wins databases are fine for logging. However, they should be avoided for certain use cases due to their behavior.\\
 \vspace{5mm}
 Industries should define a standard for testing and checking database systems towards a consistency model. Such a standard would allow the industry to homogenize the labeling, allowing users and developers to choose the current system for their use case and avoid the headaches of anomalous behavior.
 
+\section{Implementation of the Jepsen test}
+\begin{itemize}
+    \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself and reliable collections and lastly Jepsen itself.
+    \item Understanding the problem, requirement, topology, architectures, and how we want to test these things.
+    \item Designing the Services, Libraries, APIs, testing suite, the infrastructure and networking of the cluster and azure.
+    \item Implement the Services, Libraries, APIs, and testing suite required for things to talk to each other.
+    \item Test all the code and configurations and ensure things work as intended.
+    \item Execute the test itself.
+    \item Analyse the data from the test.
+\end{itemize}
+
+
 \section{Results from Service Fabric}
 
-The results from the experiment show the violation of the consistency models presented by Microsoft. In the results, 3 Types of violations were found; Dirty Write, Dirty Read, and Intermediate Read. Furthermore, no use of the consistency models relaxations. Service Fabric instead uses a strict locking approach; a large number of deadlocks occur, resulting in timeouts and what was supposed to have aborted transactions. It appears that when an exception is thrown, it should be strictly handled; otherwise, the keys are unlocked, and other transactions can access the dirty values. According to the documentation, such events are handled by the system aborting, and users should restart the transaction\cite{servicefabricguidelines}
-However, it appears that this is not the case. a modified implementation of the Service Fabric Stateful service was implemented that manually handled the case of lock timeout seems to resolve the serializable issues in Service Fabric.\\
+The results from the experiment show the violation of the consistency models presented by Microsoft. In the results, 3 Types of violations were found: Dirty Write, Dirty Read, and Intermediate Read. Furthermore, no use of the optimizations allowed with the consistency model Repeatable Read. Service Fabric uses a strict locking approach instead. As a result, a large number of deadlocks occur, resulting in timeouts and what was supposed to have been aborted transactions. It appears that when an exception is thrown, it should be strictly handled; otherwise, the keys are unlocked, and other transactions can access the dirty values. According to the documentation, such events are handled by the system aborting, and users should restart the transaction\cite{servicefabricguidelines}
+However, it appears that this is not the case. A modified implementation of the Service Fabric Stateful service was implemented that manually handled the case of lock timeout. This implementation resolved the serializability issues within Service Fabric.\\
 \vspace{5mm}
-The poor use of allowed optimizations is harder to solve. Service fabric does not run a scheduler to optimize the ordering of operations; instead, these are run in the order executed by a given process. The only way to allow for these optimizations would be to handle the execution transactions at a lower level, Either via a new module or interfaces that allow for serialization of all concurrent transactions.
+The poor use of allowed optimizations is harder to solve. Service Fabric does not run a scheduler to optimize the ordering of operations; instead, they are run executed in order by a given process. The only way to allow for these optimizations would be to handle the execution transactions at a lower level, either via a new module or interfaces that allow for serialization of all concurrent transactions.
 
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
 
-In this thesis, we presented some of the currently used consistency models. How they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as SQL99\cite{ansisql1999} by the American National Standards Institute. 
-Following this initial study, Jepsen was presented. Independent parties from the open-source community created Jepsen. Jepsen was developed due to the mislabeling of current systems. It allows for testing whether a given system meets the requirement for behavior prevented by its creators or what flaws a system exhibits in general. 
-Following the presentation, a Jepsen Service Fabric was presented. Service Fabric is a  distributed systems platform designed by Microsoft. It contains a system for providing distributed transactional data types. 
-Using the knowledge gained from the above sections, Jepsen was used for conducting a test on Service Fabric. The results of this test were that Service Fabric violates the Repeatable read consistency model by allowing uncommitted transactions to persist when exceptions interrupt their execution. 
-Lastly, a discussion on the current state of consistency models, definitions, or the lack thereof, what implications this has, and what can be improved things going forward. Here the finders are the new industry standards required that rectify ambiguous definitions and a system for testing systems towards this standard.
+In this thesis, we presented some of the currently used consistency models, how they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as ANSISQL99\cite{ansisql1999} by the American National Standards Institute. 
+Following this initial study, Jepsen was presented. Independent parties from the open-source community created Jepsen due to the mislabeling of current systems. It allows for testing whether a given system meets the requirement of the consistency model outlined by its creators and shows what other flaws a system might exhibits. 
+Following the preliminaries, Service Fabric was designed by Microsoft as a distributed systems platform. It contains a system providing distributed transactional data types. The implementation of these transactional data types is presented in chapter 4 and it contains a small section comparing this implementation to Redis and Cassandra.  
+Using the knowledge gained from the above sections, Jepsen was used for conducting a test on Service Fabric. The results of this test were that Service Fabric violates the Repeatable Read consistency model by allowing uncommitted transactions to persist when exceptions interrupt their execution. 
+Lastly, a discussion on the current state of consistency models, definitions, or the lack thereof, what implications this has, and what can be improved within these fields going forward. Here the findings are that new industry standards are required that rectify the current ambiguous definitions and outline a system for testing systems against this standard.
 
 
 
