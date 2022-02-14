@@ -699,6 +699,8 @@ A history exhibits G-single if the dsg contains a cycle consisting of an anti-de
 \\
 In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the system and therefor ended up reading an seeing inconsistent state. The two valid states in the above context is [$x_0$ , $y_0$] and [$x_1$ , $y_1$]
 
+\todo[author=Mark]{Item Anti-dependency Cycles (write skew on disjoint read)}
+
 \todo[author=Mark]{Add more DSG definitions if time permits.}
 \newpage
 
@@ -739,8 +741,52 @@ Jepsen is a generalized consistency checker that works by performing black-box t
 
 \vspace{5mm}
 
-Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that its creators give. In a world where distributed, hyper-scale, or even planetary-scale systems are becoming more common, this requires data storage to behave expectedly. The expected manner is used rather than the correct manner because we may allow certain faults to occur and allow for eventual consistency as this allows for higher throughput applications. There are cases where data may only be required locally to consider a transaction complete, even when some undesirable conditions occur. However, these are tolerated to a certain extent. \\
+Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that its creators give. Distributed systems are becoming common; this requires data storage to behave expectedly. The expected manner is used rather than the correct manner because we may allow certain faults to occur and allow for eventual consistency as this allows for higher throughput applications. There are cases where data may only be required locally to consider a transaction complete, even when some undesirable conditions occur. However, these are tolerated to a certain extent. \\
+
+A scenario where real-time data distribution and correctness are of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data are replicated, and the 'old' balance is no longer available. Otherwise, we could reach a condition where worst case, a client can draw a negative balance on their account or where one of the transactions is not recorded as only one of the two transactions is recorded.\\
+
+Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post, this comment might not necessarily be available to users instantly, and it is of no concern if it takes a few seconds or minutes to be distributed to all nodes. Users generally do not notice these delays, and it allows for better scaling within these huge applications with mullions or billions of requests per second.\\
+
 \vspace{5mm}
+
+Jepsen, therefore, exists to test and check that systems behave expectantly. The way Jepsen performs these tests is to run clients externally of the target system. Hosts are connected via an IP network, and the clients are running on the same host in a single JVM instance, using the same driver to send requests to the system. The reason they are run in the same JVM is to ensure strict timekeeping of the requests. Clients then generate randomized operations and apply these over the network.
+
+\input{figs/tikz/Jepsen_topology}
+\vspace{5mm}
+The result from these operations can result in three outcome types. :ok, :fail and :info.
+\begin{itemize}
+\item :ok. The operation was executed as expected.
+\item :fail. The operation failed and did not take place.
+\item :info, an issue occurred in the system neither, this is cases of dropped connections, timeouts, or unknown exception. for these cases, it is assumed that the operation may or may not have happened or might occur later.
+\end{itemize}
+This history is used to reason about the state and order of the system and allows for checking for anomalies or other required properties. Linearizability can be checked by finding a path moving forward in time that touches every non-failed operation. If this path makes sense, i.e., we always read prior writes this history, this system is considered Linearizability. A dependency graph is built for serializable models, and violations are found by looking for cycles. \\
+
+All of this functionality lies within the Jepsen client.
+
+\subsection{Jepsen client}
+The Jepsen client is built up in a modular fashion such that different modules perform specific tasks. This allows for delegation of responsibilities and allows modules to be reused. Different aspects of a test can be defined independently but may reuse a module instead and implementation overlapping functionality.
+
+Generally, a Jepsen test suite consists of 5 modules. Database automation, client, generator, correctness checkers, and a fault introduction. On top of these modules, a test runner delegates tasks to each module.
+
+\subsection{Runner}
+
+The runner contains configurations for targets, rates, which faults should be introduced, and every other configurable aspect of the tests. This module also delegates tasks to other modules and which modules from the Jepsen libraries should be used. 
+
+\subsection{Database Automation}
+ The Database Automation or db module handles starting, stopping, and interaction with the database instance. Its main job is to spin up, prepare and configure the test target. This is not required for all tests, but it is best practice to do this as it allows for better repeatability of the tests. This module handles a vital feature of interacting with the instance once it runs, such as killing workers, causing crashes, removing the entire node from the cluster, or partitioning the network by manipulating the routing tables.
+
+\subsection{Client}
+The client executes a map of transactions via driver. It handles parsing, validation of return values, fault handling, and routing requests to the correct endpoint.
+
+\subsection{Generator}
+The generator's task is to generate the test map, which includes transactions and which and when to cause faults. It is also essential that the generator generates transactions that allow for the order of their execution to be deferred purely from external reads. Otherwise, correctness checking becomes much more difficult. 
+
+\subsection{Correctness checker}
+The checker module checks for anomalies in the resulting history; this can be a host of symptoms, out-of-order operations, violation of isolation, or corrupt data. 
+
+\subsection{Fault inducer}
+Nemesis is the module within Jepsen that generates faults; its task is to cause faults at random such as time skew, network partitions, crashes, increased package drop, or increased latency.
+
 
 A scenario where real-time data distribution and correctness are of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data are replicated, and the 'old' balance is no longer available. Otherwise, we could reach a condition where worst case, a client can draw a negative balance on their account or where one of the transactions is not recorded as only one of the two transactions is recorded.\\
 
@@ -748,124 +794,52 @@ Oppositely a situation where eventual consistency is of no issues is for platfor
 
 
 
-\subsection{Runner}
-
-The runner is the glue that binds the underlying modules together. It contains configurations for targets, rates, how many faults should be introduced, and every other aspect of the testing suite.
-
-\subsection{Database Automation}
- The Database or db module handles starting, stopping, and interaction with the database program or service itself. Its main job is to spin up, prepare and configure the test target. This is not be required for test, but it is best practice to do this as it allows for better repeatably of the tests. A just as important feature handled by this module is interacting with the service once it is running such as killing workers, causing crashes, or removing the entire node from the cluster.
-
-\subsection{Client}
-The Client is an interface from a map of commands to a connector or driver. It handles parsing \& validation of return values, exception and faults handling, and routing requests to the correct endpoint.
-
-\subsection{Generator}
-The generator's task is to generate the test map, which includes transactions and faults. It is also important that the generator generates transactions in a manner that allows the checker to defer an ordering to allow for correctness checking.
-
-\subsection{Correctness checker}
-The checker module checks for anomalies in the results. This can be a host of symptoms, out-of-order operations, violation of isolation or corrupt data. This can either be done by writing custom checkers or using some of the functionality built into Jepsen.
-
-\subsection{Fault inducer}
-Nemesis is the module within Jepsen that induces faults; its task is to induce faults at random such as time skew, network partitions, crashes, increased package drop, increased latency, and other tools.
-
-
 \subsection{Jensens internal modules.}
+\subsubsection{Elle}
+Elle,\cite{elle} inferring isolation anomalies from Experimental Observations. \\
 
-Jepsen supports quite a few checking modules, but the most powerful checker is Elle, inferring isolation anomalies from Experimental Observations. \\
+Elle is a transactional consistency checker for black-box testing. It infers a dependency graph between client-side observations and the database version history. Checking is done via careful selection of database objects and operations such that database reads reveal information about the version history. Elle can therefore reveal anomalies and provide a concise explanation of why a fault occurred with information of what conditions were present during this fault. Using this information, we can state how a system behaves, what level of consistency, and which behavior we will see. This information can then compare the promises a system makes and how these promises are reflected in reality.\\
 \vspace{5mm}
-This works by inferring a dependency graph between client-side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
-\vspace{5mm}
-This means that Elle can reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information, we can say how a system behaves, what level of consistency and which behavior we will see, what promises the system makes, and how promises are reflected in reality.\\
-\vspace{5mm}
-
-These things can be manifested in multiple ways; some cases are, as mentioned earlier in the paper, accepted as eventually consistency and performance are valued higher, or some applications were losing some data points are acceptable to allow for higher write throughput.\\
-\vspace{5mm}
-
-Moreover, the same goes for stale, dirty, non-repeatable, and phantom reads are not an issue. This could be on hyper-scale social networks where a user might see something that was deleted, or if the newest posts, comments, and likes are not distributed across all nodes, they will eventually. Nevertheless, this is a trade-off that allows for much higher write performance as the chance of a user making changes to the same page on two different nodes/clusters is minimal. The required performance drop required to facilitate the guarantee that all data is always up to date would mean that the system would not scale at the rate it is required; this also brings up another interesting topic, approximate programming, where a program does not always have to return the correct output. However, if we can see a magnitude speedup of a program and accept a faulty result rate of a few \%, then the cost-saving and capacity increase could very much be worth it. This could be in the case of Netflix and Amazon recommencing products and services, it does not have to be perfect, and maybe sometimes the result is wrong, but if it means we can serve a lot more customers before having to degrade services or maybe having it as a step in the service degradation levels to support as many users as possible. \\
-\vspace{5mm}
-However, a lot of this lies outside the scope of this thesis, but it is also a super exciting field that will probably see growth in the next decade.
-
-
-\subsection{Elle}
-
-
-The way this works is by inferring a dependency graph between client side observations and the database version history. This is done by carefully selecting database objects and operations such that the database reads reveals information about the version history.\\
-\vspace{5mm}
-This means that Elle is able to reveal any anomaly and provide a concise explanation as to why a fault occurred with information of what conditions were present to cause this fault to occur. Using this information we are able to say how a system behaves, what level of isolation and which behavior we'll see as well as what promises the system makes and how does promises are reflected in reality.\\
-
-\todo[author=Mark]{Finish Subsection on Elle}
-Elle is a consistency checker and generator available in Jepsen. It supports a few different methods 
-\\
-Elle is the one of the Jepsen Consistency checkers available in jepsen, other exist but for all intents and purposes Elle should always to used. 
-Introduction to Elle
-... \\
-What it aims to solve
-...\\
-
-...\\
-Checker
-...\\
-Generators
-...\\
-TXN
-...\\
-
-% move these to BIB file and write this section
-% K. Kingsbury. Knossos.
-% https://github.com/jepsen-io/knossos, 2013-2019.
-
-% G. Lowe. Testing and Verifying Concurrent Objects.
-% Concurrency and Computation: Practice and
-% Experience, 29(4), 2017
-
-% J. M. Wing and C. Gong. Testing and Verifying
-% Concurrent Objects. Journal of Parallel and
-% Distributed Computing, 17(1-2), 1993.
-
-% P. B. Gibbons and E. Korach. Testing shared
-% memories. SIAM Journal on Computing, 26(4), 1997
-
-% S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
-% Line-up: A Complete and Automatic Linearizability
-% Checker. PLDI '10, 2010.
-
-
-
 
 
 \section{Past Jepsen tests}
-    Finding in past Jepsen test.
+Jepsen.io contains publicly available test for 28 different systems. they nearly all contain issues or violation of the consistency model they are presented to meet. I will summarize the findings of a few prior tests below.
 \subsection{Cassandra}
-A test was done on Cassandra in 2013 that showed some interesting behavior, with interesting names such as doomstones, and that during conflicts a lexicographically bigger value is winning. such that separate parts of separate transactions might end up in the database. .\\
+A test was done on Cassandra\cite{jepsencassandra} in 2013 that showed some interesting behavior; Doomstones, during conflicts, a lexicographically bigger value is winning. such that separate parts of separate transactions might persist in the database. .\\
 \vspace{5mm}
-Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. but unlike most other database it uses timestamp based last write wins. This allows for extremely high performance but also at the cost of being highly sensitive to clock skew.\\
+Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. Nevertheless, unlike most other databases, it uses timestamp-based last write wins. This allows for extremely high performance but also at the cost of being highly sensitive to clock skew.\\
 
 In the test on Cassandra it was found that:
 \begin{itemize}
-    \item During a single key heavy write operations Losing 28\% of committed data and fails linearizable by any definition.
-    \item During Write conflicts roughly 1 in 200 rows end up being corrupt due to poor handling time time where milliseconds are used with 3 zeros at the end instead of microseconds.
-    \item 
-    
-    \begin{quote}
-        No. Cassandra lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes–and this doesn’t even require a network partition to demonstrate. It’s just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013 where an insert is rejected but committed anyway. (unnecessarily high false negative probabilities).
-    \end{quote}
+    \item During a single key heavy write operation Losing 28\% of committed data and fails linearizable by any definition.
+    \item During Write conflicts, roughly 1 in 200 rows end up being corrupt due to poor handling time where milliseconds are used with three zeros at the end instead of microseconds.
+    \item \textit{No. Cassandra's lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes–and this does not even require a network partition to demonstrate. It is just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013, where an insert is rejected but committed. (unnecessarily high false-negative probabilities).}
 \end{itemize}
-
-https://aphyr.com/posts/294-call-me-maybe-cassandra
-
 
 \subsection{Postgres}
+A Jepsen test\cite{jepsenpostgresql} was performed on PostgreSQL in 2020. During this test, several observations were made.
+\begin{itemize}
+    \item PostgreSQLs repeatable read behaves accordingly to snapshot isolation. G2-item violations occurred where write skew on disjoint read was observed ."
+    \item PostgreSQLs serializability implementation contains the same issues, where concurrent update and insert transactions may exhibit G2-item.
+\end{itemize}
+
+\subsection{MonogoDB}
 
 \begin{itemize}
-    \item \begin{quote}
-        "Users should be aware that PostgreSQL’s “repeatable read” is in fact snapshot isolation — a fact long-understood in the PostgreSQL community and previously reported by Kleppmann. Since G2-item is prohibited under common formalizations of repeatable read, users may have designed applications assuming this held true for PostgreSQL. In this case, users may wish to run selected transactions under serializable isolation instead, add explicit locking, or redesign those transactions such that they are no longer sensitive to G2-item."
-    \end{quote}
-    \item 
-    \begin{quote}
-        "It appears that no version of PostgreSQL has ever guaranteed serializability. Users should be aware that concurrent update and insert transactions may exhibit G2-item. High-contention workloads are especially susceptible. The PostgreSQL team has written tests to reproduce the problem and is evaluating a patch; we recommend upgrading once the next minor release becomes available."
-    \end{quote}
-
+\item In the first Jepsen test of MongoDB, 42% of writes were lost \cite{jepsenmongodb243}
+\item In the second test of MongoDB, testing was done of its consistency model. It was found that MongoDB lies somewhere under Read Uncommitted\cite{jepsenmongodb267}
+\item In the third test of MongoDB Lost updates, Dirty Reads, and Stale Reads was prevented with the v1 protocol. if the v0 protocol is used, these anomalies still occur.\cite{jepsenmongodb340}
+\item The latest test of MongoDB tests claims about "full ACID transactions" where G-single (read skew), G1c (cyclic information flow), duplicated writes, and anomalies where a transaction could read its writes performed in the future. \cite{jepsenmongodb340}
 \end{itemize}
-https://jepsen.io/analyses/postgresql-12.3
+
+\subsection{ElasticSearch}
+In the jepsen test of ElasticSearch results showed that documents were lost due during a few scenarios.\cite{aphyrelasticsearch}
+\begin{itemize}
+    \item Intersecting partitions resulting in 2 primaries overwriting each other.
+    \item Isolated primaries causing split-brain that is only recoverable by restart, however only one side of the clusters changes persisted.
+    \item If the primary node pauses due to IO or garbage collection
+\end{itemize}
+
 
 \section{related work to Jepsen}
 
@@ -900,10 +874,6 @@ https://jepsen.io/analyses/postgresql-12.3
 
 
     \section{Service Fabric}
-
-%    https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf
-%
-%    https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-reliable-services-reliable-collections
 
     \subsection{Introduction}
 
@@ -965,16 +935,15 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \includegraphics[scale=0.3]{images/servicefabric-fig-ring-topology.jpeg}
 
-    SF-Ring and consistent routing. 
+    \paragraph{SF-Ring and consistent routing}
 
     The Distributed Hash table used for Service Fabric routing is an evolution of SF-ring developed within Microsoft in the 2000s. The routing used offers symmetry, and due to this, it allows bidirectional routing that allows for lookup and routing via binary search. This allows SF to quickly route messages around the ring, with multiple routing options. There are always two routing partners on either side of the destination that help distribute the load and route, even with stale routing tables. Initially, all packages were routed using this method; this has changed over the years. Today the hash table is used to build a routing table and maintain it when a new node is added to the cluster. After discovery, a direct route is used via the destination IP address. \\
     \vspace{5mm}
 
     Routing tables work differently depending on the size of the cluster. However, it can route in two ways. If the size of the routing table is smaller than the number of nodes a direct route is used, if there exist more nodes in the cluster than the routing tables, it switches to routing via routing tables to reduce memory consummation but causing an increase in time complexity to O(log(n)) from O(1)\\
     \vspace{5mm}
-
-    Routing Tokens.
-    \todo[author=Mark]{I was unable to find information on this precisely is handled; however, from the wording in the paper, the initially split would be 50/50, and a third node would be 50/25/25? is it split evening it 33/33/33 but a Fourth node would be 22/22/22/33 that would cause unbalance unless some shifting is done}
+    \paragraph{Routing Tokens}
+    
     Each node owns a token that includes a portion of the routing token it is responsible for. The SF-ring protocol ensures two properties:
     \begin{itemize}
         \item Each token is only owned by one node at any given time;
@@ -1045,7 +1014,7 @@ https://jepsen.io/analyses/postgresql-12.3
 
     \section{Programming for Service Fabric}
     
-    Development for the Service Fabric Framework closely resembles the Development flow for Dotnet Web applications and Kubernetes service Development. There are however, tighter constraints where the application is only executable in azure as no local development environment exists for Linux. \\
+    Development for the Service Fabric Framework closely resembles the development flow for Dotnet Web applications and Kubernetes service development. There are however, tighter constraints where the application is only executable in azure as no local development environment exists for Linux. \\
     
     Writing the code itself is possible via either Java or C\#. Documentation only really exists for C\#. However, this documentation also seems outdated and lacks quite a bit of information. Generally, an MVC application is the best choice for the architecture of the service itself, where stateless or stateful variants are available.\\
     
@@ -1055,40 +1024,22 @@ https://jepsen.io/analyses/postgresql-12.3
 
 
 
-    \section{Comparison}
-    In many of the papers published by Microsoft, many comparisons are made to Cassandra, Redis, and Dynamo. Therefore, an introduction will be made to two of these as they are comparable in many aspects. The investigation will not be as deep as with SF, but consistency and failure modes will be investigated.
+\section{Comparison}
+In many of the papers published by Microsoft, many comparisons are made to Cassandra, Redis, and Dynamo. Therefore, an introduction will be made to two of these as they are comparable in many aspects. The investigation will not be as deep as with SF, but consistency and failure modes will be investigated.
+
     
     
-    
-    \subsection{Cassandra}
-\todo[author=Mark]{Finish subsection}
-    Facebook database product made opensource,
-    
-    Ring via hash table
-    
-    Last write wins
-    
-    Leaderless
-    
-    scalability
-    
-    Clock skrew issues
-    
-    Handling of conflicts
-    
-    sensitivity to time desync
-    
-    possible solution ?
-    
-    usecases
+\subsection{Cassandra}
+
+One of the systems that Microsoft draws comparisons to is Casandra. Casandra was initially made by Facebook and later made open-source via the Apache Software Foundation. It uses the same underlying distributed hashtable to form a Ring; however, unlike Service Fabric, Casandra is leaderless to allow for greater scalability and is purely a database. it handles transactions and operations in a Last Write Wins consistency model. This implementation makes it sensitive to time desync and Clock skew where the wrong value might persist. Its use cases are mainly within instant messaging, where values are written and rarely modified but must be distributed quickly. 
+
+Failure detection is done via a gossiping channel and a sliding value. The way failures are handled is that nodes avoid querying a failed node's value to reach the threshold; this threshold is dynamically adjusted based on network and load conditions. Memberships of a cluster are explicitly initiated by an administrator who manually performs the addition and removal of nodes from a Cassandra instance.\cite{Cassandra}
     
     
 
     \subsection{Redis}
 \todo[author=Mark]{write section on Redis}
 
-    \subsection{Dynamo}
-\todo[author=Mark]{write section on Dynamo}
 
 
     \section{Comparison}
@@ -1433,56 +1384,46 @@ During this thesis, a surprising amount of information was found in existing pap
 
 \section{Consistency model Standards or the lack thereof}
 
-During my time studying prior to this thesis, databases were always presented as fairly strict, adhering to strict behavior with predictable results. This turned out to lack a few asterisks where the definitions for databases behavior are ambiguous. Many databases often fail these requirements when they are put under some workloads. Some of the more worrying findings are how often Nosql databases lose data and how often SQL databases violate their set consistency model. This is also not a discovery either. Looking at papers over the past ten years, it is a topic that is being investigated more and more. It also appears that changes are first being made when a third party in the open-source community brings these issues to light. The paper from Haixiang et al. \cite{li2021coo} is one of the more recent papers collecting existing literature on the topic and proposes, like many papers prior to the definition of Consistency models, not in terms of things they prohibit but in unambiguous mathematical notation that cleanly defines what can and cannot be expected.\\
+Before this thesis, databases were always presented as fairly strict, adhering to strict behavior with predictable results. This turned out to lack a few asterisks where the definitions for databases behavior are ambiguous. Many databases often fail these requirements when they are put under some workloads. Some of the more worrying findings are how often Nosql databases lose data and how often SQL databases violate their set consistency model. This is also not a discovery either. Looking at papers over the past ten years, it is a topic that is being investigated more and more. It also appears that changes are first being made when a third party in the open-source community brings these issues to light. The paper from Haixiang et al. \cite{li2021coo} is one of the more recent papers that summarize existing literature on the topic. Coo, like many papers prior to the definition of Consistency models, not in terms of things they prohibit but in unambiguous mathematical notation that cleanly defines what can and cannot be expected.\\
 \vspace{5mm}
-This unambiguous definition would prevent the current situation where databases are presented differently compared to how they behave in reality. Currently, mislabeling and misclassification of databases are the norm. This issue will persist when there is no standardized way to classify or test them, like aborted reads in Service Fabric or the other issues discovered while working on the thesis. \\\vspace{5mm}
+This unambiguous definition would prevent the current situation where databases are presented differently compared to how they behave in reality. Currently, mislabeling and misclassification of databases are the norm. This issue will persist with no standardized way to classify or test them, like aborted reads in Service Fabric or the other issues discovered while working on the thesis. \\\vspace{5mm}
 \begin{itemize}
     \item Postgres concerning its implementation of repeatable read or its replication functionality.
-    \item MongoDB dropping data
-    \item Casandra last-write wins issues, %and an attempt at a solution via Atomic clocks
-    \item Elastic search issues.
+    \item MongoDB dropping data and violating consistency models.
+    \item Casandra last-write wins issues
+    \item Elastic search losing data.
 \end{itemize}
-\todo[author=Mark]{add some more information to the above points}
 
-These issues can have huge implications in the real world if the behavior is not well understood. Just here in Odense, MongoDB is used by the city to gather data from intersections, water usage, water height levels, temperatures, pollution, and many many other things around the city, This implementation might only annoy a few city planners and other city officials, but if such a system is used in a place where data is more critical such as healthcare or another environment where no data loss is acceptable but due to insufficient understanding journal data is stored where data critical to human life is lost due to not under the correct understand and information about the system in use.
-\todo[author=Mark]{add more to the above concerns.}
+These issues can have huge implications in the real world. Often this behavior is not well understood by the users of the systems. Just here in Odense, MongoDB is used by the city to gather data from intersections, water usage, water height levels, temperatures, pollution, and many other metrics and data points around the city. In this use case, these issues might only annoy a few city planners and other city officials. Situations might occur where these systems are used in a critical application. i.e., in Healthcare, where no data loss is acceptable, medical journals with data critical to human life could be lost due to the information. This case could be due to the system not behaving as expectedly or system designers choosing a system without understanding its behavior.
 
 \section{How can this be improved going forward}
 
-
-How to resolve these issues that aeries from mislabeled and misunderstood consistency models.
-
-Enable better understanding of databases, transaction models, and use cases during the teaching of database courses where behavior is better explained. This should not in-depth but just to the level of read uncommitted or last-write-wins databases are fine for logging but should be avoided for most systems as they have much-unintended behavior, or at least theses systems should be below other layers that ensure that the data is persistent before a commit is accepted.
-
-... should maybe be defined as future work.
-
-Whats next, Defining a standard for testing and certifying database systems towards transactional model that allows the industry to standardize the labeling and allows users and developers to choose the current system for their use case and avoid the headaches of phantom behavior.
-
-This could be done via automated testing and verification of a given system in it is different transactional configurations.
-
+There is no single way to resolve all of the issues surrounding the definitions of consistency models. These issues stem from the ANSI\cite{ansisql1999} standard where due to poor official definitions, either other definitions are used, or these definitions are used that allow for the flaws within them. Information should be available to ensure that developers to ensure that they understand the tradeoffs of a given systems consistency model. System implements should also use automated testing to ensure expected behavior. Such that any issues are found before being shipped and deployed. \\
+\vspace{5mm}
+Students should be taught about transaction models and use cases during introductory database courses where behavior is explained to prevent misuse of consistency models where they do not belong. This should not be in-depth, but Read Uncommitted or last-write-wins databases are fine for logging. However, they should be avoided for certain use cases due to their behavior.\\
+\vspace{5mm}
+Industries should define a standard for testing and checking database systems towards a consistency model. Such a standard would allow the industry to homogenize the labeling, allowing users and developers to choose the current system for their use case and avoid the headaches of anomalous behavior.
 
 \section{Results from Service Fabric}
 
-\todo[author=Mark]{Email JACOPO when done!}
+The results from the experiment show the violation of the consistency models presented by Microsoft. In the results, 3 Types of violations were found; Dirty Write, Dirty Read, and Intermediate Read. Furthermore, no use of the consistency models relaxations. Service Fabric instead uses a strict locking approach; a large number of deadlocks occur, resulting in timeouts and what was supposed to have aborted transactions. It appears that when an exception is thrown, it should be strictly handled; otherwise, the keys are unlocked, and other transactions can access the dirty values. According to the documentation, such events are handled by the system aborting, and users should restart the transaction\cite{servicefabricguidelines}
+However, it appears that this is not the case. a modified implementation of the Service Fabric Stateful service was implemented that manually handled the case of lock timeout seems to resolve the serializable issues in Service Fabric.\\
+\vspace{5mm}
+The poor use of allowed optimizations is harder to solve. Service fabric does not run a scheduler to optimize the ordering of operations; instead, these are run in the order executed by a given process. The only way to allow for these optimizations would be to handle the execution transactions at a lower level, Either via a new module or interfaces that allow for serialization of all concurrent transactions.
 
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
-\todo[author=Mark]{write Conclusion}
 
-I will write deeper about designing, implementing, testing, executing, and analyzing the results. However, this does not mean that the learning and understanding phase of the project was any smaller—quite the contrary. Learning two new programming languages that I have never interacted with before is not easy; adding in the complexity of writing code for a cloud framework that I had no prior experience working on did not help either. Spicing it up with outdated documentation, incompatibility between versions of the framework, and lack of debugging tools and broken tools meant that a lot was done via eyes blind brute-forcing solutions to many issues due to lacking features on the Linux version of the cluster.\\
- 
- 
-Next, Defining a standard for testing and certifying database systems towards the transactional model allows the industry to standardize the labeling and allows users and developers to choose the current system for their use-case and avoid the headaches of phantom behavior.
-
-This could be done via automated testing and verification of a given system in its different transactional configurations.
-
-\section*{Outlook}
-\todo[author=Mark]{write Outlook}
+In this thesis, we presented some of the currently used consistency models. How they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as Ansi\cite{ansi}. 
+Following this initial study, Jepsen was presented. Independent parties from the open-source community created Jepsen. Jepsen was developed due to the mislabeling of current systems. It allows for testing whether a given system meets the requirement for behavior prevented by its creators or what flaws a system exhibits in general. 
+Following the presentation, a Jepsen Service Fabric was presented. Service Fabric is a  distributed systems platform designed by Microsoft. It contains a system for providing distributed transactional data types. 
+Using the knowledge gained from the above sections, Jepsen was used for conducting a test on Service Fabric. The results of this test were that Service Fabric violates the Repeatable read consistency model by allowing uncommitted transactions to persist when exceptions interrupt their execution. 
+Lastly, a discussion on the current state of consistency models, definitions, or the lack thereof, what implications this has, and what can be improved things going forward. Here the finders are the new industry standards required that rectify ambiguous definitions and a system for testing systems towards this standard.
 
 
 
 \section{Future Work}
-\todo[author=Mark]{write Future Work}
+
 Future work could include implementing a deeper testing suite that checks for more types of invariant and issues that might occur in the system.
 
 
