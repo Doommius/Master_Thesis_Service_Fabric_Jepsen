@@ -245,7 +245,7 @@
 
     \item Availability and Partition tolerance (AP) \\ 
     \begin{quote}
-    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would cover DNS, Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency is not guaranteed as nodes are always available. In the case of partitioning, the nodes will diverge while partitioned model and will first regain consistency once the network is healed. 
+    If a system foregoes consistency and delivers availability and partition tolerance, then in the case of a network partition between nodes, we keep serving from all nodes, but the system will serve stale data. It can also occur that rows contain different values due to multiple write operations on the various nodes. An example of an AP database would be Cassandra, where the CP has a master/replicate architecture. This would generally cover DNS, and Caching systems. Cassandra uses a leaderless architecture; it does mean that there are multiple points of failure rather than a single one. It can be available and partition tolerant, but consistency is not guaranteed as nodes are always available. In the case of partitioning, the nodes will diverge while partitioned and will first regain consistency once the network is healed. 
     \end{quote}
 
     \item Availability and Consistency (CA) \\ 
@@ -283,16 +283,16 @@ Availability refers to the guarantee a system promises during the presence of ne
 \newpage
 \section{Transaction Anomalies \& Phenomena}
 
-Consistency models are defined by what Phenomena they allow or prohibit. What lies is this in what behavior is expected during use. There are, however, issues with the definitions of these Phenomena where loose definitions allow for interpretation leading to different interpretations of consistency models and Phenomena, or simply the lack of a definition for some properties.\\
+Consistency models are defined by what Phenomena they allow or prohibit. What these Phenomena cover is the behavior not expected during use. There are, however, issues with the definitions of these Phenomena. They are loose and allow for multiple interpretations leading to different definitions of consistency models and their Phenomena. In some cases, an official definition does not exist for some anomalies.\\
 
-The most common standard for these definitions is ANSISQL99\cite{ansisql1999}, within it, three phenomena are used to describe the different transactional consistency models. These are defined as follows:
+The most common standard for these definitions is ANSI SQL 1999\cite{ansisql1999}, within it, three phenomena are used to describe the different transactional consistency models. These are defined as follows:
 \begin{itemize}
     \item "P1: Dirty Read — Transaction T1 modifies x. Another transaction T2 then reads x before T1 commits or aborts. If T1 then aborts, T2 has read a data item that was never committed and so never really existed."
     \item "P2: Fuzzy or Non-repeatable Read — Transaction T1 reads x, then T2 modifies or deletes x and commits. If T1 then attempts to reread x, it receives a modified value or discovers that the data item has been deleted."
     \item "P3: Phantom — Transaction T1 reads a set of data items satisfying some <search condition>. Transaction T2 then creates data items that satisfy T1's <search condition> and commits. If T1 then repeats its read with the same <search condition>, it gets a set of data items different from the first read."
 \end{itemize}
 
-There are, however, issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation; this led to the Berenson et al. \cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include the further definition for "Read and Write Skew," This phenomena defined data item constraint violations, where the ANSISQL99\cite{ansisql1999} models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations is defined. The exact definition is below: \\
+There are, however, issues with these three phenomena. The definitions used are loose and leave core behavior up to interpretation; this led to the Berenson et al. \cite{Berensonetal} paper "A Critique of ANSI SQL Isolation Levels" published in 1995 to include the further definition for "Read and Write Skew," This phenomena defined data item constraint violations, where the ANSI SQL 1999\cite{ansisql1999} models admit non-serializable histories. To resolve this, a phenomenon that describes item constraint violations is defined. The exact definition is below: \\
 \begin{quote}
     (Data Item Constraint Violation). Suppose C() is a database constraint between two data items x and y in the database. Here are two anomalies arising from constraint violation
 \begin{itemize}
@@ -319,7 +319,7 @@ These 4 phenomena are defined by the following Read/Write conflicts.
     \item P3 (Phantom): r1(P) … w2(y in P)
 \end{itemize}
 
-Explanations follow.
+The following subsections will contain information of the 4 mentioned conflicts as well as P4, and a view of the current landscape of research into consistency conflicts:
 \subsection{P0 - Dirty Write}
 The Dirty Write phenomena occur when concurrent transactions modify a given object x prior to committing or aborting. Following such a violation, symptoms such as aborted operations persisting to the history or cases where a committed value might be overwritten by a process and are lost. The preventive measure here should be that a transaction cannot overwrite changes made by an uncommitted transaction. Prevention is often defined as a locking mechanism working on the transaction history, by reacquiring long-term locks for write and at least short term locks for read operations.\\
 \vspace{5mm}
@@ -386,7 +386,7 @@ Suppose Transaction $T_1$ \& $T_2$ read object x contain 5, Transaction T2 then 
 \subsection{Currently Described Anomalies} 
 \todo[author=Mark]{ Unsure what to name this.}
 
-Following the ANSISQL99\cite{ansisql1999} standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years; The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. The paper includes the following sentence: 
+Following the ANSI SQL 1999\cite{ansisql1999} standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or papers from the past 30 years. The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. It also includes the following sentence: 
 \begin{quote}
     "Definition of data anomalies. Although there are so many data anomalies, but it seems that data anomalies are not explicitly defined. There is no universally accepted definition of data anomalies in academia and industry, and the understanding of data anomalies is only in the way of case-by-case" \cite{li2021coo}
 \end{quote}
@@ -400,7 +400,7 @@ The 18 transactional anomalies are listed below. These definitions will not be e
 Outside of the above paper, other anomalies and issues exist within databases, a deeper investigation into these will not take place, but a short explanation will be given here for issues that often occur to create awareness about the issue,
 \begin{itemize}
     \item Split Brain, A Split Brain occurs when a distributed database is partitioned into two or more fragments that cannot reach each other. However, both remain active with two leaders and continue to process transactions, leading to each fragment believing in separate histories. Split Brain is a regular occurrence in distributed databases.\cite{aphyrelasticsearch, jepsenscylla, jepsenhazelcast}, Some systems can recover from this but often lose data during the healing process.
-    \item Poor handling of quorum
+    \item Data loses when switching to a new primary. It is a quite common occurrence that data stores lose data when failure of the primary occurs. Often the primary might be considered by other nodes in the cluster but a new primary hasn't yet been elected and during this time any writes to the old primary will be lost as the healing processes discards these writes.
 \end{itemize}
 
 \newpage
@@ -424,13 +424,14 @@ Formally Strict Serializability is defined as a Serviceable system compatible wi
 Here it should be clarified what is meant by "the obvious way." For transactions A and B, A proceeds B if A completes prior to transaction B starting. Essentially a Serializable system with the time constraint from Linearizability.
 
 SS cannot be totally or sticky available in the event of a network partition. In this case, some or all nodes will be stuck; this is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole, as in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.\\
+\vspace{2mm}
+
 \input{figs/tables/ssdiagram}
 
 
-\newpage
 \subsection{Serializable}
 
-Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in ANSISQL99\cite{ansisql1999} as follows.
+Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in ANSI SQL 1999\cite{ansisql1999} as follows.
 
 \begin{quote}
 "The execution of concurrent SQL-transactions at isolation level SERIALIZABLE is guaranteed to be serializable. A serializable execution is defined to be an execution of the operations of concurrently executing SQL-transactions that produces the same effect as some serial execution of those same SQL-transactions. A serial execution is one in which each SQL-transaction executes to completion before the next SQL-transaction begins."\cite{ansisql1999}\\
@@ -452,7 +453,7 @@ SR follows closely to S-SR regarding partition tolerance and availability and is
 
 Repeatable Read (RR) closely resembles the Serializable consistency model, however in RR, we allow phantoms. This implies that if T1 reads a predicate like "select all from alarms with the newest timestamp," another transaction T2 is able to create or modify values within the predicate before T1 commits. So if the transaction T1 performs the read again, this predicate might not be stable.
 \\ \vspace{5mm}
-RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, repeatable read does not guarantee repeatable reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
+RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, Repeatable Read does not guarantee Repeatable Reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
 \\ \vspace{5mm}
 It should also be noted that RR allows for the same pathological ordering of operations as a Serializable database.
 \vspace{2mm}
@@ -461,7 +462,7 @@ It should also be noted that RR allows for the same pathological ordering of ope
 
 \newpage
 \subsection{Cursor Stability}
-Cursor Stability closely resembles repeatable read where RR locks the objects until committed. Cursor Stability locks the objects until the cursor moves on or until committed. This allows for different behavior depending on implementation but is formally defined by which phenomena it allows and which it prohibits. \cite{Adya99weakconsistency}\\
+Cursor Stability closely resembles Repeatable Read where RR locks the objects until committed. Cursor Stability locks the objects until the cursor moves on or until committed. This allows for different behavior depending on implementation but is formally defined by which phenomena it allows and which it prohibits. \cite{Adya99weakconsistency}\\
 \begin{itemize}
     \item G-cursor(x): the directed serialization graph, restricted to a single object x, contains an anti-dependency cycle and at least one write-dependency edge.
     \item g1:
@@ -471,7 +472,7 @@ Cursor Stability closely resembles repeatable read where RR locks the objects un
         \item G1c (Circular Information Flow): the Directed Serialization Graph of transactions contains a directed cycle consisting entirely of dependency edges. Intuitively, if transaction T1 is affected by T2, T2 cannot be affected by T1.
     \end{enumerate}
 \end{itemize}
-Furthermore, since cursor stability is strictly stronger than read committed, it also prohibits the ANSISQL99\cite{ansisql1999} phenomena:
+Furthermore, since cursor stability is strictly stronger than read committed, it also prohibits the ANSI SQL 1999\cite{ansisql1999} phenomena:
 \begin{itemize}
     \item P0 (Dirty Write): w1(x) … w2(x)
     \item P1 (Dirty Read): w1(x) … r2(x)
@@ -489,10 +490,10 @@ but allows:
 
 Snapshot Isolation behaves differently to any of the systems. It can be considered more as a \textbf{try: commit() catch: abort()} . We perform our transaction in an independent branch and commit/merge to the database on commit; if there are any conflicts with an already committed transaction, the transaction is simply aborted.
 \\ \vspace{5mm}
-Snapshot Isolation, like Readable Read, operates on an object level and allows for the same behavior. Items are stable once read; however, the predicate again isn't. We can fail to observe a previously committed transaction and place operations in arbitrary places in the transaction due to no Linearizability constraint. It also allows sub-operations to interleave. This can result in write skews, which allow transactions to read overlapping states, modify disjoint sets of objects, then commit; and a read-only transaction anomaly involving partially disjointing write sets.
+Snapshot Isolation, like Readable Read, operates on an object level and allows for the same behavior. Items are stable once read, however, the predicate again isn't. We can fail to observe a previously committed transaction and place operations in arbitrary places in the transaction due to no Linearizability constraint. It also allows sub-operations to interleave. This can result in write skews, which allow transactions to read overlapping states, modify disjoint sets of objects, then commit; and a read-only transaction anomaly involving partially disjointing write sets.
 \\ \vspace{5mm}
 
-It should also be noted that there exist multiple versions of Snapshot Isolation, one being prefix-consistent snapshot isolation that enforces process-level transaction ordering, which prevents a given process from failing to observe a previous transaction; and another being parallel snapshot isolation that allows for total availability but this allows for long fork anomalies, as each node has its own transaction ordering.
+It should also be noted that there exist multiple versions of Snapshot Isolation, one being prefix-consistent Snapshot Isolation that enforces process-level transaction ordering, which prevents a given process from failing to observe a previous transaction; another being parallel Snapshot Isolation that allows for total availability but this allows for long fork anomalies, as each node has its own transaction ordering.
 \\ \vspace{5mm}
 Formally Snapshot Isolation is defined by Berenson et al.\cite{Berensonetal}. as:
 
@@ -510,7 +511,7 @@ There also exist multiple other definitions from Cerone et al. \cite{CeroneBerna
 
 \newpage
 \subsection{Monotonic Atomic View}
-The Monotonic Atomic view(MAV) model is a relaxation of snapshot isolation. It requires that effects by transactions are fully visible once read by other transactions, such that T1 may perform w(1), w(2), w(2), c. These three sub-operations effects should all either be fully visible or not at all, so partial transactions are not allowed. Formally this is defined by Bailis et al. \cite{HighlyAvailableTransactionsVirtuesandLimitations}
+The Monotonic Atomic View (MAV) model is a relaxation of Snapshot Isolation. It requires that effects by transactions are fully visible once read by other transactions, such that transaction $T_1$ may perform $W(y_1)$, $W(x_1)$, $W(x_2)$, C. These three sub-operations effects should all either be fully visible or not at all, so partial transactions are not allowed. Formally this is defined by Bailis et al. \cite{HighlyAvailableTransactionsVirtuesandLimitations}
 \begin{quote}
     "Under MAV, once some of the effects of a transaction Ti are observed by another transaction Tj, thereafter, all effects of Ti are observed by Tj. That is if a transaction Tj reads a version of an object that transaction Ti wrote, then a later read by Tj cannot return a value whose later version is installed by Ti."
 \end{quote}
@@ -521,29 +522,29 @@ Furthermore, by Adya et al. \cite{Adya99weakconsistency} as prohibiting:
     \item G1b (Intermediate Reads): A transaction observes an object (perhaps via a predicate) modified by a transaction that was not that transaction's final modification of that object. Intuitively, transactions have to finish before we can read them,
 \end{itemize}
 
-Further, since MAV is strictly stronger than Read Committed, it also disallows the ANSISQL99\cite{ansisql1999} phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
+Further, since MAV is strictly stronger than Read Committed, it also disallows the ANSI SQL 1999\cite{ansisql1999} phenomena Dirty Write(P0), Dirty Read (P1) but allows Fuzzy Read (P2) and Phantom (P3)
 
 \subsection{Read Committed}
 The Read Committed transaction model is the first non-atomic transaction model where partial visibility of committed transactions is permitted. This however, might lead to foreign key constraint issues, among other problems where required data joins are performed due to not yet visible values.
 \\ \vspace{5mm}
 
-Formally it is defined in ANSISQL99\cite{ansisql1999} by disallowing P1 ("Dirty read" ). In the Microsoft paper, Berenson et al. \cite{Berensonetal} it is observed that the ANSISQL99\cite{ansisql1999} specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unambiguous ANSISQL99\cite{ansisql1999} specification.
+Formally it is defined in ANSI SQL 1999\cite{ansisql1999} by disallowing P1 ("Dirty read" ). In the Microsoft paper, Berenson et al. \cite{Berensonetal} it is observed that the ANSI SQL 1999\cite{ansisql1999} specification allows multiple interpretations, one of which allows non-serializable histories. Here Adya et al.\cite{Adya99weakconsistency} is commonly used as it provides a concrete specification based on the unambiguous ANSI SQL 1999\cite{ansisql1999} specification.
 \\ \vspace{5mm}
 
 %\todo[author=Mark]{TODO Make Diagram Read committed}
 
 \subsection{Read Uncommitted}
-Read Uncommitted as defined by ANSISQL99\cite{ansisql1999} allows all behavior. However, this has been challenged by Berenson et al. \cite{Berensonetal} where they argue that Read Uncommitted should disallow dirty writes. This is also the non-ANSISQL99\cite{ansisql1999} defacto definition as per Adya et al. \cite{Adya99weakconsistency} which again provides a better definition based on what can be interpreted from the loose definition in ANSISQL99\cite{ansisql1999}. It should be noted that due to the loose specification in ANSISQL99\cite{ansisql1999}, multiple mainstream interpretations exist.\\
+Read Uncommitted as defined by ANSI SQL 1999\cite{ansisql1999} allows all behavior. However, this has been challenged by Berenson et al. \cite{Berensonetal} where they argue that Read Uncommitted should disallow Dirty Writes. This is also the non-ANSI SQL 1999\cite{ansisql1999} defacto definition as per Adya et al. \cite{Adya99weakconsistency} which again provides a better definition based on what can be interpreted from the loose definition in ANSI SQL 1999\cite{ansisql1999}. It should be noted that due to the loose specification in ANSI SQL 1999\cite{ansisql1999}, multiple mainstream interpretations exist.\\
 
-by the Aday's specification Read Uncommitted disallows
+by the Aday's specification Read Uncommitted disallows:
 \begin{itemize}
-    \item Dirty Write(P0)
+    \item Dirty Write(P0).
 \end{itemize}
-But allows
+But allows:
 \begin{itemize}
-    \item Dirty read(P1)
-    \item Fuzzy Read (P2)
-    \item Phantom (P3)
+    \item Dirty read(P1);
+    \item Fuzzy Read (P2);
+    \item Phantom (P3).
 \end{itemize}
 
 \subsection{Non-transaction models (BASE)}
@@ -552,12 +553,12 @@ The category of BASE transaction models is not considering the order of transact
 \subsubsection{Linearizable}
 Linearizability is the strongest single object consistency model that requires operations to occur in an order consistent with real-time, and the operations themselves should occur atomically. It should also be noted that Linearizability is not tolerant to network partitions and should be considered a CA model according to the CAP theorem.
 
-it is formalized  in \cite{Linearizability} and later specified  in \cite{ConsistencyinNonTransactionalDistributedStorageSystems} where it's defined by 3 requirements
+Linearizable is formalized in Herlihy et al.\cite{Linearizability} and later specified in Viotti et al. \cite{ConsistencyinNonTransactionalDistributedStorageSystems} where it's defined by 3 requirements:
 
 \begin{itemize}
-    \item Single Order (there exists some total order of operations)
-    \item RealTime (consistent with the real time bound)
-    \item RVal (obeying the single-threaded laws of the associated object's datatype)
+    \item Single Order (there exists some total order of operations);
+    \item RealTime (consistent with the real time bound);
+    \item RVal (obeying the single-threaded laws of the associated object's datatype).
 \end{itemize}
 
 \subsubsection{Sequential Consistency}
@@ -567,19 +568,19 @@ One of the phenomena SC allows is Stale Reads. All processes have to follow the 
 
 Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti and Vukolić\cite{ConsistencyinNonTransactionalDistributedStorageSystems} formalized it into three requirements:
 \begin{itemize}
-    \item SingleOrder (there exists some total order of operations)
-    \item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).)
-    \item RVal (the order must be consistent with the semantics of the datatype)
+    \item SingleOrder (there exists some total order of operations);
+    \item PRAM (the session order (the order of operations on each process) is a subset of the visibility order (what operations are visible to a given operation).);
+    \item RVal (the order must be consistent with the semantics of the datatype).
 \end{itemize}
 
 \subsubsection{Causal Consistency and Eventual Consistency}
-Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way the consistency is handled by all end up in the same state eventually.
+Two of the consistency models were already mentioned in the previous section namely Atomic Consistency and Sequential Consistency. There exist two more models within common use, which are Causal Consistency and Eventual Consistency. They differ in the way that consistency is handled but all end up in the same state eventually.
 
 
 \newpage
 \section{Directed Serialization graphs}
 
-Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction. Each node represents a committed transaction, and edges represent different types of direct conflicts. \\ using these conflicts, we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
+Directed Serialization graphs(DSG) are used to reason about a history of Transactions and operations within a transactional system. Each node represents a committed transaction, and edges represent different types of direct conflicts. \\ By using these conflicts, we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
 \subsection{Transaction conflicts relations}
 \subsubsection{Read-Dependency}
 
@@ -589,14 +590,14 @@ The Read-dependency is when a Transaction $T_j$ directly depends on a write from
 \input{Report/figs/tikz/dsg/rd}
 \vspace{2mm}
 
-We have a history H. as follows.
+We have a history H. as follows:
 \begin{equation}
     History\ H: [T_1(W(x_0)), T_2(R(x_0))]
 \end{equation}
 
 This history contains two transactions $T_i$ followed by $T_j$. $T_i$ writes version $x_0$, which is later read by $T_j$, thus item-read-depends on $T_i$. this wr is also denoted by the red arrow in the above illustration.
     
-A SQL example of this relation would be the below script
+An SQL example of this relation would be the below script:
         
 \begin{lstlisting}
 update accounts set balance = 42 where id = 1;
@@ -616,12 +617,12 @@ This case of WR dependency gives the symptom of objects appearing or disappearin
 
 Transaction $T_2$ sees $x_0$ in it's first predicate read, however in the second read nothing is observed as $x_0$ was overwritten by $x_1$ via $T_1$. \\
 
-We have a history H. as follows.
+We have a history H. as follows:
 \begin{equation}
     History\ H: [T_1(W(x_1)), T_2(R(x_0),R(\emptyset))]
 \end{equation}
 
-A SQL example of this relation would be the below script.
+An SQL example of this relation would be the below script:
 
 \begin{lstlisting}
 select * from accounts where balance > 0;
@@ -631,20 +632,20 @@ select * from accounts where balance > 0;
         
         
 \subsubsection{Write-Dependency (ww)}
-A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. the relation is named ww as two writes to the same object with only one persisting.
+A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. The relation is named ww as two writes to the same object with only one persisting.
 
 \vspace{2mm}
 \input{Report/figs/tikz/dsg/wd}
 \vspace{2mm}
 
 
-Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-dependency on $T_1$, The dependency is denoted by the red arrow in the graph. \\
+Transaction $T_2$ overwrites the object $x_1$ written by $T_1$ implying a Write-dependency on $T_1$. The dependency is denoted by the red arrow in the graph. \\
 
 \begin{equation}
     History\ H: [T_1(W(x_1)), T_2(W(x_2))]
 \end{equation}
 
-A SQL example of this relation would be the below script
+An SQL example of this relation would be the below script:
 
 \begin{lstlisting}
 update accounts set balance = 42 where id = 42;
@@ -667,13 +668,13 @@ Transaction $T_1$ reads $X_1$, this object is then modified by $T_2$ and therefo
 \end{equation}
 
 
-A SQL example of this relation would be the below script:
+An SQL example of this relation would be the below script:
 \begin{lstlisting}
   select * from accounts where id = 42;
   update accounts set balance = 2022 where id = 42;
 \end{lstlisting}
 
-\subsection{phenomena defined via cycles and conflicts}
+\subsection{Phenomena defined via cycles and conflicts}
 
 \subsection{G0: Dirty Writes}
 A history exhibits phenomenon G0 if the DSG contains a directed cycle consisting entirely of write-dependency edges.
@@ -694,12 +695,12 @@ Phenomenon G1 captures the essence of no-dirty-reads and consists of g1a, g1b, g
     \input{Report/figs/tikz/dsg/g1a}
     \\
 
-To prevent this: If a transaction has performed a read on an object modified by an aborted transaction, It itself has to abort.
+To prevent this: If a transaction has performed a read on an object modified by an aborted transaction, it itself has to abort.
 \subsubsection{G1b: Intermediate Reads (Dirty Reads)}
     A history exhibits G1b if it contains a committed transaction containing a read of an intermediary modification by another transaction. i.e., a read of a non-final modification was performed and committed to the history. 
 \input{Report/figs/tikz/dsg/g1b}
  \\
-To prevent this, a: If a transaction has read an intermediate state of an object, it must be aborted, or an exclusive lock should be held to prevent other transactions from accessing an intermediate state.
+The preventative implementation requires that if a transaction has read an intermediate state of an object, it must be aborted.
 
 
 \subsubsection{G1c: Circular Information Flow}
@@ -719,7 +720,7 @@ The above example has $T_1$ and $T_2$ performing a concurrent increment(x) call.
 A history exhibits G-single if the dsg contains a cycle consisting of an anti-dependency (rw) and dependency (ww, wr) edges.\\
 \input{figs/tikz/dsg/g-single}
 \\
-In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the system and therefor ended up reading an seeing inconsistent state. The two valid states in the above context is [$x_0$ , $y_0$] and [$x_1$ , $y_1$]
+In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the system and therefore end up reading an inconsistent state. The two valid states in the above context are [$x_0$ , $y_0$] and [$x_1$ , $y_1$]
 
 \todo[author=Mark]{Item Anti-dependency Cycles (write skew on disjoint read)}
 
@@ -731,25 +732,25 @@ In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the s
 \section{Introduction}
 Consistency model testing is the process of testing if a given system meets the requirement for a given consistency model. The way consistency models are defined is by which anomalies they prohibit. Therefore a straightforward method for testing whether a system meets the requirements for a model can be done by analyzing the transaction history for anomalies.\\
 \vspace{5mm}
-These tests are required to ensure that a system behaves expectedly and verify that they behave according to their creators' specifications. If a system does not behave as expected, situations can occur where information is lost, and harm can be done either bodily, financially, or materially. \\ \vspace{5mm}
+These tests are required to ensure that a system behaves expectedly and to verify that they behave according to their designers' specifications. If a system does not behave as expected, situations can occur where information is lost, and harm can be done either bodily, financially, or materially. \\ \vspace{5mm}
 
-In context, some transactional databases only allow for the execution of one transaction at a time where either the whole database or tables used are locked during transactions. In contrast, high-performance databases operate at a high concurrency level, allowing multiple transactions to operate on the same objects, thus allowing for higher performance and better scalability. However, these optimizations often have side effects due to poor implementation, understanding, or an intentional side effect to gain performance. These side effects might range from sometimes returning a stale value to the dirty reads and writes that allow for uncommitted data to persist. These side effects occur when allowing multiple processes to access or modify objects concurrently. Therefore, the system must ensure that the ordering of these operations does not violate the system's consistency model. For a system that does not operate concurrently, this is easily implemented. This same approach can be implemented via heavy locking for concurrent systems; however, this might lead to a high number of deadlocks and a consequent drop in performance, possibly lower than a nonconcurrent implementation. Instead, a scheduler is used to schedule and execute transactions concurrently. This scheduler is at fault for causing these violations, or rather optimizations of the scheduler. 
-These circumstances arise when database creators attempt to improve the performance. During these optimizations, errors might inadvertently be introduced that allow for the execution of conflicting transactions. Therefore tests are required to check if a given optimization allows for conflicts.
+In context, some transactional databases only allow for the execution of one transaction at a time where either the whole database or tables used are locked during transactions. In contrast, high-performance databases operate at a high concurrency level, allowing multiple transactions to operate on the same objects, thus allowing for higher performance and better scalability. However, these optimizations often have side effects due to poor implementation, understanding, or an intentional side effect to gain performance. These side effects might range from sometimes returning a stale value to the Dirty Reads and Writes that allow for uncommitted data to persist. These side effects occur when allowing multiple processes to access or modify objects concurrently. Therefore, the system must ensure that the ordering of these operations does not violate the system's consistency model. For a system that does not operate concurrently, this is easily implemented. This same approach can be implemented via heavy locking for concurrent systems, however, this might lead to a high number of deadlocks and a consequent drop in performance, possibly lower than a nonconcurrent implementation. Instead, a scheduler is used to plan and execute transactions concurrently. This scheduler is at fault for causing these violations, or rather optimizations applied to it. 
+These circumstances arise when database creators attempt to improve the performance. During these optimizations, errors might inadvertently be introduced that allow for the execution of conflicting transactions. Therefore, tests are required to check if a given optimization allows for conflicts.
 
 \section{Historically}
 
-Historically, testing was done using manually defined sets of transactions. They required careful consideration and were time-consuming to design, and often only able to check for simple patterns. These tests could check if a proven invariant held for a given consistency model or if an anomaly is present. They were also used to show if a system allowed long forks or snapshot isolation, and more importantly, at the time, if it supported them.
+Historically, testing was done using manually defined sets of transactions. They required careful consideration and were time-consuming to design, and often only able to check for simple patterns. These tests could check if a proven invariant held for a given consistency model or if an anomaly is present. They were also used to show if a system allowed long forks or Snapshot Isolation, and more importantly, at the time, if it supported them.
 
-These tests are quite efficient but only check for specific patterns and therefore do not allow generalized checking if issues might be present. They were highly limited in what anomalies they could find and which consistency models they checked. Furthermore, due to the hard-coded and highly custom design, they are implemented on a system-to-system basis with no interchangeability.
+These tests are quite efficient but only check for specific patterns and, therefore, do not allow generalized checking if issues might be present. They were highly limited in what anomalies they could find and which consistency models they checked. Furthermore, due to the hard-coded and highly custom design, they are implemented on a system-to-system basis with no interchangeability.
 
-This also means that the scope of these testing projects usually is enormous and defined case by case with predefined transactions that only test a limited scope. The test might have been done previously but was very limited in test coverage, and most anomalies were are never detected.
+This also means that the scope of these testing projects usually is enormous and defined case by case with predefined transactions that only test a limited scope. The test might have been done previously but was very limited in test coverage, and most anomalies were never detected.
 
 \section{State of the art}
 
 Modern databases require automated testing suites to test if their behavior meets the requirements for their specification. During the investigating of what is available, three results were found, more possibly exist but not in the public space.
 \begin{itemize}
-\item Jepsen is an automized framework that allows for generalized consistency testing of nearly any type of system.
-\item AGENDA\cite{AGENDA} is a partially-automatable tool that allows for ACID constraint testing. The only mention of this is in a paper from 2002 with minimal information available online. this is not fit for this use case as it does not allow for
+\item Jepsen is an automized framework that allows for generalized consistency testing of nearly any type of system;
+\item AGENDA\cite{AGENDA} is a partially-automatable tool that allows for ACID constraint testing. The only mention of this is in a paper from 2002 with minimal information available online. This is not fit for this use case as it does not allow for consistency testing;
 \item HISTEX\cite{HISTEX} is a tool developed that allows for automated testing of a database but using hand-coded transactions and appears more in line with the historical way of performing consistency testing and can therefore not be used.
 \end{itemize}
 
@@ -763,25 +764,25 @@ Jepsen is a generalized consistency checker that works by performing black-box t
 
 \vspace{5mm}
 
-Going from the above quote Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that its creators give. Distributed systems are becoming common; this requires data storage to behave expectedly. The expected manner is used rather than the correct manner because we may allow certain faults to occur and allow for eventual consistency as this allows for higher throughput applications. There are cases where data may only be required locally to consider a transaction complete, even when some undesirable conditions occur. However, these are tolerated to a certain extent. \\
+Going from the above quote, Jepsen is a way that allows us to check whether a given database system lives up to the requirements and premises that its designers give. Distributed systems are becoming common; this requires data storage to behave expectedly. The expected manner is used rather than the correct manner because we may allow certain faults to occur and allow for eventual consistency as this allows for higher throughput applications. There are cases where data may only be required locally to consider a transaction complete, even when some undesirable conditions occur. However, these are tolerated to a certain extent. \\
 
 A scenario where real-time data distribution and correctness are of the utmost importance is within transactions in the finance industry, where we only want to consider a financial transaction committed once all shards of this data are replicated, and the 'old' balance is no longer available. Otherwise, we could reach a condition where worst case, a client can draw a negative balance on their account or where one of the transactions is not recorded as only one of the two transactions is recorded.\\
 
-Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post, this comment might not necessarily be available to users instantly, and it is of no concern if it takes a few seconds or minutes to be distributed to all nodes. Users generally do not notice these delays, and it allows for better scaling within these huge applications with mullions or billions of requests per second.\\
+Oppositely a situation where eventual consistency is of no issues is for platforms like Facebook, YouTube, or Reddit. When a user comments on a post, this comment might not necessarily be available to users instantly, and it is of no concern if it takes a few seconds or minutes to be distributed to all nodes. Users generally do not notice these delays, and it allows for better scaling within these huge applications with millions or billions of requests per second.\\
 
 \vspace{5mm}
 
-Jepsen, therefore, exists to test and check that systems behave expectantly. The way Jepsen performs these tests is to run clients externally of the target system. Hosts are connected via an IP network, and the clients are running on the same host in a single JVM instance, using the same driver to send requests to the system. The reason they are run in the same JVM is to ensure strict timekeeping of the requests. Clients then generate randomized operations and apply these over the network.
+Jepsen, therefore, exists to test and check that systems behave expectantly. The way Jepsen performs these tests is to run clients externally of the target system. Hosts are connected via an IP network, and the clients are running on the same host in a single JVM instance, using the same driver to send requests to the system. The reason they are run in the same JVM is to ensure strict timekeeping of the requests. Clients then generate randomized operations and apply these over the network.\\
 
 \input{figs/tikz/Jepsen_topology}
-\vspace{5mm}
-The result from these operations can result in three outcome types. :ok, :fail and :info.
+\vspace{25mm}
+The result from these operations can result in three outcome types:
 \begin{itemize}
-\item :ok. The operation was executed as expected.
-\item :fail. The operation failed and did not take place.
-\item :info, an issue occurred in the system neither, this is cases of dropped connections, timeouts, or unknown exception. for these cases, it is assumed that the operation may or may not have happened or might occur later.
+\item :ok. The operation was executed as expected;
+\item :fail. The operation failed and did not take place;
+\item :info, an issue occurred in the system. These are cases of dropped connections, timeouts, or an unknown exception. For these cases, it is assumed that the operation may or may not have happened or might occur later.
 \end{itemize}
-This history is used to reason about the state and order of the system and allows for checking for anomalies or other required properties. Linearizability can be checked by finding a path moving forward in time that touches every non-failed operation. If this path makes sense, i.e., we always read prior writes this history, this system is considered Linearizability. A dependency graph is built for serializable models, and violations are found by looking for cycles. \\
+This history is used to reason about the state and order of the system and allows for checking for anomalies or other required properties. Linearizability can be checked by finding a path moving forward in time that touches every non-failed operation. If this path makes sense, i.e., if we always Read Prior Writes in this history, this system is considered liniarizable. A dependency graph is built for serializable models, and violations are found by looking for cycles. \\
 
 All of this functionality lies within the Jepsen client.
 
@@ -816,7 +817,9 @@ Oppositely a situation where eventual consistency is of no issues is for platfor
 
 
 
-\subsection{Jensens internal modules.}
+\subsection{Jensens internal modules}
+Jepsens internal modules handle consistency between the clients and connections to the target system.
+
 \subsubsection{Elle}
 Elle,\cite{elle} inferring isolation anomalies from Experimental Observations. \\
 
@@ -825,9 +828,9 @@ Elle is a transactional consistency checker for black-box testing. It infers a d
 
 
 \section{Past Jepsen tests}
-Jepsen.io contains publicly available test for 28 different systems. they nearly all contain issues or violation of the consistency model they are presented to meet. I will summarize the findings of a few prior tests below.
+Jepsen.io contains publicly available test for 28 different systems. They nearly all contain issues or violation of the consistency model they are presented to meet. I will summarize the findings of a few prior tests below.
 \subsection{Cassandra}
-A test was done on Cassandra\cite{jepsencassandra} in 2013 that showed some interesting behavior; Doomstones, during conflicts, a lexicographically bigger value is winning. such that separate parts of separate transactions might persist in the database. .\\
+A test was done on Cassandra\cite{jepsencassandra} in 2013 that showed some interesting behavior; Doomstones, during conflicts, a lexicographically bigger value is winning. such that separate parts of separate transactions might persist in the database.\\
 \vspace{5mm}
 Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. Nevertheless, unlike most other databases, it uses timestamp-based last write wins. This allows for extremely high performance but also at the cost of being highly sensitive to clock skew.\\
 
@@ -835,20 +838,20 @@ In the test on Cassandra it was found that:
 \begin{itemize}
     \item During a single key heavy write operation Losing 28\% of committed data and fails linearizable by any definition.
     \item During Write conflicts, roughly 1 in 200 rows end up being corrupt due to poor handling time where milliseconds are used with three zeros at the end instead of microseconds.
-    \item \textit{No. Cassandra's lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes–and this does not even require a network partition to demonstrate. It is just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013, where an insert is rejected but committed. (unnecessarily high false-negative probabilities).}
+    \item \textit{"No. Cassandra's lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes–and this does not even require a network partition to demonstrate. It is just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013, where an insert is rejected but committed. (unnecessarily high false-negative probabilities)."}\cite{jepsencassandra}
 \end{itemize}
 
 \subsection{Postgres}
 A Jepsen test\cite{jepsenpostgresql} was performed on PostgreSQL in 2020. During this test, several observations were made.
 \begin{itemize}
-    \item PostgreSQLs repeatable read behaves accordingly to snapshot isolation. G2-item violations occurred where write skew on disjoint read was observed ."
+    \item PostgreSQLs repeatable read behaves accordingly to snapshot isolation. G2-item violations occurred where write skew on disjoint read was observed.
     \item PostgreSQLs serializability implementation contains the same issues, where concurrent update and insert transactions may exhibit G2-item.
 \end{itemize}
 
 \subsection{MonogoDB}
 
 \begin{itemize}
-\item In the first Jepsen test of MongoDB, 42% of writes were lost \cite{jepsenmongodb243}
+\item In the first Jepsen test of MongoDB, 42\% of writes were lost \cite{jepsenmongodb243}
 \item In the second test of MongoDB, testing was done of its consistency model. It was found that MongoDB lies somewhere under Read Uncommitted\cite{jepsenmongodb267}
 \item In the third test of MongoDB Lost updates, Dirty Reads, and Stale Reads was prevented with the v1 protocol. if the v0 protocol is used, these anomalies still occur.\cite{jepsenmongodb340}
 \item The latest test of MongoDB tests claims about "full ACID transactions" where G-single (read skew), G1c (cyclic information flow), duplicated writes, and anomalies where a transaction could read its writes performed in the future. \cite{jepsenmongodb340}
@@ -1330,13 +1333,15 @@ The changes for the Generator and checker shifted a lot of the heavy lifting fro
 \subsubsection{Running the test}
 
 \begin{enumerate}
-    \item The testing suite is run in Azure using six nodes. Five for service fabric and 1 for the Jepsen host.  Service Fabric is in charge of the cluster for Orchestration.
+    \item The testing suite is run in Azure using six nodes. Five for service fabric and 1 for the Jepsen host. Service Fabric is in charge of the cluster for Orchestration. a deployment configuration is provided with the source code,
     \item Deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script; 
     \item The Jepsen test code is deployed to the Jepsen node test node. 
     \item Test configuration
     \begin{itemize}
         \item Duration of the test were for up to 2 hours. Longer test can occur once routing is available on service fabric for linux.
+        \item The driver should be updated to point to the IP of the node hosting the primary partition. 
     \end{itemize}
+    \item The test is started by running the bash file in the repository located at thesis/Clojure\_project/deploy\_run\_remote.sh. Prior to running the file a ssh key should be added to the host and the file should have the IP to the host updated to point to the server used. when the script is run it first uploads the code to the jepsen host, installs the required packages, configures ssh keys of the deployment clusters , builds the project and starts the test. After the test is complete it copies the results to the local machine.
     \item During the test, systems take care of themselves. the tester can either remain connected over the duration of the test and follow the tail of the output or reconnect later to retrieve the results.
     \begin{itemize}
         \item  The Jepsen node connects to the 5 Service Fabric nodes via SSH to induce crashes, time skew, and other failures and issues.
@@ -1441,37 +1446,34 @@ These issues can have huge implications in the real world. Often these failure m
 
 \section{How can this be improved going forward}
 
-There is no single way to resolve all of the issues surrounding the definitions of consistency models. These issues stem from the ANSISQL99\cite{ansisql1999} standard where due to poor official definitions, either other definitions are used, or these definitions are used that allow for the flaws within the consistency models.. Information should be available to developers that ensure that they understand the trade-offs of a given systems consistency model. System implements should also use automated testing to ensure expected behavior, such that any issues are found before being shipped and deployed. \\
+There is no single way to resolve all of the issues surrounding the definitions of consistency models. These issues stem from the ANSI SQL 1999\cite{ansisql1999} standard where due to poor official definitions, either other definitions are used, or these definitions are used that allow for the flaws within the consistency models.. Information should be available to developers that ensure that they understand the trade-offs of a given systems consistency model. System implements should also use automated testing to ensure expected behavior, such that any issues are found before being shipped and deployed. \\
 \vspace{5mm}
 Students should be taught about transaction models and use cases during introductory database courses where behavior is explained to prevent misuse of consistency models where they do not belong. This should not be in-depth, but Read Uncommitted or last-write-wins databases are fine for logging. However, they should be avoided for certain use cases due to their behavior.\\
 \vspace{5mm}
 Industries should define a standard for testing and checking database systems towards a consistency model. Such a standard would allow the industry to homogenize the labeling, allowing users and developers to choose the current system for their use case and avoid the headaches of anomalous behavior.
 
-\section{Implementation of the Jepsen test}
-\begin{itemize}
-    \item Learning the required tools to implement the services and applications in the first place. C\#, Clojure, and Service Fabric itself and reliable collections and lastly Jepsen itself.
-    \item Understanding the problem, requirement, topology, architectures, and how we want to test these things.
-    \item Designing the Services, Libraries, APIs, testing suite, the infrastructure and networking of the cluster and azure.
-    \item Implement the Services, Libraries, APIs, and testing suite required for things to talk to each other.
-    \item Test all the code and configurations and ensure things work as intended.
-    \item Execute the test itself.
-    \item Analyse the data from the test.
-\end{itemize}
+\section{Implementation of Jepsen test for Service Fabric}
 
+Implementing the Jepsen test of Service Fabric was not the most seem less experience. 2 new programming languages, programming patterns, and frameworks were introduced. these new framworks led to many beginners' mistakes due to the lack of experience with .Net, Clojure, and the MVC design paradigm. 
+\\ \vspace{5mm}
+Misconceptions about the behavior and functionality of the systems used led to,the implementations reaching a blockage caused by incorrect design decisions. These decisions required starting with multiple parts of the implementation as the examples and guides in the documentation are often outdated. They will not work with current deployments in Azure. This documentation often led the development astray as it contained examples a few years ago, where the current implementation of .Net contains countless breaking changes compared to the older versions.\cite{breakingchangesdotnet} 
+\\ \vspace{5mm}
+
+ Although functioning implementation was reached in the end, it was not without pains; due to the rapid changes of the .Net framework, the documentation is not there to document how the framework function and what functionality works with a given revision.
 
 \section{Results from Service Fabric}
 
 The results from the experiment show the violation of the consistency models presented by Microsoft. In the results, 3 Types of violations were found: Dirty Write, Dirty Read, and Intermediate Read. Furthermore, no use of the optimizations allowed with the consistency model Repeatable Read. Service Fabric uses a strict locking approach instead. As a result, a large number of deadlocks occur, resulting in timeouts and what was supposed to have been aborted transactions. It appears that when an exception is thrown, it should be strictly handled; otherwise, the keys are unlocked, and other transactions can access the dirty values. According to the documentation, such events are handled by the system aborting, and users should restart the transaction\cite{servicefabricguidelines}
 However, it appears that this is not the case. A modified implementation of the Service Fabric Stateful service was implemented that manually handled the case of lock timeout. This implementation resolved the serializability issues within Service Fabric.\\
 \vspace{5mm}
-The poor use of allowed optimizations is harder to solve. Service Fabric does not run a scheduler to optimize the ordering of operations; instead, they are run executed in order by a given process. The only way to allow for these optimizations would be to handle the execution transactions at a lower level, either via a new module or interfaces that allow for serialization of all concurrent transactions.
+The poor use of allowed optimizations is harder to solve. Service Fabric does not run a scheduler to optimize the ordering of operations; they are run executed in order by a given process, instead. The only way to allow for these optimizations would be to handle the execution transactions at a lower level, either via a new module or interfaces that allow for serialization of all concurrent transactions.
 
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
 
-In this thesis, we presented some of the currently used consistency models, how they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as ANSISQL99\cite{ansisql1999} by the American National Standards Institute. 
+In this thesis, we presented some of the currently used consistency models, how they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as ANSI SQL 1999\cite{ansisql1999} by the American National Standards Institute. 
 Following this initial study, Jepsen was presented. Independent parties from the open-source community created Jepsen due to the mislabeling of current systems. It allows for testing whether a given system meets the requirement of the consistency model outlined by its creators and shows what other flaws a system might exhibits. 
-Following the preliminaries, Service Fabric was designed by Microsoft as a distributed systems platform. It contains a system providing distributed transactional data types. The implementation of these transactional data types is presented in chapter 4 and it contains a small section comparing this implementation to Redis and Cassandra.  
+Following the preliminaries, Service Fabric was designed by Microsoft as a distributed systems platform. It contains a system providing distributed transactional data types. The implementation of these transactional data types is presented in chapter 4 and it contains a small section comparing this implementation to the Redis and Cassandra data stores.  
 Using the knowledge gained from the above sections, Jepsen was used for conducting a test on Service Fabric. The results of this test were that Service Fabric violates the Repeatable Read consistency model by allowing uncommitted transactions to persist when exceptions interrupt their execution. 
 Lastly, a discussion on the current state of consistency models, definitions, or the lack thereof, what implications this has, and what can be improved within these fields going forward. Here the findings are that new industry standards are required that rectify the current ambiguous definitions and outline a system for testing systems against this standard.
 
