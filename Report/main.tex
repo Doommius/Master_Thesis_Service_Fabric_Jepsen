@@ -148,16 +148,16 @@
     \end{itemize}
     
     The results for the test show that Service Fabric expresses G0 and G1 violations as well as exponential abort rates in correlation with transaction length. There is no guarantee of consistency with scaling beyond a single node due to the underlying architecture that requires an individual implementation of a transaction manager and query optimizer.
-    Within the industry, the classifications and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
-    Instead, numerous papers, outdated standards, and articles are used with mixed terminology, definitions, and specifications. Users cannot rely on documentation of how a given database or data store behaves.
+    Within the industry, the classifications, and specifications of consistency models lack a usable standard that outlays what users can expect of the different models.
+    Instead, numerous papers, outdated standards and articles are used with mixed terminology, definitions, and specifications. Users cannot rely on documentation of how a given database or data store behaves.
 
 
 
     \chapter{Introduction}
-    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and, low cost. However, often these expectations are not met.
+    Highly Distributed systems are becoming commonplace as the world grows increasingly interconnected, faster-paced, more data-driven with higher expectations of user services and products. In these situations, the end-user expects availability combined with low- latency, reliability and low cost. However, these expectations are often not met.
 
     Most people are familiar with how YouTube, Facebook, Google, and Reddit behave and the quirks they sometimes present.
-    For example, the YouTube video counter got stuck at around 300 views and did not update for a while. This problem was a side effect of an anti-botting feature that caused it to stick, the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes were not consistent. Therefore the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people do not notice a few seconds to a minute delay when dealing with comments, views, or likes.
+    For example, the YouTube video counter got stuck at around 300 views and did not update for a while. This problem was a side effect of an anti-botting feature that caused it to stick; the system was designed to stop after the counter reached 300, but the counter would often go higher. This is an example of the system not being entirely consistent; most nodes were in the correct state of stopping the count when the number got larger than 300; however other nodes were not consistent. Therefore, the servers still counted the views even though they were supposed to have been sent to a different table that verified the views before considering them legitimate. Even though the number is still not consistent worldwide, this does not pose an issue as most people do not notice a few seconds to a minute delay when dealing with comments, views, or likes.
     \\
     Many user-facing services are not required to be entirely consistent; however, there are use cases where not being consistent can have a severe impact. Strongly consistent transactions are of utmost importance when dealing with data that has a real-time constraint, such as financial data, automated or autonomous systems, and other areas where out-of-sync states might lead to issues or loss of life.
 
@@ -355,8 +355,30 @@ Suppose Transaction T1 selects all values >= 2, Transaction T2 then writes 3 to 
 \vspace{2mm}
 \input{figs/tikz/transactions/p3}
 \vspace{2mm}
+
+\subsection{P4 - Lost Update}
+
+The Lost Update violations occurs when both Transaction $T_1$ \& $T_2$ performs concurrent read on the same object. Following these initial reads, transaction $T_2$ updates object x and commits. Finally $T_1$ updates x as well and commits. 
+This cases isn't covered by P0 (Dirty Write), or P1 (Dirty Read)
+\begin{itemize}
+    \item Dirty Write: T2 commits before T1 writes x,
+    \item Dirty Read: No dirty reads occurred as there want cases of write followed by read.
+\end{itemize}
+Either way this sequence meant that $T_2$‘s update is lost, even if T2 commits.
+
+\subsubsection{Example of violation}
+
+Suppose Transaction $T_1$ \& $T_2$ read object x contain 5, Transaction T2 then add 1 and write 6 to object x and commits. T1 then writes 6 to object x as well and commits. \\
+\vspace{2mm}
+\input{figs/tikz/transactions/p4}
+\vspace{2mm}
+\todo[author=Mark]{ A5A: Read Skew ?}
+
+\todo[author=Mark]{ A5B: Write Skew}
+
 \newpage
-\subsection{Currently Described Anomalies} \todo[author=Mark]{ Unsure what to name this.}
+\subsection{Currently Described Anomalies} 
+\todo[author=Mark]{ Unsure what to name this.}
 
 Following the ANSI standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang Li et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or paper in the past 30 years; The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. The paper includes the following sentence: 
 \begin{quote}
@@ -395,14 +417,11 @@ Formally Strict Serializability is defined as a Serviceable system compatible wi
 \vspace{5mm}
 Here it should be clarified what is meant by "the obvious way." For transactions A and B, A proceeds B if A completes prior to transaction B starting. Essentially a Serializable system with the time constraint from Linearizability.
 
-SS cannot be totally or sticky available in the event of a network partition. In this case, some or all nodes will be stuck; this is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole, as in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.
-
-
-\vspace{2mm}
+SS cannot be totally or sticky available in the event of a network partition. In this case, some or all nodes will be stuck; this is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole, as in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.\\
 \input{figs/tables/ssdiagram}
-\vspace{2mm}
 
 
+\newpage
 \subsection{Serializable}
 
 Serializability is a relaxation of the Strict Serializability consistency model that foregoes that real-time constraint. It defines systems where transactions occur in some total order. It is formally defined in the ANSI SQL 1999 spec as follows.
@@ -422,9 +441,6 @@ SR follows closely to S-SR regarding partition tolerance and availability and is
 \vspace{2mm}
 \input{figs/tables/sdiagram}
 \vspace{2mm}
-
-
-
 \newpage
 \subsection{Repeatable Read}
 
@@ -461,7 +477,7 @@ but allows:
     \item P3 (Phantom): r1(P) … w2(y in P)
 \end{itemize}
 
-
+\input{figs/tables/cs_schedule}
 \todo[author=Mark]{Make diagram Cursor Stability}
 \newpage
 \subsection{Snapshot Isolation}
@@ -559,7 +575,7 @@ Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti a
 
 Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction. Each node represents a committed transaction, and edges represent different types of direct conflicts. \\ using these conflicts, we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
 \subsection{Transaction conflicts relations}
-\subsubsection{Read-dependency}
+\subsubsection{Read-Dependency}
 
 The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$. This relation is also called Write-Read (wr), as one transaction writes an object and a second transaction depends on this prior write.
         
@@ -582,7 +598,7 @@ select * from accounts where id = 1;
 \end{lstlisting}
         
         
-\subsubsection{predicate-based read dependency (wr)}
+\subsubsection{Predicate-based Read Dependency (wr)}
 A Predicate read dependency occurs when a transaction $T_j$ performs an operation containing multiple reads while a concurrent $T_i$ performs writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
 
 This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
@@ -608,7 +624,7 @@ select * from accounts where balance > 0;
 \end{lstlisting}
         
         
-\subsubsection{Write-dependency (ww)}
+\subsubsection{Write-Dependency (ww)}
 A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. the relation is named ww as two writes to the same object with only one persisting.
 
 \vspace{2mm}
@@ -630,7 +646,7 @@ update accounts set balance = -42 where id = 42;
 \end{lstlisting}
 
 
-\subsubsection{Anti-dependency (rw)}
+\subsubsection{Anti-Dependency (rw)}
 A read-write-dependency, formally known as an anti-dependency, occurs when a transaction overwrites a version observed by another transaction. i.e., transaction T1 reads an object x, x is then modified by transaction T2.
 
 \vspace{2mm}
@@ -681,20 +697,20 @@ To prevent this, a: If a transaction has read an intermediate state of an object
 
 
 \subsubsection{G1c: Circular Information Flow}
-A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist three possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depend on eachothers writes.
+A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist three possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depend on eachothers writes.\\
 \input{Report/figs/tikz/dsg/g1c}
 
 The above example has x and y in the initial state of 0, $T_1$ writes $x_1$ and $T_1$ writes $y_1$. They then read x,y. $T_1$ sees $x_1,y_0$ and $T_1$ sees $X_0,y_1$ while the actual state of the system is $x_1,y_1$
 
 
 \subsection{G-Cursor: Lost Update}
-A history exhibits G-cursor if the dsg contains a cycle with an anti-dependency (rw) edge and write-dependency (ww) edges using the same label.
+A history exhibits G-cursor if the dsg contains a cycle with an anti-dependency (rw) edge and write-dependency (ww) edges using the same label.\\
 \input{figs/tikz/dsg/g-cursor}
-\\
+
 The above example has $T_1$ and $T_2$ performing a concurrent increment(x) call. $T_1$ and $T_2$ both read the initial state of $x=0$, $T_2$ then increments X via $W_2(x=1)$. $T_1$ then performs $W_1(x=1)$ overwriting the increment performed by $T_2$. The right outcome is $x = 2$
 
 \subsection{G-Single: Read Skew}
-A history exhibits G-single if the dsg contains a cycle consisting of an anti-dependency (rw) and dependency (ww, wr) edges.
+A history exhibits G-single if the dsg contains a cycle consisting of an anti-dependency (rw) and dependency (ww, wr) edges.\\
 \input{figs/tikz/dsg/g-single}
 \\
 In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the system and therefor ended up reading an seeing inconsistent state. The two valid states in the above context is [$x_0$ , $y_0$] and [$x_1$ , $y_1$]
@@ -1037,14 +1053,24 @@ Failure detection is done via a gossiping channel and a sliding value. The way f
     
     
 
-    \subsection{Redis}
-\todo[author=Mark]{write section on Redis}
+\subsection{Redis}
+Redis is an in-memory data structure store. It can be used as a database, cache, and message broker with replication across multiple hosts. These features match closely with what Service Fabric provides. Redis furthermore supports transactions, or the definitions from Redis states that; a group of operations executed serializable where other clients are not served in the middle. Redis is a CP-style datastore, i.e., a Primary node and multiple read-only replicas. 
+Failover is performed via a Sentinel service that performs automatic failover by promoting a replica to the new primary and reconfigures all other nodes to use this as the new master. This Sentinel service runs on all replica nodes to prevent a single point of failure and make decisions by voting of the majority.
 
 
+\subsection{Similarities}
 
-    \section{Comparison}
-\todo[author=Mark]{write Comparison between the 3 datastores}
-    In many of the papers published by Microsoft a lot of comparisons are made to Cassadra, Redis and Redis. Therefore, comparisons will be made to these as they are comparable in a lot of aspects. The investigation won't be as deep as with SF but investigation of consistency and failure modes will be be done.
+Service Fabric, and Redis share some similarities, while Cassandra works entirely different. \\ 
+
+Service Fabric and Cassandra both use a distributed hash table to assign tokens that are used to decide where data is stored. however there is where the similarities end. Cassandra is a leaderless AP style database and Service Fabric is CP.
+
+Service Fabric and Redis both fit the same use case. They also share a lot of behavior.
+\begin{itemize}
+    \item CP style data stores
+    \item Failure detection and decision making is handled by a separate service.
+    \item Both support transactions, The definition differ slightly but but preform behave in a manner quite close to each other.
+\end{itemize}
+
 
 
     \chapter{Jepsen Test on Service Fabric Reliable collections}
@@ -1080,7 +1106,7 @@ Failure detection is done via a gossiping channel and a sliding value. The way f
 
     \subsection{Infrastructure}
     The infrastructure is centered around Azure, using an isolated v-net containing six virtual machines running Linux. Ubuntu was chosen because it is a known distribution that we are familiar with. one of the six nodes runs the Jepsen application, while the five remaining notes run the Service Fabric Cluster.
-    The 5 Service Fabric nodes are managed by Service fabric, and the configuration is deployed to them via Azure. There are cases where manual intervention is required due to the cluster becoming unhealthy and is unable to heal. in these cases, a full reimage of the cluster is performed. ,  Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
+    The 5 Service Fabric nodes are managed by Service fabric, and the configuration is deployed to them via Azure. There are cases where manual intervention is required due to the cluster becoming unhealthy and is unable to heal. in these cases, a full re-image of the cluster is performed. ,  Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
 
     The Jepsen host is manged and accessed via ssh. A deployment pipeline was considered but was decided against due to development overhead. A solution using SCP was chosen instead due to the quicker development cycles and that only a single machine required access to the deployment. 
     
@@ -1088,11 +1114,10 @@ Failure detection is done via a gossiping channel and a sliding value. The way f
     The network's topology is arranged such that the six nodes are located in the same VLAN to keep connections local and prevent outside connections from causing issues with the test.\\
     \begin{figure}[h!]
         \centering
-        \includegraphics[scale=0.3]{images/topology.png}
-        \caption{Network topology of the infrastructure as deployed in Azure. }
+        \includegraphics[scale=0.5]{images/azure_network_topology.png}
+        \caption{Network topology of the infrastructure as deployed in Azure. The Jepsen host is itself. and the Service Fabric is defined via the Scale-set Type730 and it's 5 connected hosts.}
     \end{figure}
 
-     \todo[author=Mark]{Redo this figure.}
 
     All traffic resides within the cluster. The load balancer is part of the standard service fabric deployment and allows for connection to the management interface, deployments, and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence on the results.
 
@@ -1435,7 +1460,7 @@ The poor use of allowed optimizations is harder to solve. Service fabric does no
 \chapter{Conclusion and Outlook}
 \section*{Conclusion}
 
-In this thesis, we presented some of the currently used consistency models. How they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as Ansi\cite{ansi}. 
+In this thesis, we presented some of the currently used consistency models. How they are defined, what is wrong with the current definitions, and how the scientific community and industries have tried to address these shortcomings. No standard body has yet rectified the flawed definitions used in standards such as SQL99\cite{ansisql1999} by the American National Standards Institute. 
 Following this initial study, Jepsen was presented. Independent parties from the open-source community created Jepsen. Jepsen was developed due to the mislabeling of current systems. It allows for testing whether a given system meets the requirement for behavior prevented by its creators or what flaws a system exhibits in general. 
 Following the presentation, a Jepsen Service Fabric was presented. Service Fabric is a  distributed systems platform designed by Microsoft. It contains a system for providing distributed transactional data types. 
 Using the knowledge gained from the above sections, Jepsen was used for conducting a test on Service Fabric. The results of this test were that Service Fabric violates the Repeatable read consistency model by allowing uncommitted transactions to persist when exceptions interrupt their execution. 
@@ -1460,8 +1485,6 @@ Future work could include implementing a deeper testing suite that checks for mo
 
 \section{Revised Proposal}
 \input{proposal_revised}
-
-\section{TODO}
 \todototoc
 \listoftodos
 
