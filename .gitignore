@@ -363,3 +363,6 @@ report/main.pdf
 report/main.run.xml
 report/main.synctex.gz
 report/main.toc
+/Results/
+/other sources/jepsen-main/
+/other sources/jecci/
