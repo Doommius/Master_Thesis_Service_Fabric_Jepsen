@@ -422,9 +422,6 @@ SR follows closely to S-SR regarding partition tolerance and availability and is
 \vspace{2mm}
 \input{figs/tables/sdiagram}
 \vspace{2mm}
-
-
-
 \newpage
 \subsection{Repeatable Read}
 
@@ -1088,11 +1085,10 @@ Failure detection is done via a gossiping channel and a sliding value. The way f
     The network's topology is arranged such that the six nodes are located in the same VLAN to keep connections local and prevent outside connections from causing issues with the test.\\
     \begin{figure}[h!]
         \centering
-        \includegraphics[scale=0.3]{images/topology.png}
-        \caption{Network topology of the infrastructure as deployed in Azure. }
+        \includegraphics[scale=0.5]{images/azure_network_topology.png}
+        \caption{Network topology of the infrastructure as deployed in Azure. The Jepsen host is itself. and the Service Fabric is defined via the Scale-set Type730 and it's 5 connected hosts.}
     \end{figure}
 
-     \todo[author=Mark]{Redo this figure.}
 
     All traffic resides within the cluster. The load balancer is part of the standard service fabric deployment and allows for connection to the management interface, deployments, and access to the underlying hosts. These endpoints were protected by firewall rules that only allowed connections from approved sources to avoid external influence on the results.
 
