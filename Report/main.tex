@@ -1080,7 +1080,7 @@ Failure detection is done via a gossiping channel and a sliding value. The way f
 
     \subsection{Infrastructure}
     The infrastructure is centered around Azure, using an isolated v-net containing six virtual machines running Linux. Ubuntu was chosen because it is a known distribution that we are familiar with. one of the six nodes runs the Jepsen application, while the five remaining notes run the Service Fabric Cluster.
-    The 5 Service Fabric nodes are managed by Service fabric, and the configuration is deployed to them via Azure. There are cases where manual intervention is required due to the cluster becoming unhealthy and is unable to heal. in these cases, a full reimage of the cluster is performed. ,  Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
+    The 5 Service Fabric nodes are managed by Service fabric, and the configuration is deployed to them via Azure. There are cases where manual intervention is required due to the cluster becoming unhealthy and is unable to heal. in these cases, a full re-image of the cluster is performed. ,  Applications can be deployed via either the Azure Service Fabric CLI \cite{servicefabriccli} or via Visual Studio \cite{servicefabricguide}. The latter was the process used during the development stages of the project.
 
     The Jepsen host is manged and accessed via ssh. A deployment pipeline was considered but was decided against due to development overhead. A solution using SCP was chosen instead due to the quicker development cycles and that only a single machine required access to the deployment. 
     
