@@ -14,7 +14,7 @@ Ensures that concurrent execution of transactions leaves the database in the sam
 \item	Durability \\
 Guarantees that once a transaction has been committed, it will remain committed even in the case of a system failure 
 \end{itemize}
- \\
+
 We plan to apply these methods on Service Fabric\footnote[4]{https://docs.microsoft.com/en-us/azure/service-fabric/service-fabric-overview  } , to verify if this system is compliant with the ACID properties. Service Fabric is a framework developed by Microsoft, designed to allow developers to build Hyper-Scale Cloud (HSC) deployments on the Azure\footnote[5]{https://microsoft.com/en-us/azure/ } platform.
 The motivation behind this thesis is to study the ACID properties in an HSC environment and evaluate how the constraints of ACID hold up in practice, as well as verifying if these constraints are met, and more importantly if they are not. 
 \section{Plan}
