@@ -113,12 +113,15 @@
         \normalfont
         Mark Jervelund \\
         Mark@jervelund.com \\
-        \vspace*{9\baselineskip}
+        \vspace*{8\baselineskip}
         \normalfont
         \includegraphics[scale=1]{logos/SDU_BLACK.png}
         \vfill\
         \vspace{5mm}
         Institute Of Mathematics and Computer Science, SDU \\
+        Supervisors:\\
+        Associate Professor, Jacopo Mauro, SDU \\
+        Mikkel Mørk Hegnhøj, Microsoft \\
 
         %Date
         \textbf{\datedate} \\[2\baselineskip]
@@ -207,7 +210,8 @@
         \item "D" stands for "durability," This condition requires that no data may be lost once a Transaction has been committed.
     \end{itemize}
 
-    ACID, therefore, offers strong consistency with rigorous handling of transaction isolation that prevents inaccurate data. This allows for designing a system to avoid operations on stale data, data loss, or "illegal" transactions. These faults will be presented later in the paper.
+    ACID, therefore, offers strong consistency with rigorous handling of transaction isolation that prevents consistency violations. This allows for designing a system where transactions are executed, such that a predictable outcome is guaranteed. The consistency violations within ACID will be presented later in the chapter.
+
 
 
     \section{BASE}
@@ -684,9 +688,9 @@ Phenomenon G1 captures the essence of no-dirty-reads and consists of g1a, g1b, g
 
 \subsubsection{G1a: Aborted Reads (Cascaded Aborts)}
 
-        A history exhibits G1a if it contains an aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
-        \input{Report/figs/tikz/dsg/g1a}
-        \\
+    A history exhibits G1a if it contains an aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
+    \input{Report/figs/tikz/dsg/g1a}
+    \\
 
 To prevent this: If a transaction has performed a read on an object modified by an aborted transaction, It itself has to abort.
 \subsubsection{G1b: Intermediate Reads (Dirty Reads)}
