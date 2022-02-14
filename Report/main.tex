@@ -575,7 +575,7 @@ Formally SC was defined by Leslie Lamport\cite{Lamport1979how}, however Viotti a
 
 Directed Serialization graphs(DSG) are to reason about a history of Transactions and operations within a transaction. Each node represents a committed transaction, and edges represent different types of direct conflicts. \\ using these conflicts, we can reason about what order transactions were executed in and if any transactional phenomena of anomalies occurred. These are defined in terms of DSG cycles and conflict relations. 
 \subsection{Transaction conflicts relations}
-\subsubsection{Read-dependency}
+\subsubsection{Read-Dependency}
 
 The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$. This relation is also called Write-Read (wr), as one transaction writes an object and a second transaction depends on this prior write.
         
@@ -598,7 +598,7 @@ select * from accounts where id = 1;
 \end{lstlisting}
         
         
-\subsubsection{predicate-based read dependency (wr)}
+\subsubsection{Predicate-based Read Dependency (wr)}
 A Predicate read dependency occurs when a transaction $T_j$ performs an operation containing multiple reads while a concurrent $T_i$ performs writes within the predicate of $T_j$. This occurs if $T_i$ write $x_i$, $x_h$ precedes $x_i$ in the history, and $x_h$ matches Predicate where $x_i$ does not or opposite were $x_h$ does not match the predicate whereas $x_i$ does.\\
 
 This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
@@ -624,7 +624,7 @@ select * from accounts where balance > 0;
 \end{lstlisting}
         
         
-\subsubsection{Write-dependency (ww)}
+\subsubsection{Write-Dependency (ww)}
 A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. the relation is named ww as two writes to the same object with only one persisting.
 
 \vspace{2mm}
@@ -646,7 +646,7 @@ update accounts set balance = -42 where id = 42;
 \end{lstlisting}
 
 
-\subsubsection{Anti-dependency (rw)}
+\subsubsection{Anti-Dependency (rw)}
 A read-write-dependency, formally known as an anti-dependency, occurs when a transaction overwrites a version observed by another transaction. i.e., transaction T1 reads an object x, x is then modified by transaction T2.
 
 \vspace{2mm}
