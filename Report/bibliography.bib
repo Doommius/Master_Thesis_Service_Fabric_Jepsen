@@ -506,21 +506,97 @@ location = {Porto, Portugal},
 series = {EuroSys '18}
 }
 
+@article{glowe,
+author = {Lowe, Gavin},
+year = {2016},
+month = {12},
+pages = {},
+title = {Testing for linearizability},
+volume = {29},
+journal = {Concurrency and Computation: Practice and Experience},
+doi = {10.1002/cpe.3928}
+}
+
+@article{winggong,
+title = {Testing and Verifying Concurrent Objects},
+journal = {Journal of Parallel and Distributed Computing},
+volume = {17},
+number = {1},
+pages = {164-182},
+year = {1993},
+issn = {0743-7315},
+doi = {https://doi.org/10.1006/jpdc.1993.1015},
+url = {https://www.sciencedirect.com/science/article/pii/S0743731583710154},
+author = {J.M. Wing and C. Gong},
+abstract = {A concurrent object is a data structure shared by concurrent processes. We present a two-pronged approach for establishing the correctness of implementations of concurrent objects. Our approach is based on a notion of correctness called linearizability: each concurrent object has a sequential specification, which describes how it behaves in sequential executions. Each concurrent execution is required to be equivalent to some sequential execution. We advocate using both testing and verification as complementary approaches for showing a concurrent object is linearizable. We first describe a simulation environment for simulating, testing, and analyzing implementations of concurrent objects. We can use the simulator to gain assurance that an implementation is correct or to detect errors in an incorrect one. The simulator provides a systematic way to testing implementations of any data type. Whereas testing is useful in practice, verification is more definitive. We provide a library of verified concurrent objects; specifically, we give the specifications, implementations, and proofs of correctness for the FIFO queue, semiqueue, and stuttering queue data types. Implementors of objects of other data types can use our library by following the patterns of design and proof that we give; at the same time, clients of our library need not reimplement commonly used abstractions from scratch and are freed from the tedium of their verification.}
+}
 
 
+@article{gibbonskorach,
+author = {Gibbons, Phillip and Korach, Ephraim},
+year = {1999},
+month = {10},
+pages = {},
+title = {Testing Shared Memories},
+volume = {26},
+journal = {SIAM Journal on Computing},
+doi = {10.1137/S0097539794279614}
+}
+
+@article{10.1145/1809028.1806634,
+author = {Burckhardt, Sebastian and Dern, Chris and Musuvathi, Madanlal and Tan, Roy},
+title = {Line-up: A Complete and Automatic Linearizability Checker},
+year = {2010},
+issue_date = {June 2010},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {45},
+number = {6},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/1809028.1806634},
+doi = {10.1145/1809028.1806634},
+abstract = {Modular development of concurrent applications requires thread-safe components that behave correctly when called concurrently by multiple client threads. This paper focuses on linearizability, a specific formalization of thread safety, where all operations of a concurrent component appear to take effect instantaneously at some point between their call and return. The key insight of this paper is that if a component is intended to be deterministic, then it is possible to build an automatic linearizability checker by systematically enumerating the sequential behaviors of the component and then checking if each its concurrent behavior is equivalent to some sequential behavior.We develop this insight into a tool called Line-Up, the first complete and automatic checker for deterministic linearizability. It is complete, because any reported violation proves that the implementation is not linearizable with respect to any sequential deterministic specification. It is automatic, requiring no manual abstraction, no manual specification of semantics or commit points, no manually written test suites, no access to source code.We evaluate Line-Up by analyzing 13 classes with a total of 90 methods in two versions of the .NET Framework 4.0. The violations of deterministic linearizability reported by Line-Up exposed seven errors in the implementation that were fixed by the development team.},
+journal = {SIGPLAN Not.},
+month = {jun},
+pages = {330–340},
+numpages = {11},
+keywords = {atomicity, linearizability, thread safety}
+}
+
+@inproceedings{Burckhardtetal,
+author = {Burckhardt, Sebastian and Dern, Chris and Musuvathi, Madanlal and Tan, Roy},
+title = {Line-up: A Complete and Automatic Linearizability Checker},
+year = {2010},
+isbn = {9781450300193},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1806596.1806634},
+doi = {10.1145/1806596.1806634},
+abstract = {Modular development of concurrent applications requires thread-safe components that behave correctly when called concurrently by multiple client threads. This paper focuses on linearizability, a specific formalization of thread safety, where all operations of a concurrent component appear to take effect instantaneously at some point between their call and return. The key insight of this paper is that if a component is intended to be deterministic, then it is possible to build an automatic linearizability checker by systematically enumerating the sequential behaviors of the component and then checking if each its concurrent behavior is equivalent to some sequential behavior.We develop this insight into a tool called Line-Up, the first complete and automatic checker for deterministic linearizability. It is complete, because any reported violation proves that the implementation is not linearizable with respect to any sequential deterministic specification. It is automatic, requiring no manual abstraction, no manual specification of semantics or commit points, no manually written test suites, no access to source code.We evaluate Line-Up by analyzing 13 classes with a total of 90 methods in two versions of the .NET Framework 4.0. The violations of deterministic linearizability reported by Line-Up exposed seven errors in the implementation that were fixed by the development team.},
+booktitle = {Proceedings of the 31st ACM SIGPLAN Conference on Programming Language Design and Implementation},
+pages = {330–340},
+numpages = {11},
+keywords = {linearizability, atomicity, thread safety},
+location = {Toronto, Ontario, Canada},
+series = {PLDI '10}
+}
 
 
-%G. Lowe. Testing and Verifying Concurrent Objects.
-%Concurrency and Computation: Practice and
-%Experience, 29(4), 2017
-%
-%J. M. Wing and C. Gong. Testing and Verifying
-%Concurrent Objects. Journal of Parallel and
-%Distributed Computing, 17(1-2), 1993.
-%
-%P. B. Gibbons and E. Korach. Testing shared
-%memories. SIAM Journal on Computing, 26(4), 1997
-%
-%S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
-%Line-up: A Complete and Automatic Linearizability
-%Checker. PLDI ’10, 2010.
+@article{BiswasEnea,
+author = {Biswas, Ranadeep and Enea, Constantin},
+title = {On the Complexity of Checking Transactional Consistency},
+year = {2019},
+issue_date = {October 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3360591},
+doi = {10.1145/3360591},
+abstract = {Transactions simplify concurrent programming by enabling computations on shared data that are isolated from other concurrent computations and are resilient to failures. Modern databases provide different consistency models for transactions corresponding to different tradeoffs between consistency and availability. In this work, we investigate the problem of checking whether a given execution of a transactional database adheres to some consistency model. We show that consistency models like read committed, read atomic, and causal consistency are polynomial-time checkable while prefix consistency and snapshot isolation are NP-complete in general. These results complement a previous NP-completeness result concerning serializability. Moreover, in the context of NP-complete consistency models, we devise algorithms that are polynomial time assuming that certain parameters in the input executions, e.g., the number of sessions, are fixed. We evaluate the scalability of these algorithms in the context of several production databases.},
+journal = {Proc. ACM Program. Lang.},
+month = {oct},
+articleno = {165},
+numpages = {28},
+keywords = {axiomatic specifications, transactional databases, testing, consistency}
+}

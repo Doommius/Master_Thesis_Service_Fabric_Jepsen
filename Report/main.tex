@@ -722,9 +722,9 @@ A history exhibits G-single if the dsg contains a cycle consisting of an anti-de
 \\
 In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the system and therefore end up reading an inconsistent state. The two valid states in the above context are [$x_0$ , $y_0$] and [$x_1$ , $y_1$]
 
-\todo[author=Mark]{Item Anti-dependency Cycles (write skew on disjoint read)}
+%\todo[author=Mark]{Item Anti-dependency Cycles (write skew on disjoint read)}
 
-\todo[author=Mark]{Add more DSG definitions if time permits.}
+%\todo[author=Mark]{Add more DSG definitions if time permits.}
 \newpage
 
 \chapter{Consistency Model testing}
@@ -867,29 +867,9 @@ In the Jepsen test of ElasticSearch, results showed that documents were lost dur
     \item If the primary node pauses due to IO or garbage collection.
 \end{itemize}
 
-
 \section{related work to Jepsen}
 
-A significant amount of work has been put into consistency checking. Early work from Wing \& Gong\\cite{winggong} described a checker algorithm for linearizable systems. 
-Biswas \& Enea\\cite{BiswasEnea} in 2019 providered formal pro checkers serializabile systems. where dependency graphs are used.
-
-% G. Lowe. Testing and Verifying Concurrent Objects.
-% Concurrency and Computation: Practice and
-% Experience, 29(4), 2017
-
-% J. M. Wing and C. Gong. Testing and Verifying
-% Concurrent Objects. Journal of Parallel and
-% Distributed Computing, 17(1-2), 1993.
-
-% P. B. Gibbons and E. Korach. Testing shared
-% memories. SIAM Journal on Computing, 26(4), 1997
-
-% S. Burckhardt, C. Dern, M. Musuvathi, and R. Tan.
-% Line-up: A Complete and Automatic Linearizability
-% Checker. PLDI '10, 2010.
-
-
-
+A significant amount of work has been put into consistency checking. Early work from Wing \& Gong\cite{winggong} described a checker algorithm for linearizable systems. From this algorithms were designed that allow for testing of linearizable systems, namely Line-Up\cite{Burckhardtetal}, Knossos\cite{Knossos}, and Lowe’s linearizability checker\cite{glowe}. Biswas \& Enea\cite{BiswasEnea} provided formal pro checkers serializabile systems, where dependency graphs are used. This prior work combined with client-centric formalization from Croos et al. \cite{CrooksPuAlvisiClement} redefined consistency models in terms of client side observations. 
 
     \newpage
 
