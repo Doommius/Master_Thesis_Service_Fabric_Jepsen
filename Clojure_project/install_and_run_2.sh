@@ -23,6 +23,7 @@ else
   echo "SSH KEYS: KEY Generating SSH key and installing it to cluster."
   expect gen_install_sshkey.expect
   echo "SSH KEYS: Complete"
+  bash install_packages_remote.sh
   echo "Setup: End"
 fi
 
