@@ -85,7 +85,9 @@ namespace ReliableCollectionsWebAPI.Controllers
         public async Task<IActionResult> Put()
         {
             List<KeyValuePair<string, List<long>>> result = new List<KeyValuePair<string, List<long>>>();
+            try
 
+            {
                 IReliableDictionary<string, List<long>> votesDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, List<long>>>("appenworkload");
 
                 String transactionquery;
@@ -104,7 +106,9 @@ namespace ReliableCollectionsWebAPI.Controllers
 
                 using (ITransaction tx = this.stateManager.CreateTransaction())
                 {
-                                            ConditionalValue<List<long>> conditionalValue;
+                    try
+                    {
+                        ConditionalValue<List<long>> conditionalValue;
                         Boolean v;
                         foreach (var item in operationlist.transaction)
                         {
@@ -136,6 +140,9 @@ namespace ReliableCollectionsWebAPI.Controllers
                                 string key = item.key.Value;
 
                                 result.Add(new KeyValuePair<string, List<long>>(item.key.Value, new List<long>(await votesDictionary.AddOrUpdateAsync(tx, key, new List<long>() { tmpvalue }, (key, oldvalue) => { oldvalue.Add(tmpvalue); return oldvalue; }))));
+
+
+
 
                             }
                             else if (item.operation.Value == "c")
@@ -183,8 +190,21 @@ namespace ReliableCollectionsWebAPI.Controllers
                         }
                         await tx.CommitAsync();
                     }
+                    catch (Exception e)
+                    {
+                        tx.Abort();
+                        List<KeyValuePair<string, List<long>>> exceptionresult = new List<KeyValuePair<string, List<long>>>();
+                        exceptionresult.Add(new KeyValuePair<string, List<long>>(e.ToString(), new List<long>() { -1 }));
+                        return this.Json(exceptionresult);
+                    }
                     return this.Json(result);
                 }
+            }
+            catch (Exception e)
+            {
+                List<KeyValuePair<string, List<long>>> exceptionresult = new List<KeyValuePair<string, List<long>>>();
+                exceptionresult.Add(new KeyValuePair<string, List<long>>(e.ToString(), new List<long>() { -1 }));
+                return this.Json(exceptionresult);
             }
         }
 
