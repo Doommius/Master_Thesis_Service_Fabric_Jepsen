@@ -416,14 +416,14 @@ For explaining the concepts within consistency, we will use a paper by Ballis et
 
 \subsection{Strict Serializability}
 
-For a system to have Strict Serializability, it is required that the entire system operationally appears to occur in order regarding both the order and the real-time of the operations. Within the CAP theorem, this would be considered a CA system.\\
+For a system to be considered Strict Serializability, it is required that the entire system operationally appears to occur in order regarding both the order of operations and the real-time. Within the CAP theorem, this would be considered a CA system.\\
 \vspace{5mm}
 Formally Strict Serializability is defined as a Serviceable system compatible with a Time-dependent order.
 "A history is serializable if it is equivalent to one in which transactions appear to execute sequentially, i.e., without interleaving. A (partial) precedence order can be defined on non-overlapping pairs of transactions in an obvious way. A history is strictly serializable if the transactions' order in the sequential history is compatible with their precedence order." \cite{Herlihy1990Linearizability}\\
 \vspace{5mm}
-Here it should be clarified what is meant by "the obvious way." For transactions A and B, A proceeds B if A completes prior to transaction B starting. Essentially a Serializable system with the time constraint from Linearizability.
+Here it should be clarified what is meant by "the obvious way." For transactions A and B, A proceeds B if A completes prior to transaction B starting.
 
-SS cannot be totally or sticky available in the event of a network partition. In this case, some or all nodes will be stuck; this is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole, as in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.\\
+SS cannot be Totally or Sticky Available in the event of a network partition. In this case, some or all nodes will be stuck. This is due to the nature of the Strict Serializable consistency model, where transactions operate on the system as a whole; in the case of a partition in the distributed system, this is impossible. There can be cases where replicate nodes are partitioned from the primary nodes, and the primary nodes can continue with some degradation but where the replicas either shut down or serve stale data. In the case of primary nodes partitioning, the system would be unable to resume due to not being able to commit a given transaction to the entire system.\\
 \vspace{2mm}
 
 \input{figs/tables/ssdiagram}
@@ -453,7 +453,7 @@ SR follows closely to S-SR regarding partition tolerance and availability and is
 
 Repeatable Read (RR) closely resembles the Serializable consistency model, however in RR, we allow phantoms. This implies that if T1 reads a predicate like "select all from alarms with the newest timestamp," another transaction T2 is able to create or modify values within the predicate before T1 commits. So if the transaction T1 performs the read again, this predicate might not be stable.
 \\ \vspace{5mm}
-RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, Repeatable Read does not guarantee Repeatable Reads in the sense that we might consider. This is due to RR not requiring any real-time constraint; this allows for a situation where process A performs a write, and after process A completes process B performs a read. However, this read is not guaranteed to obverse the write from process A. Furthermore, as no per-process ordering of transactions is required, process A can write something and then fail to observe that write in a subsequent transaction.
+RR contains the above relaxation; however, this relaxation implies more than meets the eye. For example, Repeatable Read does not guarantee Repeatable Reads in the sense that we might consider, in table 2.4 transaction $T_1$ reads y twice, these 2 reads return different results as $T_2$ modifies the objects to match the predicate of the read preformed by $T_1$. Another scenario for this is due to RR not requiring any real-time constraint.
 \\ \vspace{5mm}
 It should also be noted that RR allows for the same pathological ordering of operations as a Serializable database.
 \vspace{2mm}
@@ -490,7 +490,7 @@ but allows:
 
 Snapshot Isolation behaves differently to any of the systems. It can be considered more as a \textbf{try: commit() catch: abort()} . We perform our transaction in an independent branch and commit/merge to the database on commit; if there are any conflicts with an already committed transaction, the transaction is simply aborted.
 \\ \vspace{5mm}
-Snapshot Isolation, like Readable Read, operates on an object level and allows for the same behavior. Items are stable once read, however, the predicate again isn't. We can fail to observe a previously committed transaction and place operations in arbitrary places in the transaction due to no Linearizability constraint. It also allows sub-operations to interleave. This can result in write skews, which allow transactions to read overlapping states, modify disjoint sets of objects, then commit; and a read-only transaction anomaly involving partially disjointing write sets.
+Snapshot Isolation, like Readable Read, operates on an object level and allows for the same behavior. Items are stable once read, however, the predicate again isn't. We can fail to observe a previously committed transaction and place operations in arbitrary places in the history due to no Linearizability constraint. It also allows sub-operations to interleave. This can result in write skews, which allow transactions to read overlapping states, modify disjoint sets of objects, and read-only transaction anomaly involving partially disjoint write sets.
 \\ \vspace{5mm}
 
 It should also be noted that there exist multiple versions of Snapshot Isolation, one being prefix-consistent Snapshot Isolation that enforces process-level transaction ordering, which prevents a given process from failing to observe a previous transaction; another being parallel Snapshot Isolation that allows for total availability but this allows for long fork anomalies, as each node has its own transaction ordering.
@@ -823,46 +823,46 @@ Jepsens internal modules handle consistency between the clients and connections 
 \subsubsection{Elle}
 Elle,\cite{elle} inferring isolation anomalies from Experimental Observations. \\
 
-Elle is a transactional consistency checker for black-box testing. It infers a dependency graph between client-side observations and the database version history. Checking is done via careful selection of database objects and operations such that database reads reveal information about the version history. Elle can therefore reveal anomalies and provide a concise explanation of why a fault occurred with information of what conditions were present during this fault. Using this information, we can state how a system behaves, what level of consistency, and which behavior we will see. This information can then compare the promises a system makes and how these promises are reflected in reality.\\
+Elle is a transactional consistency checker for black-box testing. It infers a dependency graph between client-side observations and the database version history. Checking is done via careful selection of database objects and operations such that database reads reveal information about the version history. Elle can, therefore, reveal anomalies and provide a concise explanation of why a fault occurred with information conditions present during the fault. Using this information, we can reason about how a system behaves, what level of consistency it exhibits, and which behavior we will see. This information can then compare the promises a system makes and how these promises are reflected in reality.\\
 \vspace{5mm}
 
 
 \section{Past Jepsen tests}
-Jepsen.io contains publicly available test for 28 different systems. They nearly all contain issues or violation of the consistency model they are presented to meet. I will summarize the findings of a few prior tests below.
+Jepsen.io contains publicly available test for 28 different systems. Nearly all of them contain issues or violation of the consistency model they are presented to meet. I will summarize the findings of a few prior tests below.
 \subsection{Cassandra}
-A test was done on Cassandra\cite{jepsencassandra} in 2013 that showed some interesting behavior; Doomstones, during conflicts, a lexicographically bigger value is winning. such that separate parts of separate transactions might persist in the database.\\
+A test was done on Cassandra\cite{jepsencassandra} in 2013 that showed some interesting behavior; Doomstones, during conflicts, a lexicographically bigger value wins such that separate parts of separate transactions may persist in the database.\\
 \vspace{5mm}
 Casandra itself is built on a hash ring via a distributed hash table like Service Fabric. Nevertheless, unlike most other databases, it uses timestamp-based last write wins. This allows for extremely high performance but also at the cost of being highly sensitive to clock skew.\\
 
 In the test on Cassandra it was found that:
 \begin{itemize}
-    \item During a single key heavy write operation Losing 28\% of committed data and fails linearizable by any definition.
-    \item During Write conflicts, roughly 1 in 200 rows end up being corrupt due to poor handling time where milliseconds are used with three zeros at the end instead of microseconds.
-    \item \textit{"No. Cassandra's lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes–and this does not even require a network partition to demonstrate. It is just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013, where an insert is rejected but committed. (unnecessarily high false-negative probabilities)."}\cite{jepsencassandra}
+    \item During a single key heavy write operation losing 28\% of committed data and fails linearizablility.
+    \item During Write conflicts, roughly 1 in 200 rows end up being corrupt due to poor handling time where milliseconds are used with three zeros at the end instead of microseconds;
+    \item \textit{"No. Cassandra's lightweight transactions are not even close to correct. Depending on throughput, they may drop anywhere from 1-5\% of acknowledged writes-and this does not even require a network partition to demonstrate. It is just a broken implementation of Paxos. In addition to the deadlock bug, these Jepsen tests revealed \#6012 (Cassandra may accept multiple proposals for a single Paxos round) and \#6013, where an insert is rejected but committed. (unnecessarily high false-negative probabilities)."}\cite{jepsencassandra}
 \end{itemize}
 
 \subsection{Postgres}
-A Jepsen test\cite{jepsenpostgresql} was performed on PostgreSQL in 2020. During this test, several observations were made.
+A Jepsen test\cite{jepsenpostgresql} was performed on PostgreSQL in 2020. During this test, several observations were made:
 \begin{itemize}
-    \item PostgreSQLs repeatable read behaves accordingly to snapshot isolation. G2-item violations occurred where write skew on disjoint read was observed.
-    \item PostgreSQLs serializability implementation contains the same issues, where concurrent update and insert transactions may exhibit G2-item.
+    \item PostgreSQLs Repeatable Read behaves accordingly to snapshot isolation. G2-item violations occurred where write skew on disjoint read was observed;
+    \item PostgreSQLs serializable implementation contains the same issues, where concurrent update and insert transactions may exhibit G2-item.
 \end{itemize}
 
 \subsection{MonogoDB}
-
+In the Jepsen tests of MongoDB\cite{jepsenmongodb243, jepsenmongodb267, jepsenmongodb340} multiple different aspects of the systems was tested showing a wide range of both described anomalies but also abnormal behavior such as duplicated writes and future writes being read.
 \begin{itemize}
-\item In the first Jepsen test of MongoDB, 42\% of writes were lost \cite{jepsenmongodb243}
-\item In the second test of MongoDB, testing was done of its consistency model. It was found that MongoDB lies somewhere under Read Uncommitted\cite{jepsenmongodb267}
-\item In the third test of MongoDB Lost updates, Dirty Reads, and Stale Reads was prevented with the v1 protocol. if the v0 protocol is used, these anomalies still occur.\cite{jepsenmongodb340}
-\item The latest test of MongoDB tests claims about "full ACID transactions" where G-single (read skew), G1c (cyclic information flow), duplicated writes, and anomalies where a transaction could read its writes performed in the future. \cite{jepsenmongodb340}
+\item In the first Jepsen test of MongoDB, 42\% of writes were lost \cite{jepsenmongodb243};
+\item In the second test of MongoDB, testing was done of its consistency model. It was found that MongoDB lies somewhere under Read Uncommitted\cite{jepsenmongodb267};
+\item In the third test of MongoDB Lost updates, Dirty Reads, and Stale Reads was prevented with the v1 protocol. If the v0 protocol is used, these anomalies still occur.\cite{jepsenmongodb340};
+\item The latest test of MongoDB tests claims about "full ACID transactions" where G-single (Read Skew), G1c (Cyclic Information Flow), duplicated writes, and anomalies where a transaction could read its writes performed in the future. \cite{jepsenmongodb340}
 \end{itemize}
 
 \subsection{ElasticSearch}
-In the jepsen test of ElasticSearch results showed that documents were lost due during a few scenarios.\cite{aphyrelasticsearch}
+In the Jepsen test of ElasticSearch, results showed that documents were lost during a few scenarios.\cite{aphyrelasticsearch}
 \begin{itemize}
-    \item Intersecting partitions resulting in 2 primaries overwriting each other.
-    \item Isolated primaries causing split-brain that is only recoverable by restart, however only one side of the clusters changes persisted.
-    \item If the primary node pauses due to IO or garbage collection
+    \item Intersecting partitions resulting in 2 primaries overwriting each other;
+    \item Isolated primaries causing split-brain that is only recoverable by restart, however only one side of the clusters changes persisted;
+    \item If the primary node pauses due to IO or garbage collection.
 \end{itemize}
 
 
@@ -895,7 +895,7 @@ In the jepsen test of ElasticSearch results showed that documents were lost due 
 
     \chapter{Modern Datastores}
 
-    The thesis will primacy focus on Service Fabrics. However, an investigation into other data stores is also done to allow comparisons and investigation into what different models affect the behavior of the database systems.
+    The thesis will primarily focus on Service Fabrics. However, an investigation into other data stores is also done to allow comparisons and investigation into how different models affect the behavior of the database systems.
 
 
     \section{Service Fabric}
@@ -909,7 +909,7 @@ In the jepsen test of ElasticSearch results showed that documents were lost due 
 
     \subsection{System Architecture}
 
-    The architecture behind Service Fabric is built via a layered approach; by Microsoft's words, this allows developers to write highly available applications, scalable, manageable, and testable. These layers are built on five Core and two supporting subsystems. Our main interest lies within the reliable collection, so we will only be investigating the layers and services that lay below this.\\
+    The architecture behind Service Fabric is built via a layered approach. According to by Microsoft, this allows developers to write highly available applications, that allow the code to be scalable, manageable, and testable. These layers are built on five Core and two supporting subsystems. Our main interest lies within the reliable collection, so we will only be investigating the layers and services that lay below this.\\
     \vspace{5mm}
 
     \subsubsection{Transport subsystem}
@@ -919,25 +919,22 @@ In the jepsen test of ElasticSearch results showed that documents were lost due 
 
     \subsubsection{Federation subsystem}
 
-    The next subsystem in the stack is the Federation subsystem, which uses communication channels provided by the transport subsystem to gather the nodes into a unified service fabric cluster. It also provides system primitives that allow for Failure detection, leader Election and consistent routing within the cluster by upper layers in the system.\\
+    The next subsystem in the stack is the Federation subsystem, which uses communication channels provided by the transport subsystem to gather the nodes into a unified Service Fabric cluster. It also provides system primitives that allow for failure detection, leader election and consistent routing within the cluster by upper layers in the system.\\
     \vspace{5mm}
 
-    The core subsystem is built around an SF-ring developed internally at Microsoft in the early 2000s. Keys and nodes are mapped to points in the ring, with keys being owned by the node closest to it in the ring. Each node also uses this ring to keep track of its immediate successor and predecessor nodes in a Neighborhood set; the Federation layer then uses this set to run consistent membership and failure detection. Nodes also maintain long-distance routing partners that are used for consistent routing.\\
+    The core subsystem is built around an SF-ring developed internally at Microsoft in the early 2000s. Keys and nodes are mapped to points in the ring, with keys being owned by the node closest to it in the ring. Each node also uses this ring to keep track of its immediate successor and predecessor nodes in a Neighborhood set. The Federation layer then uses this set to run consistent membership and failure detection. Nodes also maintain long-distance routing partners that are used for consistent routing.\\
     \vspace{5mm}
 
-    The membership and Failure detection are done using two key design principles.\\
-    \vspace{5mm}
-
-    Strongly Consistent membership and Decoupling Failure Detection from Failure Decision\\
+    The membership and failure detection are done using two key design principles:\\
     \vspace{5mm}
 
     \begin{itemize}
-        \item \textbf{Strongly Consistent membership} All nodes monitoring the status of a given node must agree on whether the node is up or down. For use in the SF ring, this means that all nodes on the node's Neighborhood set must agree on its status.
+        \item \textbf{Strongly Consistent membership} All nodes monitoring the status of a given node must agree on whether the node is up or down. For use in the SF ring, this means that all nodes on the node's Neighborhood set must agree on its status;
         \item \textbf{Decoupling Failure Detection from Failure Decision}: Failure detection protocols can lead to conflicting states; therefore, the decision is decoupled from detection.
     \end{itemize}
     \vspace{5mm}
 
-    To solve the issue of decoupling failure detection and decision-making on these failures. All decisions are distributed to a set of responsible nodes. This ensures that decisions are performed consistently and reliably. The detection of failures is performed via a distributed monitoring and leasing solution implemented in SF. This implementation solves this via Lease Renewal Request(LR) and LRack(Lease Renewal Acknowledgement). A node must maintain valid leases from all of its monitors, and these leases have to be renewed every lease period. This leasing period is calculated based on round trip times within the cluster. If a node fails to renew any of these leases, it considers removing itself from the set of nodes. If a monitor misses a lease request to a node, the node turn considers marking the monitor as failed. Both of these decisions need to be approved by an Arbitrator group. If a node fails to receive an LRack within a timeout based on round trip time, it repeats the LR until it receives an LRack. Due to the nature of the SF-ring, these monitor relations are symmetrical, but this Lease protocol is still run independently. There are other cases; if a node fails the renewal process, it stops renewing leases to any other nodes, or if a node detects another node as having failed, it stops sending renewal requests to it. These 2 cases can cause inconsistencies if they were operating alone; however, deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
+    To solve the issue of decoupling failure detection and decision-making on these failures. All decisions are distributed to a set of responsible nodes. This ensures that decisions are performed consistently and reliably. The detection of failures is performed via a distributed monitoring and leasing solution implemented in SF. This implementation solves this via Lease Renewal Request (LR) and Lease Renewal Acknowledgement (LRack). A node must maintain valid leases from all of its monitors, and these leases have to be renewed every lease period. This leasing period is calculated based on round trip times within the cluster. If a node fails to renew any of these leases, it considers removing itself from the set of nodes. If a monitor misses a lease request to a node, the node considers marking the monitor as failed. This decision need to be approved by an Arbitrator group. If a node fails to receive an LRack within a timeout based on round trip time, it repeats the LR until it receives an LRack. Due to the nature of the SF-ring, these monitor relations are symmetrical, but this Lease protocol is still run independently. There are other cases; if a node fails the renewal process, it stops renewing leases to any other nodes, or if a node detects another node as having failed, it stops sending renewal requests to it. These 2 cases can cause inconsistencies if they were operating alone, however, deciding if a node is down or up is up to the Arbitrator group, which maintains consistent memberships. \\
     \vspace{5mm}
 
     The Arbitrator group performs the decision to determine failures. This is separate from the neighborhood set. They operate independently, and it has two ways of deciding if a given node has failed. The way that the groups stay consistent when members join or leave the group is that when an Arbitrator joins the set, it initially rejects all requests in the first T seconds. This is done to prevent new Arbitrators from making conflicting decisions with the excising nodes and prevent failed nodes from existing in the distributed membership protocol. This ensures that detected nodes leave before being forgotten.\\
@@ -952,20 +949,20 @@ In the jepsen test of ElasticSearch results showed that documents were lost due 
     If a node is already in the recently failed list, it returns the same response as the first reporter, except it calculates the time since the first detection, so the neighbors claim the portion of the ring it owns at the same time. This also means that the routing can continue after time out with a laxity added. All routing requests for a node are added to a queue if a node is marked as failed. The queue is then released after Timeout+laxity that allows all neighboring nodes to claim that part of the ring and allows these routing requests to be performed by its successors.\\
     \vspace{5mm}
 
-    If the case of two nodes reporting each other failed, the conflict is resolved either by a majority; the node that was reported first to the most Arbitrators leaves the ring. A second option is to heal the membership if both nodes are healthy and can therefore stay. \\   \vspace{5mm}
+    If the case of two nodes reporting each other failed, the conflict is resolved either by majority, i,e,.  the node that was reported first to the most Arbitrators leaves the ring, or a second option where the membership is healed if both nodes are healthy and can therefore stay. \\   \vspace{5mm}
     
     The implementation in SF is presented as failure tolerant towards cascade failures as the decision is not made by the detectors themselves but by arbitrators.
-    This can be in cases of network congestion or -partitions that result in multiple nodes detecting each other as failed. For traditional distributed hash-tables, this can result in membership list or ring inconsistencies.\\ 
+    This can happen in cases of network congestion or partitions that result in multiple nodes detecting each other as failed. For traditional distributed hash-tables, this can result in membership list or ring inconsistencies.\\ 
     \vspace{5mm}
 
     \includegraphics[scale=0.3]{images/servicefabric-fig-ring-topology.jpeg}
 
     \paragraph{SF-Ring and consistent routing}
 
-    The Distributed Hash table used for Service Fabric routing is an evolution of SF-ring developed within Microsoft in the 2000s. The routing used offers symmetry, and due to this, it allows bidirectional routing that allows for lookup and routing via binary search. This allows SF to quickly route messages around the ring, with multiple routing options. There are always two routing partners on either side of the destination that help distribute the load and route, even with stale routing tables. Initially, all packages were routed using this method; this has changed over the years. Today the hash table is used to build a routing table and maintain it when a new node is added to the cluster. After discovery, a direct route is used via the destination IP address. \\
+    The distributed hash-tables used for Service Fabric routing is an evolution of SF-ring developed within Microsoft in the 2000s. The routing used offers symmetry, and due to this, it allows bidirectional routing that allows for lookup and routing via binary search. This allows SF to quickly route messages around the ring, with multiple routing options. There are always two routing partners on either side of the destination that help distribute the load and route, even with stale routing tables. Initially, all packages were routed using this method; this has changed over the years. Today the hash table is used to build a routing table and maintain it when a new node is added to the cluster. After discovery, a direct route is used via the destination IP address. \\
     \vspace{5mm}
 
-    Routing tables work differently depending on the size of the cluster. However, it can route in two ways. If the size of the routing table is smaller than the number of nodes a direct route is used, if there exist more nodes in the cluster than the routing tables, it switches to routing via routing tables to reduce memory consummation but causing an increase in time complexity to O(log(n)) from O(1)\\
+    Routing tables work differently depending on the size of the cluster. However, it can route in two ways. If the size of the routing table is smaller than the number of nodes a direct route is used, if there exist more nodes in the cluster than the routing tables, it switches to routing via routing tables to reduce memory consumption but causing an increase in time complexity to O(log(n)) from O(1)\\
     \vspace{5mm}
     \paragraph{Routing Tokens}
     
@@ -977,7 +974,7 @@ In the jepsen test of ElasticSearch results showed that documents were lost due 
     This ensures SF handles nodes joining and leaving the ring. Initially, a bootstrap node owns the entire ring. After the initial bootstrap node, any joining node will split the ring segment between them. Routing tokens are also used for leader election, simply the owner of a given key is the owner. This same process ensures that no keys are abandoned.
 
     \subsubsection{Reliability subsystem}
-    The reliability subsystem is in charge of load balancing, replication, and availability. These three aspects are provided via three services: a Failover Manage, a Naming and Resolution, and a Placement, and lastly, a Load Balancer service.\\
+    The reliability subsystem is in charge of load balancing, replication, and availability. These three aspects are provided via three services: A Failover Manager; A Naming and Resolution service; and Placement and Load Balancer service.\\
     \vspace{5mm}
 
     The Failover Manager runs as a stateful service with an instance running on each node in the cluster that provides three actions: start a replica, move a replica, and reconfigure a replica.\\
