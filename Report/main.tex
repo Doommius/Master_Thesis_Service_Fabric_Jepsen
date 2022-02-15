@@ -384,7 +384,7 @@ Suppose Transaction $T_1$ \& $T_2$ read object x contain 5, Transaction T2 then 
 
 \newpage
 \subsection{Currently Described Anomalies} 
-\todo[author=Mark]{ Unsure what to name this.}
+
 
 Following the ANSI SQL 1999\cite{ansisql1999} standard and Adya et al. \cite{Adya99weakconsistency} a significant amount of discoveries have been made that describe anomalies not accounted for in most definitions of consistency models. A recent paper by Haixiang et al. \cite{li2021coo} describes a total of 18 anomalies either described in standards or papers from the past 30 years. The paper mentions that all these definitions are defined case by case and not in a rigors mathematically manner. It also includes the following sentence: 
 \begin{quote}
@@ -913,7 +913,6 @@ In the Jepsen test of ElasticSearch, results showed that documents were lost dur
     \vspace{5mm}
 
     \subsubsection{Transport subsystem}
-    \todo[author=Mark]{these might be serving the same purpose and the documentation might just be odd.}
     The lowest layer in the core stack provides secure communication within the cluster itself and between the cluster and clients. This functionality is provided via point-to-point communication channels that support one-way and request-reply patterns, in other terms UDP and TCP. This also provides the basis for broadcast and multicast within the cluster. Security is handled via either windows security or x509 certificates. \\
     \vspace{5mm}
 
@@ -949,7 +948,7 @@ In the Jepsen test of ElasticSearch, results showed that documents were lost dur
     If a node is already in the recently failed list, it returns the same response as the first reporter, except it calculates the time since the first detection, so the neighbors claim the portion of the ring it owns at the same time. This also means that the routing can continue after time out with a laxity added. All routing requests for a node are added to a queue if a node is marked as failed. The queue is then released after Timeout+laxity that allows all neighboring nodes to claim that part of the ring and allows these routing requests to be performed by its successors.\\
     \vspace{5mm}
 
-    If the case of two nodes reporting each other failed, the conflict is resolved either by majority, i,e,.  the node that was reported first to the most Arbitrators leaves the ring, or a second option where the membership is healed if both nodes are healthy and can therefore stay. \\   \vspace{5mm}
+  Suppose the case of two nodes reporting each other failed. In that case, the conflict is resolved either by a majority, i.e., the node reported first to the most Arbitrators leaves the ring or a second option where the membership is healed if both nodes are healthy and can therefore stay. \\   \vspace{5mm}
     
     The implementation in SF is presented as failure tolerant towards cascade failures as the decision is not made by the detectors themselves but by arbitrators.
     This can happen in cases of network congestion or partitions that result in multiple nodes detecting each other as failed. For traditional distributed hash-tables, this can result in membership list or ring inconsistencies.\\ 
@@ -1018,7 +1017,7 @@ In the Jepsen test of ElasticSearch, results showed that documents were lost dur
     \vspace{5mm}
 
     \paragraph{Consistency models/isolation levels}
-    SF reliable collections promise two Select-able consistency models that the user can pick. Repeatable Read and Snapshot Isolation. \todo[author=Mark]{maybe delete this last line.}eg, there is no promise about Serializability of the transactions.\\
+    SF reliable collections promise two Select-able consistency models that the user can pick. Repeatable Read and Snapshot Isolation.\\
     \vspace{5mm}
 
     \begin{table}[h]
@@ -1330,7 +1329,7 @@ The changes for the Generator and checker shifted a lot of the heavy lifting fro
 \subsubsection{Running the test}
 
 \begin{enumerate}
-    \item The testing suite is run in Azure using six nodes. Five for service fabric and 1 for the Jepsen host. Service Fabric is in charge of the cluster for Orchestration. a deployment configuration is provided with the source code,
+    \item The testing suite is run in Azure using six nodes. Five for service fabric and 1 for the Jepsen host. Service Fabric is in charge of the cluster for Orchestration. a deployment template is provided with the source code,
     \item Deployment of the applications to the cluster is pretty trivial and can be done either via Visual studio or a PowerShell script; 
     \item The Jepsen test code is deployed to the Jepsen node test node. 
     \item Test configuration
