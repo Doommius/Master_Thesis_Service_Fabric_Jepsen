@@ -378,9 +378,9 @@ Suppose Transaction $T_1$ \& $T_2$ read object x contain 5, Transaction T2 then 
 \vspace{2mm}
 \input{figs/tikz/transactions/p4}
 \vspace{2mm}
-\todo[author=Mark]{ A5A: Read Skew ?}
+%\todo[author=Mark]{ A5A: Read Skew ?}
 
-\todo[author=Mark]{ A5B: Write Skew}
+%\todo[author=Mark]{ A5B: Write Skew}
 
 \newpage
 \subsection{Currently Described Anomalies} 
@@ -587,7 +587,7 @@ Directed Serialization graphs(DSG) are used to reason about a history of Transac
 The Read-dependency is when a Transaction $T_j$ directly depends on a write from a transaction $T_i$ where $T_i$ writes some object $x_i$ and $T_j$ reads $x_i$. This relation is also called Write-Read (wr), as one transaction writes an object and a second transaction depends on this prior write.
         
 \vspace{2mm}
-\input{Report/figs/tikz/dsg/rd}
+\input{figs/tikz/dsg/rd}
 \vspace{2mm}
 
 We have a history H. as follows:
@@ -611,7 +611,7 @@ A Predicate read dependency occurs when a transaction $T_j$ performs an operatio
 This case of WR dependency gives the symptom of objects appearing or disappearing within a transaction. 
 
 \vspace{2mm}
-\input{Report/figs/tikz/dsg/prd}
+\input{figs/tikz/dsg/prd}
 \vspace{2mm}
 
 
@@ -635,7 +635,7 @@ select * from accounts where balance > 0;
 A write dependency occurs when transaction $T_j$ directly depends on $T_i$ if $T_i$ writes $x_i$, and $T_j$ writes the version of x following $T_i$ in the history. The relation is named ww as two writes to the same object with only one persisting.
 
 \vspace{2mm}
-\input{Report/figs/tikz/dsg/wd}
+\input{figs/tikz/dsg/wd}
 \vspace{2mm}
 
 
@@ -657,7 +657,7 @@ update accounts set balance = -42 where id = 42;
 A read-write-dependency, formally known as an anti-dependency, occurs when a transaction overwrites a version observed by another transaction. i.e., transaction T1 reads an object x, x is then modified by transaction T2.
 
 \vspace{2mm}
-\input{Report/figs/tikz/dsg/ad}
+\input{figs/tikz/dsg/ad}
 \vspace{2mm}
 
 
@@ -679,7 +679,7 @@ An SQL example of this relation would be the below script:
 \subsection{G0: Dirty Writes}
 A history exhibits phenomenon G0 if the DSG contains a directed cycle consisting entirely of write-dependency edges.
 
-\input{Report/figs/tikz/dsg/g0}
+\input{figs/tikz/dsg/g0}
 
 \begin{equation}
     History\ H: [W_1(x_1),W_2(x_2),W_3(y_1),C_2,W_3(y_2),C_1]
@@ -692,20 +692,20 @@ Phenomenon G1 captures the essence of no-dirty-reads and consists of g1a, g1b, g
 \subsubsection{G1a: Aborted Reads (Cascaded Aborts)}
 
     A history exhibits G1a if it contains an aborted transaction T1 and a committed transaction T2, where T2 has read an object modified by T1. 
-    \input{Report/figs/tikz/dsg/g1a}
+    \input{figs/tikz/dsg/g1a}
     \\
 
 To prevent this: If a transaction has performed a read on an object modified by an aborted transaction, it itself has to abort.
 \subsubsection{G1b: Intermediate Reads (Dirty Reads)}
     A history exhibits G1b if it contains a committed transaction containing a read of an intermediary modification by another transaction. i.e., a read of a non-final modification was performed and committed to the history. 
-\input{Report/figs/tikz/dsg/g1b}
+\input{figs/tikz/dsg/g1b}
  \\
 The preventative implementation requires that if a transaction has read an intermediate state of an object, it must be aborted.
 
 
 \subsubsection{G1c: Circular Information Flow}
 A history exhibits G1c if the DSG contains a directed cycle consisting entirely of dependency edges. There exist three possible combinations of such cycles: [ww,wr],[ww,ww],[wr,wr], below [wr,wr] is used for an example where T1 and T2 depend on eachothers writes.\\
-\input{Report/figs/tikz/dsg/g1c}
+\input{figs/tikz/dsg/g1c}
 
 The above example has x and y in the initial state of 0, $T_1$ writes $x_1$ and $T_1$ writes $y_1$. They then read x,y. $T_1$ sees $x_1,y_0$ and $T_1$ sees $X_0,y_1$ while the actual state of the system is $x_1,y_1$
 
@@ -818,7 +818,9 @@ Oppositely a situation where eventual consistency is of no issues is for platfor
 
 
 \subsection{Jensens internal modules}
-Jepsens internal modules handle consistency between the clients and connections to the target system.
+Jepsens internal modules maps to custom implementations via interfaces, these interfaces handle consistency between the clients, generators, checkers. Jepsen also handles the ssh connections to the target system, that allow for code execution within the target system, ie.e changing the times, manually editing the routing table to partition the cluster, or killing processes.\\
+
+A larger modules also exist. Knossos\cite{Knossos} is the linearizabiliy checker that ships by default with Knossos that allow implementation of test on linearizable systems. In this project Elle will be used;
 
 \subsubsection{Elle}
 Elle,\cite{elle} inferring isolation anomalies from Experimental Observations. \\
@@ -868,9 +870,8 @@ In the Jepsen test of ElasticSearch, results showed that documents were lost dur
 
 \section{related work to Jepsen}
 
-\todo[author=Mark]{ move these to BIB file and write this section}
-% K. Kingsbury. Knossos.
-% https://github.com/jepsen-io/knossos, 2013-2019.
+A significant amount of work has been put into consistency checking. Early work from Wing \& Gong\\cite{winggong} described a checker algorithm for linearizable systems. 
+Biswas \& Enea\\cite{BiswasEnea} in 2019 providered formal pro checkers serializabile systems. where dependency graphs are used.
 
 % G. Lowe. Testing and Verifying Concurrent Objects.
 % Concurrency and Computation: Practice and
@@ -1004,7 +1005,7 @@ In the Jepsen test of ElasticSearch, results showed that documents were lost dur
         \item Available and Fault-tolerant via replication,
         \item Persistent via disk
         \item Efficient via asynchronous via a nonblocking API.
-        \item Transnational via APIs with ACID semantics.
+        \item Transnational APIs with ACID semantics.
     \end{itemize}
 
     One of the key differences between storage systems built on SF and other highly-available systems is that states are kept locally in the replica while also being made highly available. This causes most reads to be local.\\
@@ -1052,7 +1053,7 @@ In many of the papers published by Microsoft, many comparisons are made to Cassa
     
 \subsection{Cassandra}
 
-One of the systems that Microsoft draws comparisons to is Casandra. Casandra was initially made by Facebook and later made open-source via the Apache Software Foundation. It uses the same underlying distributed hashtable to form a Ring; however, unlike Service Fabric, Casandra is leaderless to allow for greater scalability and is purely a database. it handles transactions and operations in a Last Write Wins consistency model. This implementation makes it sensitive to time desync and Clock skew where the wrong value might persist. Its use cases are mainly within instant messaging, where values are written and rarely modified but must be distributed quickly. 
+One of the systems that Microsoft draws comparisons to is Casandra. Casandra was initially made by Facebook and later made open-source via the Apache Software Foundation. It uses the same underlying distributed hashtable to form a Ring; however, unlike Service Fabric, Casandra is leaderless to allow for greater scalability and is purely a database. It handles transactions and operations in a Last Write Wins consistency model. This implementation makes it sensitive to time desync and clock skew where the wrong value might persist. Its use cases are mainly within instant messaging, where values are written and rarely modified but must be distributed quickly. 
 
 Failure detection is done via a gossiping channel and a sliding value. The way failures are handled is that nodes avoid querying a failed node's value to reach the threshold; this threshold is dynamically adjusted based on network and load conditions. Memberships of a cluster are explicitly initiated by an administrator who manually performs the addition and removal of nodes from a Cassandra instance.\cite{Cassandra}
     
@@ -1223,9 +1224,9 @@ The Clojure application itself is split into different modules that expose class
        
   \item  The \textbf{Generator} class generates a list of transactions to execute, which can later be used to check the transaction history for any anomalies. This is closely linked with the checker.
        
-  \item  The \textbf{checker} checks for anomalies in the transaction history, This could be by either checking if all committed values exist in the data store after the test, if there are transactional violations in the data store, if odd behavior like the case of Casandra where multiples objects are merged due to conflicts that might lead to an unintended outcome. 
+  \item  The \textbf{Checker} checks for anomalies in the transaction history, This could be by either checking if all committed values exist in the data store after the test, if there are transactional violations in the data store, if odd behavior like the case of Casandra where multiples objects are merged due to conflicts that might lead to an unintended outcome. 
        
- \item  the \textbf{client} interface maps the generated list of transactions to the driver calls for a given data store. This module processes the map generated by our generator into transactions, parses the transaction into a format the driver understands and back into a format Jepsen understands as well as handling any errors, exception as well as basic check if the operation failed and succeeded and logs this to the internal transaction history handled by Jepsen.
+ \item  The \textbf{Client} interface maps the generated list of transactions to the driver calls for a given data store. This module processes the map generated by our generator into transactions, parses the transaction into a format the driver understands and back into a format Jepsen understands as well as handling any errors, exception as well as basic check if the operation failed and succeeded and logs this to the internal transaction history handled by Jepsen.
 \end{itemize}
        
 The Jepsen application required a driver to be written for Clojure to interact with the API exposed by the stateless service; This could have been written in either Java or Clojure. An attempt was made to implement this in Java with some success but was scrapped, and implementation was done in Clojure instead. The driver performs HTTP/HTTPS calls to the service fabric cluster and handles input validation, connection management, fault handling of connection, and parsing any faults and results returned by the service into a format compatible with Clojure.
@@ -1238,7 +1239,7 @@ The initial version of the service fabric has some issues with the stateless ser
 
 A few considerations on how this issue could be resolved were considered, lowering the latency between nodes in the cluster, removing the stateless layer, and connecting directly to the stateful service. A choice here was made to scrap the initial implementation for Service Fabric and redesign it only to require a stateful service. The transactions would behave the same in a  single partition compared to a cluster with 500 partitions, as each "primary" node will behave the same, either way with the implementation that service fabric exposes. The service should therefore have a primary node as well as a few active replicas that allow for checking of replication status if this should be required down the line. This resolves and simplifies two things. Routing to the separate partitions is no longer an issue as the stateless "proxy" node is removed, we no longer need to consider routing data to the correct node from our Clojure connector, where it is possible to route all traffic to the primary or only route writes to the primary while distributing the reads to check for replication issues. This allows for testing of the replication engine in the future.
 
-\subsubsection{implementation of the revised design}
+\subsubsection{Implementation of the revised design}
 
 The implementation of the revised design was supposed to be fairly straightforward. However, the lack of feature parity started causing issues. These started showing up after an update to a new version of Service Fabric, a change to the behavior of warning to instead throw errors. This exposed the inexperience working with the .Net framework and the service fabric framework. These issues were eventually ironed out, but a significant amount of time was again lost due to the lack of debugging support either from a local cluster or diagnostic output from the cluster running in azure. This turned the development cycle upside down as there is no way to execute the code without a Service Fabric cluster.
 \\ \vspace{5mm}
@@ -1450,9 +1451,9 @@ Industries should define a standard for testing and checking database systems to
 
 \section{Implementation of Jepsen test for Service Fabric}
 
-Implementing the Jepsen test of Service Fabric was not the most seem less experience. 2 new programming languages, programming patterns, and frameworks were introduced. these new framworks led to many beginners' mistakes due to the lack of experience with .Net, Clojure, and the MVC design paradigm. 
+Implementing the Jepsen test of Service Fabric was not the most seemless experience. 2 new programming languages, programming patterns, and frameworks were introduced. these new framworks led to many beginners' mistakes due to the lack of experience with .Net, Clojure, and the MVC design paradigm. 
 \\ \vspace{5mm}
-Misconceptions about the behavior and functionality of the systems used led to,the implementations reaching a blockage caused by incorrect design decisions. These decisions required starting with multiple parts of the implementation as the examples and guides in the documentation are often outdated. They will not work with current deployments in Azure. This documentation often led the development astray as it contained examples a few years ago, where the current implementation of .Net contains countless breaking changes compared to the older versions.\cite{breakingchangesdotnet} 
+Misconceptions about the behavior and functionality of the systems used led to the implementations reaching a blockage caused by incorrect design decisions. These decisions required starting with multiple parts of the implementation as the examples and guides in the documentation are often outdated. They will not work with current deployments in Azure. This documentation often led the development astray as it contained examples a few years ago, where the current implementation of .Net contains countless breaking changes compared to the older versions~\cite{breakingchangesdotnet}. 
 \\ \vspace{5mm}
 
  Although functioning implementation was reached in the end, it was not without pains; due to the rapid changes of the .Net framework, the documentation is not there to document how the framework function and what functionality works with a given revision.
@@ -1475,9 +1476,12 @@ Lastly, a discussion on the current state of consistency models, definitions, or
 
 
 
-\section{Future Work}
-
-Future work could include implementing a deeper testing suite that checks for more types of invariant and issues that might occur in the system.
+As a future work, one could implement a deeper testing suite that checks for more types of invariant and issues that might occur in the system.
+\begin{itemize}
+    \item Is it possible to cause a a split brain scenario.
+    \item How reliable is the replication function and what anomalies does this exhibit during failures and portioning.
+    \item fully automate the testing suite such that it allows for integration into a CI pipeline.
+\end{itemize}
 
 
 \newpage
