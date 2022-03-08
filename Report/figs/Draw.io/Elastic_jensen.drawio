@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2022-03-08T19:43:13.320Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4931.0 Safari/537.36" etag="jTcvwjOOZAvd9wgO8E4r" version="15.3.8" type="github">
+<mxfile host="app.diagrams.net" modified="2022-03-08T20:52:51.165Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4931.0 Safari/537.36" etag="emvyXRUrf0d4qzgz0jVI" version="15.3.8" type="github">
   <diagram id="W23tsPag_Ub_MHOgVZHd" name="Page-1">
-    <mxGraphModel dx="2574" dy="1403" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2574" dy="1345" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -16,7 +16,7 @@
         <mxCell id="OUST3nQpqe01GOuJWhE--3" value="Secondary 2" style="aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image;image=img/lib/active_directory/generic_node.svg;" vertex="1" parent="1">
           <mxGeometry x="65" y="15.5" width="50" height="49" as="geometry" />
         </mxCell>
-        <mxCell id="OUST3nQpqe01GOuJWhE--4" value="Primary 2" style="aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image;image=img/lib/active_directory/generic_node.svg;" vertex="1" parent="1">
+        <mxCell id="OUST3nQpqe01GOuJWhE--4" value="Primary 2" style="aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image;image=img/lib/active_directory/generic_node.svg;imageBackground=none;" vertex="1" parent="1">
           <mxGeometry x="215" y="162.5" width="50" height="49" as="geometry" />
         </mxCell>
         <mxCell id="OUST3nQpqe01GOuJWhE--5" value="Primary 1" style="aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image;image=img/lib/active_directory/generic_node.svg;" vertex="1" parent="1">
