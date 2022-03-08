@@ -110,7 +110,7 @@
         \vspace*{5\baselineskip}
         \huge
         \bfseries
-        Jepsen methods usage for ACID compliance in Hyperscale Cloud Frameworks \\
+        Jepsen methods usage for consistency compliance testing in Hyper-scale Cloud Framework \\
         \normalfont
         by \\
         Mark Jervelund \\
@@ -141,7 +141,10 @@
     
     \setcounter{page}{1}
     \renewcommand{\thepage}{\arabic{page}}
+\section{Comments}
+ Some Sections were added after hand in to include more information or missing information. Such a G2-Item
 
+\newpage
 
     \section*{Abstract}
     Databases allow modern society to store, manage, distribute, and receive data at a previously unprecedented scale. Working with data is standard practice for most businesses. Still, it is often done monotonically on a single node, where modern systems require more storage, lower latency, higher availability, and better performance than current systems allow. Distributing a data store in a manner that scales performance, storage, availability, and desired properties is no easy feat. In this thesis, I will present methods of testing these properties and investigate how different frameworks solve this issue or often work around the issue in a way that aligns with the requirements of the systems. \\
@@ -736,7 +739,12 @@ A history exhibits G-single if the dsg contains a cycle consisting of an anti-de
 \\
 In the above example $T_1$ observes $x_0$ and $y_1$ from various states of the system and therefore end up reading an inconsistent state. The two valid states in the above context are [$x_0$ , $y_0$] and [$x_1$ , $y_1$]
 
-%\todo[author=Mark]{Item Anti-dependency Cycles (write skew on disjoint read)}
+\subsection{G2-Item Item Anti-dependency Cycles (write skew on disjoint read) AFTER}
+\input{figs/tikz/dsg/g2}
+
+
+% \subsection{G2: Anti-Dependency Cycles (write skew on predicate read) AFTER}
+
 
 %\todo[author=Mark]{Add more DSG definitions if time permits.}
 \newpage
